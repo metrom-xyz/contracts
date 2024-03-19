@@ -1,0 +1,23 @@
+{
+    "include": ["index.ts"],
+    "exclude": ["node_modules"],
+    "compilerOptions": {
+        "composite": false,
+        "target": "esnext",
+        "module": "esnext",
+        "useDefineForClassFields": true,
+        "lib": ["esnext"],
+        "strict": true,
+        "alwaysStrict": true,
+        "strictNullChecks": true,
+        "noUnusedLocals": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "noImplicitReturns": true,
+        "moduleResolution": "node",
+        "skipLibCheck": true,
+        "verbatimModuleSyntax": true,
+        "outDir": "./dist"
+    }
+}
