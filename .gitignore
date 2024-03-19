@@ -145,3 +145,6 @@ dist
 .pnp.*
 
 dist
+
+.env*
+broadcast

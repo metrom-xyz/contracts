@@ -43,8 +43,9 @@ create a .env.<NETWORK_NAME> file exporting 3 env variables:
 
 ```
 export PRIVATE_KEY=""
-export RPC_ENDPOINT=""
+export RPC_URL=""
 export OWNER=""
+export UPDATER=""
 export FEE_RECEIVER=""
 export FEE=""
 export ETHERSCAN_API_KEY=""
@@ -55,8 +56,8 @@ Brief explainer of the env variables:
 
 - `PRIVATE_KEY`: the private key related to the account that will perform the
   deployment.
-- `RPC_ENDPOINT`: the RPC endpoint that will be used to broadcast transactions.
-  This will also determine the network where the deployment will happen.
+- `RPC_URL`: the RPC endpoint that will be used to broadcast transactions. This
+  will also determine the network where the deployment will happen.
 - `OWNER`: the address that will own the deployed core protocol contracts and
   that will be able to set some protocol parameters.
 - `UPDATER`: the address that will be allowed to update Merkle trees for the
@@ -77,10 +78,10 @@ deployment:
 
 ```
 // to verify on etherscan
-FOUNDRY_PROFILE=production forge script --broadcast --rpc-url $RPC_ENDPOINT --sig 'run(address,address,address,uint16)' --verify Deploy $OWNER $UPDATER $FEE_RECEIVER $FEE
+FOUNDRY_PROFILE=production forge script --broadcast --rpc-url $RPC_URL --sig 'run(address,address,address,uint16)' --verify Deploy $OWNER $UPDATER $FEE_RECEIVER $FEE
 
 // if you instead want to verify on blockscout
-FOUNDRY_PROFILE=production forge script --broadcast --rpc-url $RPC_ENDPOINT --sig 'run(address,address,address,uint16)' --verify --verifier blockscout --verifier-url $BLOCKSCOUT_INSTANCE_URL/api? Deploy $OWNER $UPDATER $FEE_RECEIVER $FEE
+FOUNDRY_PROFILE=production forge script --broadcast --rpc-url $RPC_URL --sig 'run(address,address,address,uint16)' --verify --verifier blockscout --verifier-url $BLOCKSCOUT_INSTANCE_URL/api? Deploy $OWNER $UPDATER $FEE_RECEIVER $FEE
 ```
 
 ### Addresses
