@@ -20,7 +20,7 @@
         "lint:commit-message": "commitlint -e",
         "prepare": "husky install",
         "build": "tsc",
-        "prepublishOnly": "pnpm build:lib"
+        "prepublishOnly": "pnpm build"
     },
     "devDependencies": {
         "@commitlint/cli": "^18.6.1",
