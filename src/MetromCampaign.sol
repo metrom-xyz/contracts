@@ -7,7 +7,7 @@ import {ReentrancyGuard} from "oz/utils/ReentrancyGuard.sol";
 import {MerkleProof} from "oz/utils/cryptography/MerkleProof.sol";
 
 import {MerkleTree, Reward, RewardWithAccounting, RewardWithFee} from "./Commons.sol";
-import {BPS, MAX_FEE} from "./Commons.sol";
+import {UNIT, MAX_FEE} from "./Commons.sol";
 import {IMetromCampaign} from "./interfaces/IMetromCampaign.sol";
 import {IMetromCampaignFactory} from "./interfaces/IMetromCampaignFactory.sol";
 
@@ -15,10 +15,12 @@ import {IMetromCampaignFactory} from "./interfaces/IMetromCampaignFactory.sol";
 contract MetromCampaign is Initializable, IMetromCampaign, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
+    address public override owner;
+    address public override pendingOwner;
     address public override factory;
-    address public override creator;
     bytes32 public override specificationHash;
-    MerkleTree internal tree;
+    bytes32 public override treeRoot;
+    bytes32 public override dataHash;
     mapping(address token => RewardWithAccounting) reward;
 
     constructor() {
@@ -26,23 +28,23 @@ contract MetromCampaign is Initializable, IMetromCampaign, ReentrancyGuard {
     }
 
     function initialize(
-        address _creator,
+        address _owner,
         bytes32 _specificationHash,
         address _feeReceiver,
         uint16 _fee,
         Reward[] calldata _rewards
     ) external override initializer {
-        if (_creator == address(0)) revert InvalidCreator();
+        if (_owner == address(0)) revert InvalidOwner();
         if (_specificationHash == bytes32(0)) revert InvalidSpecificationHash();
         if (_feeReceiver == address(0)) revert InvalidFeeReceiver();
         if (_fee > MAX_FEE) revert InvalidFee();
 
-        RewardWithFee[] memory _collectedRewardsWithFee = _initializeRewards(_creator, _feeReceiver, _fee, _rewards);
+        RewardWithFee[] memory _collectedRewardsWithFee = _initializeRewards(_owner, _feeReceiver, _fee, _rewards);
 
-        emit Initialize(_creator, _specificationHash, _feeReceiver, _collectedRewardsWithFee);
+        emit Initialize(_owner, _specificationHash, _feeReceiver, _collectedRewardsWithFee);
     }
 
-    function _initializeRewards(address _creator, address _feeReceiver, uint16 _fee, Reward[] calldata _rewards)
+    function _initializeRewards(address _owner, address _feeReceiver, uint16 _fee, Reward[] calldata _rewards)
         internal
         returns (RewardWithFee[] memory)
     {
@@ -59,13 +61,13 @@ contract MetromCampaign is Initializable, IMetromCampaign, ReentrancyGuard {
                 }
             }
             reward[_reward.token].amount = _reward.amount;
-            reward[_reward.token].unclaimed = _reward.amount;
-            uint256 _rewardFee = (_reward.amount * _fee) / BPS;
+            reward[_reward.token].remaining = _reward.amount;
+            uint256 _rewardFee = (_reward.amount * _fee) / UNIT;
             uint256 _rewardAmountPlusFees;
             unchecked {
                 _rewardAmountPlusFees = _reward.amount + _rewardFee;
             }
-            IERC20(_reward.token).safeTransferFrom(_creator, address(this), _rewardAmountPlusFees);
+            IERC20(_reward.token).safeTransferFrom(_owner, address(this), _rewardAmountPlusFees);
             if (_rewardFee > 0) {
                 IERC20(_reward.token).safeTransfer(_feeReceiver, _rewardFee);
             }
@@ -74,33 +76,47 @@ contract MetromCampaign is Initializable, IMetromCampaign, ReentrancyGuard {
         return _rewardsWithFee;
     }
 
-    function updateTree(bytes32 _root, bytes32 _dataHash) external override {
+    function transferOwnership(address _owner) external {
+        if (msg.sender != owner) revert Forbidden();
+        pendingOwner = _owner;
+        emit TransferOwnership(_owner);
+    }
+
+    function acceptOwnership() external {
+        if (msg.sender != pendingOwner) revert Forbidden();
+        delete pendingOwner;
+        owner = msg.sender;
+        emit AcceptOwnership();
+    }
+
+    function updateTree(bytes32 _treeRoot, bytes32 _dataHash) external override {
         if (msg.sender != IMetromCampaignFactory(factory).updater()) revert Forbidden();
-        tree.root = _root;
-        tree.dataHash = _dataHash;
-        emit UpdateTree(_root, _dataHash);
+        treeRoot = _treeRoot;
+        dataHash = _dataHash;
+        emit UpdateTree(_treeRoot, _dataHash);
     }
 
     function claim(address[] calldata _tokens, uint16 _weight, bytes32[] calldata _proof) external nonReentrant {
         bytes32 _leaf = keccak256(abi.encode(msg.sender, _weight));
-        if (!MerkleProof.verifyCalldata(_proof, tree.root, _leaf)) revert InvalidProof();
+        if (!MerkleProof.verifyCalldata(_proof, treeRoot, _leaf)) revert InvalidProof();
 
         for (uint256 _i; _i < _tokens.length; _i++) {
             address _token = _tokens[_i];
             RewardWithAccounting storage _reward = reward[_token];
-            uint256 _claimable = (_reward.amount * _weight / BPS) - _reward.claimed[msg.sender];
-            _reward.claimed[msg.sender] += _claimable;
-            IERC20(_token).safeTransfer(msg.sender, _claimable);
-            emit Claim(msg.sender, _token, _claimable);
+            uint256 _claimed = (_reward.amount * _weight / UNIT) - _reward.claimed[msg.sender];
+            _reward.remaining -= _claimed;
+            _reward.claimed[msg.sender] += _claimed;
+            IERC20(_token).safeTransfer(msg.sender, _claimed);
+            emit Claim(msg.sender, _token, _claimed);
         }
     }
 
     function recover(address _token, address _receiver) external override {
         if (_receiver == address(0)) revert InvalidReceiver();
-        if (msg.sender != creator) revert Forbidden();
+        if (msg.sender != owner) revert Forbidden();
         uint256 _reimbursement = IERC20(_token).balanceOf(address(this));
         unchecked {
-            _reimbursement -= reward[_token].unclaimed;
+            _reimbursement -= reward[_token].remaining;
         }
         if (_reimbursement == 0) revert NothingToRecover();
         IERC20(_token).safeTransfer(_receiver, _reimbursement);
@@ -109,10 +125,5 @@ contract MetromCampaign is Initializable, IMetromCampaign, ReentrancyGuard {
 
     function claimed(address _token, address _user) external view override returns (uint256) {
         return reward[_token].claimed[_user];
-    }
-
-    function merkleTree() external view override returns (MerkleTree memory) {
-        MerkleTree memory _tree = tree;
-        return _tree;
     }
 }

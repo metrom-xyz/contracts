@@ -2,8 +2,11 @@
 
 pragma solidity 0.8.25;
 
-uint256 constant BPS = 10_000;
-uint256 constant MAX_FEE = 1_000;
+// maximum unit that percentages can take
+uint256 constant UNIT = 1_000_000;
+
+// max fee is 10%
+uint256 constant MAX_FEE = 100_000;
 
 struct MerkleTree {
     bytes32 root;
@@ -23,6 +26,6 @@ struct RewardWithFee {
 
 struct RewardWithAccounting {
     uint256 amount;
-    uint256 unclaimed;
+    uint256 remaining;
     mapping(address user => uint256 amount) claimed;
 }

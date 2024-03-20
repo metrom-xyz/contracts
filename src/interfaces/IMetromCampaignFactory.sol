@@ -4,21 +4,21 @@ import {RewardWithFee, MerkleTree, Reward} from "../Commons.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 interface IMetromCampaignFactory {
+    event Initialize(address indexed owner, address updater, address implementation, address feeReceiver, uint16 fee);
+    event TransferOwnership(address indexed owner);
+    event AcceptOwnership();
+    event Create(address indexed campaign);
+    event SetUpdater(address indexed updater);
+    event SetImplementation(address indexed implementation);
+    event SetFeeReceiver(address indexed feeReceiver);
+    event SetFee(uint16 fee);
+
     error InvalidOwner();
     error InvalidUpdater();
     error InvalidImplementation();
     error InvalidFeeReceiver();
     error InvalidFee();
     error Forbidden();
-
-    event Initialize(address owner, address updater, address implementation, address feeReceiver, uint16 fee);
-    event TransferOwnership(address owner);
-    event AcceptOwnership();
-    event Create(address campaign);
-    event SetUpdater(address updater);
-    event SetImplementation(address implementation);
-    event SetFeeReceiver(address feeReceiver);
-    event SetFee(uint16 fee);
 
     function owner() external view returns (address);
     function pendingOwner() external view returns (address);

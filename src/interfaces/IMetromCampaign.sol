@@ -5,12 +5,14 @@ import {RewardWithFee, MerkleTree, Reward} from "../Commons.sol";
 /// SPDX-License-Identifier: GPL-3.0-or-later
 interface IMetromCampaign {
     event Initialize(address creator, bytes32 specificationHash, address feeReceiver, RewardWithFee[] rewards);
+    event TransferOwnership(address indexed owner);
+    event AcceptOwnership();
     event UpdateTree(bytes32 root, bytes32 dataHash);
     event Claim(address indexed user, address indexed token, uint256 amount);
     event Recover(address indexed receiver, address indexed token, uint256 amount);
 
     error Forbidden();
-    error InvalidCreator();
+    error InvalidOwner();
     error InvalidSpecificationHash();
     error InvalidRewards();
     error InvalidFeeReceiver();
@@ -19,14 +21,18 @@ interface IMetromCampaign {
     error InvalidReceiver();
     error NothingToRecover();
 
-    function factory() external returns (address);
-    function creator() external returns (address);
-    function specificationHash() external returns (bytes32);
-    function merkleTree() external view returns (MerkleTree memory);
+    function owner() external view returns (address);
+    function pendingOwner() external view returns (address);
+    function factory() external view returns (address);
+    function specificationHash() external view returns (bytes32);
+    function dataHash() external view returns (bytes32);
+    function treeRoot() external view returns (bytes32);
     function claimed(address user, address token) external view returns (uint256);
 
+    function transferOwnership(address owner) external;
+    function acceptOwnership() external;
     function initialize(
-        address creator,
+        address owner,
         bytes32 specificationHash,
         address feeReceiver,
         uint16 fee,
