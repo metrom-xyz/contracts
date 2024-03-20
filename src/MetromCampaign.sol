@@ -6,9 +6,8 @@ import {SafeERC20} from "oz/token/ERC20/utils/SafeERC20.sol";
 import {ReentrancyGuard} from "oz/utils/ReentrancyGuard.sol";
 import {MerkleProof} from "oz/utils/cryptography/MerkleProof.sol";
 
-import {MerkleTree, Reward, RewardWithAccounting, RewardWithFee} from "./Commons.sol";
-import {UNIT, MAX_FEE} from "./Commons.sol";
-import {IMetromCampaign} from "./interfaces/IMetromCampaign.sol";
+import {UNIT, MAX_FEE, TokenAmount} from "./Commons.sol";
+import {IMetromCampaign, Reward, RewardWithFee, InitializeCampaignParams} from "./interfaces/IMetromCampaign.sol";
 import {IMetromCampaignFactory} from "./interfaces/IMetromCampaignFactory.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
@@ -18,62 +17,53 @@ contract MetromCampaign is Initializable, IMetromCampaign, ReentrancyGuard {
     address public override owner;
     address public override pendingOwner;
     address public override factory;
-    bytes32 public override specificationHash;
+    address public override pool;
+    uint32 public override from;
+    uint32 public override to;
     bytes32 public override treeRoot;
     bytes32 public override dataHash;
-    mapping(address token => RewardWithAccounting) reward;
+    mapping(address token => Reward) reward;
 
     constructor() {
         _disableInitializers();
     }
 
-    function initialize(
-        address _owner,
-        bytes32 _specificationHash,
-        address _feeReceiver,
-        uint16 _fee,
-        Reward[] calldata _rewards
-    ) external override initializer {
-        if (_owner == address(0)) revert InvalidOwner();
-        if (_specificationHash == bytes32(0)) revert InvalidSpecificationHash();
-        if (_feeReceiver == address(0)) revert InvalidFeeReceiver();
-        if (_fee > MAX_FEE) revert InvalidFee();
+    function initialize(InitializeCampaignParams calldata _params) external override initializer {
+        if (_params.owner == address(0)) revert InvalidOwner();
+        if (_params.feeReceiver == address(0)) revert InvalidFeeReceiver();
+        if (_params.fee > MAX_FEE) revert InvalidFee();
+        if (_params.pool == address(0)) revert InvalidPool();
+        if (_params.from < block.timestamp) revert InvalidFrom();
+        if (_params.to <= _params.from) revert InvalidTo();
+        if (_params.rewards.length == 0 || _params.rewards.length > 5) revert InvalidRewards();
 
-        RewardWithFee[] memory _collectedRewardsWithFee = _initializeRewards(_owner, _feeReceiver, _fee, _rewards);
+        owner = _params.owner;
+        factory = msg.sender;
+        pool = _params.pool;
+        from = _params.from;
+        to = _params.to;
 
-        emit Initialize(_owner, _specificationHash, _feeReceiver, _collectedRewardsWithFee);
-    }
-
-    function _initializeRewards(address _owner, address _feeReceiver, uint16 _fee, Reward[] calldata _rewards)
-        internal
-        returns (RewardWithFee[] memory)
-    {
-        if (_rewards.length == 0 || _rewards.length > 5) revert InvalidRewards();
-
-        RewardWithFee[] memory _rewardsWithFee = new RewardWithFee[](_rewards.length);
-        for (uint8 _i = 0; _i < _rewards.length; _i++) {
-            Reward memory _reward = _rewards[_i];
+        RewardWithFee[] memory _rewardsWithFee = new RewardWithFee[](_params.rewards.length);
+        for (uint8 _i = 0; _i < _params.rewards.length; _i++) {
+            TokenAmount memory _reward = _params.rewards[_i];
             if (_reward.token == address(0)) revert InvalidRewards();
             if (_reward.amount == 0) revert InvalidRewards();
-            for (uint8 _j = _i + 1; _j < _rewards.length; _j++) {
-                if (_reward.token == _rewards[_j].token) {
-                    revert InvalidRewards();
-                }
+            for (uint8 _j = _i + 1; _j < _params.rewards.length; _j++) {
+                if (_reward.token == _params.rewards[_j].token) revert InvalidRewards();
             }
             reward[_reward.token].amount = _reward.amount;
             reward[_reward.token].remaining = _reward.amount;
-            uint256 _rewardFee = (_reward.amount * _fee) / UNIT;
+            uint256 _rewardFee = (_reward.amount * _params.fee) / UNIT;
             uint256 _rewardAmountPlusFees;
             unchecked {
                 _rewardAmountPlusFees = _reward.amount + _rewardFee;
             }
-            IERC20(_reward.token).safeTransferFrom(_owner, address(this), _rewardAmountPlusFees);
-            if (_rewardFee > 0) {
-                IERC20(_reward.token).safeTransfer(_feeReceiver, _rewardFee);
-            }
+            IERC20(_reward.token).safeTransferFrom(_params.owner, address(this), _rewardAmountPlusFees);
+            if (_rewardFee > 0) IERC20(_reward.token).safeTransfer(_params.feeReceiver, _rewardFee);
             _rewardsWithFee[_i] = RewardWithFee({token: _reward.token, amount: _reward.amount, fee: _rewardFee});
         }
-        return _rewardsWithFee;
+
+        emit Initialize(_params.owner, _params.pool, _params.from, _params.to, _params.feeReceiver, _rewardsWithFee);
     }
 
     function transferOwnership(address _owner) external {
@@ -96,13 +86,13 @@ contract MetromCampaign is Initializable, IMetromCampaign, ReentrancyGuard {
         emit UpdateTree(_treeRoot, _dataHash);
     }
 
-    function claim(address[] calldata _tokens, uint16 _weight, bytes32[] calldata _proof) external nonReentrant {
+    function claim(address[] calldata _tokens, uint32 _weight, bytes32[] calldata _proof) external nonReentrant {
         bytes32 _leaf = keccak256(abi.encode(msg.sender, _weight));
         if (!MerkleProof.verifyCalldata(_proof, treeRoot, _leaf)) revert InvalidProof();
 
         for (uint256 _i; _i < _tokens.length; _i++) {
             address _token = _tokens[_i];
-            RewardWithAccounting storage _reward = reward[_token];
+            Reward storage _reward = reward[_token];
             uint256 _claimed = (_reward.amount * _weight / UNIT) - _reward.claimed[msg.sender];
             _reward.remaining -= _claimed;
             _reward.claimed[msg.sender] += _claimed;

@@ -2,10 +2,9 @@ pragma solidity 0.8.25;
 
 import {Clones} from "oz/proxy/Clones.sol";
 
-import {IMetromCampaignFactory} from "./interfaces/IMetromCampaignFactory.sol";
-import {IMetromCampaign} from "./interfaces/IMetromCampaign.sol";
-import {MAX_FEE} from "./Commons.sol";
-import {Reward} from "./Commons.sol";
+import {IMetromCampaignFactory, CreateCampaignParams} from "./interfaces/IMetromCampaignFactory.sol";
+import {IMetromCampaign, InitializeCampaignParams} from "./interfaces/IMetromCampaign.sol";
+import {MAX_FEE, TokenAmount} from "./Commons.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 contract MetromCampaignFactory is IMetromCampaignFactory {
@@ -14,9 +13,9 @@ contract MetromCampaignFactory is IMetromCampaignFactory {
     address public override updater;
     address public override implementation;
     address public override feeReceiver;
-    uint16 public override fee;
+    uint32 public override fee;
 
-    constructor(address _owner, address _updater, address _implementation, address _feeReceiver, uint16 _fee) {
+    constructor(address _owner, address _updater, address _implementation, address _feeReceiver, uint32 _fee) {
         if (_owner == address(0)) revert InvalidOwner();
         if (_updater == address(0)) revert InvalidUpdater();
         if (_implementation == address(0)) revert InvalidImplementation();
@@ -45,11 +44,32 @@ contract MetromCampaignFactory is IMetromCampaignFactory {
         emit AcceptOwnership();
     }
 
-    function create(bytes32 _specificationHash, Reward[] calldata _rewards) external override returns (address) {
-        address _instance =
-            Clones.cloneDeterministic(implementation, keccak256(abi.encodePacked(msg.sender, _specificationHash)));
-        IMetromCampaign(_instance).initialize(msg.sender, _specificationHash, feeReceiver, fee, _rewards);
+    function create(CreateCampaignParams calldata _params) external override returns (address) {
+        uint256 _rewardsLength = _params.rewards.length;
+        address[] memory _rewardTokens = new address[](_rewardsLength);
+        uint256[] memory _rewardAmounts = new uint256[](_rewardsLength);
+        for (uint256 _i = 0; _i < _params.rewards.length; _i++) {
+            _rewardTokens[_i] = _params.rewards[_i].token;
+            _rewardAmounts[_i] = _params.rewards[_i].amount;
+        }
+        address _instance = Clones.cloneDeterministic(
+            implementation,
+            keccak256(
+                abi.encodePacked(msg.sender, _params.pool, _params.from, _params.to, _rewardTokens, _rewardAmounts)
+            )
+        );
         emit Create(_instance);
+        IMetromCampaign(_instance).initialize(
+            InitializeCampaignParams({
+                owner: msg.sender,
+                feeReceiver: feeReceiver,
+                fee: fee,
+                pool: _params.pool,
+                from: _params.from,
+                to: _params.to,
+                rewards: _params.rewards
+            })
+        );
         return _instance;
     }
 
@@ -74,7 +94,7 @@ contract MetromCampaignFactory is IMetromCampaignFactory {
         emit SetFeeReceiver(_feeReceiver);
     }
 
-    function setFee(uint16 _fee) external override {
+    function setFee(uint32 _fee) external override {
         if (msg.sender != owner) revert Forbidden();
         if (_fee > MAX_FEE) revert InvalidFee();
         fee = _fee;
