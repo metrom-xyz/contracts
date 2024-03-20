@@ -4,7 +4,7 @@ import {RewardWithFee, MerkleTree, Reward} from "../Commons.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 interface IMetromCampaign {
-    event Initialize(address creator, bytes32 specificationHash, address feeReceiver, RewardWithFee[] rewards);
+    event Initialize(address owner, bytes32 specificationHash, address feeReceiver, RewardWithFee[] rewards);
     event TransferOwnership(address indexed owner);
     event AcceptOwnership();
     event UpdateTree(bytes32 root, bytes32 dataHash);
