@@ -8,6 +8,10 @@
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "sideEffects": false,
+    "exports": {
+        "./abis/MetromCampaign.json": "./abis/MetromCampaign.json",
+        "./abis/MetromCampaignFactory.json": "./abis/MetromCampaignFactory.json"
+    },
     "files": [
         "./dist"
     ],
@@ -19,7 +23,7 @@
         "format": "forge fmt && prettier --write .",
         "lint:commit-message": "commitlint -e",
         "prepare": "husky install",
-        "build": "tsc",
+        "build": "node ./build.js",
         "prepublishOnly": "pnpm build"
     },
     "dependencies": {
