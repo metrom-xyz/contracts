@@ -1,13 +1,9 @@
 import type { ChainContract } from "viem";
-import { sepolia } from "viem/chains";
+import { celoAlfajores } from "viem/chains";
 
-export enum ChainId {
-    Sepolia = sepolia.id,
-}
-
-export const DEPLOYMENT_ADDRESSES: Record<ChainId, ChainContract> = {
-    [ChainId.Sepolia]: {
-        address: "0x05D1bE53482783619C616220F689A3044340d574",
-        blockCreated: 5_518_376,
+export const ADDRESS: Record<number, ChainContract> = {
+    [celoAlfajores.id]: {
+        address: "0xe82c4D8b993D613a28600B953e91A3A93Ae69Fd6",
+        blockCreated: 23_111_863,
     },
 };

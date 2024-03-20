@@ -7,7 +7,7 @@ import {MetromCampaignFactory} from "../src/MetromCampaignFactory.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 contract Deploy is Script {
-    function run(address _owner, address _updater, address _feeReceiver, uint16 _fee) public {
+    function run(address _owner, address _updater, address _feeReceiver, uint32 _fee) public {
         vm.startBroadcast(vm.envUint("PRIVATE_KEY"));
 
         MetromCampaign _campaign = new MetromCampaign();

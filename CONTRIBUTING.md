@@ -78,10 +78,10 @@ deployment:
 
 ```
 // to verify on etherscan
-FOUNDRY_PROFILE=production forge script --broadcast --rpc-url $RPC_URL --sig 'run(address,address,address,uint16)' --verify Deploy $OWNER $UPDATER $FEE_RECEIVER $FEE
+FOUNDRY_PROFILE=production forge script --broadcast --rpc-url $RPC_URL --sig 'run(address,address,address,uint32)' --verify Deploy $OWNER $UPDATER $FEE_RECEIVER $FEE
 
 // if you instead want to verify on blockscout
-FOUNDRY_PROFILE=production forge script --broadcast --rpc-url $RPC_URL --sig 'run(address,address,address,uint16)' --verify --verifier blockscout --verifier-url $BLOCKSCOUT_INSTANCE_URL/api? Deploy $OWNER $UPDATER $FEE_RECEIVER $FEE
+FOUNDRY_PROFILE=production forge script --broadcast --rpc-url $RPC_URL --sig 'run(address,address,address,uint32)' --verify --verifier blockscout --verifier-url $BLOCKSCOUT_INSTANCE_URL/api? Deploy $OWNER $UPDATER $FEE_RECEIVER $FEE
 ```
 
 ### Addresses
