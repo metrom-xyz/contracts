@@ -52,12 +52,7 @@ contract MetromCampaignFactory is IMetromCampaignFactory {
             _rewardTokens[_i] = _params.rewards[_i].token;
             _rewardAmounts[_i] = _params.rewards[_i].amount;
         }
-        address _instance = Clones.cloneDeterministic(
-            implementation,
-            keccak256(
-                abi.encodePacked(msg.sender, _params.pool, _params.from, _params.to, _rewardTokens, _rewardAmounts)
-            )
-        );
+        address _instance = Clones.cloneDeterministic(implementation, _salt(_params));
         emit Create(_instance);
         IMetromCampaign(_instance).initialize(
             InitializeCampaignParams({
@@ -71,6 +66,23 @@ contract MetromCampaignFactory is IMetromCampaignFactory {
             })
         );
         return _instance;
+    }
+
+    function _salt(CreateCampaignParams calldata _params) internal view returns (bytes32) {
+        uint256 _rewardsLength = _params.rewards.length;
+        address[] memory _rewardTokens = new address[](_rewardsLength);
+        uint256[] memory _rewardAmounts = new uint256[](_rewardsLength);
+        for (uint256 _i = 0; _i < _rewardsLength; _i++) {
+            _rewardTokens[_i] = _params.rewards[_i].token;
+            _rewardAmounts[_i] = _params.rewards[_i].amount;
+        }
+        return keccak256(
+            abi.encodePacked(msg.sender, _params.pool, _params.from, _params.to, _rewardTokens, _rewardAmounts)
+        );
+    }
+
+    function predictCampaignAddress(CreateCampaignParams calldata _params) external view returns (address) {
+        return Clones.predictDeterministicAddress(implementation, _salt(_params));
     }
 
     function setUpdater(address _updater) external override {
