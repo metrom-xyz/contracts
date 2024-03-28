@@ -33,6 +33,7 @@ interface IMetromCampaignFactory {
     function implementation() external view returns (address);
     function feeReceiver() external view returns (address);
     function fee() external view returns (uint32);
+    function predictCampaignAddress(CreateCampaignParams calldata _params) external view returns (address);
 
     function transferOwnership(address owner) external;
     function acceptOwnership() external;
