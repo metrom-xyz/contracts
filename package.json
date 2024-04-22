@@ -10,8 +10,7 @@
     "sideEffects": false,
     "exports": {
         ".": "./dist/index.js",
-        "./abis/MetromCampaign.json": "./abis/MetromCampaign.json",
-        "./abis/MetromCampaignFactory.json": "./abis/MetromCampaignFactory.json"
+        "./abis/Metrom.json": "./abis/Metrom.json"
     },
     "files": [
         "./dist"

@@ -37,45 +37,17 @@ execSync("pnpm tsc", { stdio: "inherit" });
 
 console.log("Bundling ABIs...");
 
-const { abi: metromCampaignAbi } = JSON.parse(
-    readFileSync(
-        join(CURRENT_DIR, "./out/IMetromCampaign.sol/IMetromCampaign.json"),
-    ),
-);
-
-const { abi: metromCampaignFactoryAbi } = JSON.parse(
-    readFileSync(
-        join(
-            CURRENT_DIR,
-            "./out/IMetromCampaignFactory.sol/IMetromCampaignFactory.json",
-        ),
-    ),
+const { abi } = JSON.parse(
+    readFileSync(join(CURRENT_DIR, "./out/IMetrom.sol/IMetrom.json")),
 );
 
 mkdirSync(join(CURRENT_DIR, "./dist/abis"));
 
 writeFileSync(
-    join(CURRENT_DIR, "./dist/abis/MetromCampaign.json"),
-    JSON.stringify(metromCampaignAbi, undefined, 4),
+    join(CURRENT_DIR, "./dist/abis/Metrom.json"),
+    JSON.stringify(abi, undefined, 4),
 );
 appendFileSync(
     join(CURRENT_DIR, "./dist/index.js"),
-    `export const metromCampaignAbi = ${getJsonAsTypescript(metromCampaignAbi)};\n`,
-);
-appendFileSync(
-    join(CURRENT_DIR, "./dist/index.d.ts"),
-    `export declare const metromCampaignAbi = ${getJsonAsTypescript(metromCampaignAbi)} as const\n`,
-);
-
-writeFileSync(
-    join(CURRENT_DIR, "./dist/abis/MetromCampaignFactory.json"),
-    JSON.stringify(metromCampaignFactoryAbi, undefined, 4),
-);
-appendFileSync(
-    join(CURRENT_DIR, "./dist/index.js"),
-    `export const metromCampaignFactoryAbi = ${getJsonAsTypescript(metromCampaignAbi)};\n`,
-);
-appendFileSync(
-    join(CURRENT_DIR, "./dist/index.d.ts"),
-    `export declare const metromCampaignFactoryAbi = ${getJsonAsTypescript(metromCampaignAbi)} as const;\n`,
+    `export const metromAbi = ${getJsonAsTypescript(abi)};\n`,
 );
