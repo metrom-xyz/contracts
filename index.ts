@@ -5,9 +5,9 @@ export enum SupportedChain {
     CeloAlfajores = celoAlfajores.id,
 }
 
-export const ADDRESSES: Record<SupportedChain, ChainContract> = {
+export const ADDRESS: Record<SupportedChain, ChainContract> = {
     [SupportedChain.CeloAlfajores]: {
-        address: "0x97fdbf49e4C5649477e4f2f26cCE772bEa4e6165",
-        blockCreated: 23_681_326,
+        address: "0x8F140C6473ab59adCe2a294EdE8d6aB485CfCb8c",
+        blockCreated: 23_681_808,
     },
 };
