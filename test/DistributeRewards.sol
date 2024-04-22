@@ -94,7 +94,7 @@ contract DistributeRewardsTest is BaseTest {
         _bundles[0] = _bundle;
 
         vm.expectEmit();
-        emit IMetrom.DistributeReward(_bundle.campaignId, _bundle.root);
+        emit IMetrom.DistributeReward(_bundle.campaignId, _bundle.root, _bundle.data);
 
         vm.prank(updater);
         metrom.distributeRewards(_bundles);

@@ -157,7 +157,7 @@ contract Metrom is IMetrom {
             Campaign storage campaign = _getExistingCampaign(_bundle.campaignId);
             campaign.root = _bundle.root;
             campaign.data = _bundle.data;
-            emit DistributeReward(_bundle.campaignId, _bundle.root);
+            emit DistributeReward(_bundle.campaignId, _bundle.root, _bundle.data);
         }
     }
 

@@ -76,7 +76,7 @@ interface IMetrom {
         address[] rewardTokens,
         uint256[] rewardAmounts
     );
-    event DistributeReward(bytes32 indexed campaignId, bytes32 root);
+    event DistributeReward(bytes32 indexed campaignId, bytes32 root, bytes32 data);
     event ClaimReward(bytes32 indexed campaignId, address token, uint256 amount, address indexed receiver);
     event CollectFee(address token, uint256 amount, address indexed receiver);
 
