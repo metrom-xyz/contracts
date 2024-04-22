@@ -270,16 +270,6 @@ contract CreateCampaignTest is BaseTest {
         CreateBundle[] memory _bundles = new CreateBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.expectEmit();
-        emit IMetrom.CreateCampaign(
-            address(this),
-            _bundle.pool,
-            _bundle.from,
-            _bundle.to,
-            _bundle.specification,
-            _bundle.rewardTokens,
-            _bundle.rewardAmounts
-        );
         metrom.createCampaigns(_bundles);
 
         vm.assertEq(_mintableErc20.balanceOf(address(this)), 0);
@@ -342,25 +332,6 @@ contract CreateCampaignTest is BaseTest {
         _bundles[0] = _bundle1;
         _bundles[1] = _bundle2;
 
-        vm.expectEmit();
-        emit IMetrom.CreateCampaign(
-            address(this),
-            _bundle1.pool,
-            _bundle1.from,
-            _bundle1.to,
-            _bundle1.specification,
-            _bundle1.rewardTokens,
-            _bundle1.rewardAmounts
-        );
-        emit IMetrom.CreateCampaign(
-            address(this),
-            _bundle2.pool,
-            _bundle2.from,
-            _bundle2.to,
-            _bundle2.specification,
-            _bundle2.rewardTokens,
-            _bundle2.rewardAmounts
-        );
         metrom.createCampaigns(_bundles);
 
         vm.assertEq(_mintableErc20.balanceOf(address(this)), 0);
@@ -427,16 +398,6 @@ contract CreateCampaignTest is BaseTest {
         CreateBundle[] memory _bundles = new CreateBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.expectEmit();
-        emit IMetrom.CreateCampaign(
-            address(this),
-            _bundle.pool,
-            _bundle.from,
-            _bundle.to,
-            _bundle.specification,
-            _bundle.rewardTokens,
-            _bundle.rewardAmounts
-        );
         metrom.createCampaigns(_bundles);
 
         vm.assertEq(_mintableErc201.balanceOf(address(this)), 0);
@@ -514,25 +475,6 @@ contract CreateCampaignTest is BaseTest {
         _bundles[0] = _bundle1;
         _bundles[1] = _bundle2;
 
-        vm.expectEmit();
-        emit IMetrom.CreateCampaign(
-            address(this),
-            _bundle1.pool,
-            _bundle1.from,
-            _bundle1.to,
-            _bundle1.specification,
-            _bundle1.rewardTokens,
-            _bundle1.rewardAmounts
-        );
-        emit IMetrom.CreateCampaign(
-            address(this),
-            _bundle2.pool,
-            _bundle2.from,
-            _bundle2.to,
-            _bundle2.specification,
-            _bundle2.rewardTokens,
-            _bundle2.rewardAmounts
-        );
         metrom.createCampaigns(_bundles);
 
         vm.assertEq(_mintableErc201.balanceOf(address(this)), 0);

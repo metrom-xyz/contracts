@@ -68,6 +68,7 @@ interface IMetrom {
     event Initialize(address indexed owner, address updater, uint32 fee, uint32 minimumCampaignDuration);
 
     event CreateCampaign(
+        bytes32 indexed id,
         address indexed owner,
         address indexed pool,
         uint32 from,

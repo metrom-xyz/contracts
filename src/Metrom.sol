@@ -136,6 +136,7 @@ contract Metrom is IMetrom {
             }
 
             emit CreateCampaign(
+                _id,
                 msg.sender,
                 _bundle.pool,
                 _bundle.from,
