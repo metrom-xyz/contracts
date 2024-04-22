@@ -23,7 +23,8 @@ contract DistributeRewardsTest is BaseTest {
     }
 
     function test_failInvalidRoot() public {
-        DistributeRewardsBundle memory _bundle = DistributeRewardsBundle({campaignId: bytes32(0), root: bytes32(0)});
+        DistributeRewardsBundle memory _bundle =
+            DistributeRewardsBundle({campaignId: bytes32(0), root: bytes32(0), data: bytes32(0)});
 
         DistributeRewardsBundle[] memory _bundles = new DistributeRewardsBundle[](1);
         _bundles[0] = _bundle;
@@ -33,9 +34,21 @@ contract DistributeRewardsTest is BaseTest {
         metrom.distributeRewards(_bundles);
     }
 
+    function test_failInvalidData() public {
+        DistributeRewardsBundle memory _bundle =
+            DistributeRewardsBundle({campaignId: bytes32(0), root: bytes32("test"), data: bytes32(0)});
+
+        DistributeRewardsBundle[] memory _bundles = new DistributeRewardsBundle[](1);
+        _bundles[0] = _bundle;
+
+        vm.prank(updater);
+        vm.expectRevert(IMetrom.InvalidData.selector);
+        metrom.distributeRewards(_bundles);
+    }
+
     function test_failNonExistentCampaign() public {
         DistributeRewardsBundle memory _bundle =
-            DistributeRewardsBundle({campaignId: bytes32(0), root: bytes32("test")});
+            DistributeRewardsBundle({campaignId: bytes32(0), root: bytes32("test"), data: bytes32("test")});
 
         DistributeRewardsBundle[] memory _bundles = new DistributeRewardsBundle[](1);
         _bundles[0] = _bundle;
@@ -72,8 +85,11 @@ contract DistributeRewardsTest is BaseTest {
 
         metrom.createCampaigns(_createBundles);
 
-        DistributeRewardsBundle memory _bundle =
-            DistributeRewardsBundle({campaignId: metrom.campaignId(_createBundle), root: bytes32("test")});
+        DistributeRewardsBundle memory _bundle = DistributeRewardsBundle({
+            campaignId: metrom.campaignId(_createBundle),
+            root: bytes32("test"),
+            data: bytes32("test")
+        });
         DistributeRewardsBundle[] memory _bundles = new DistributeRewardsBundle[](1);
         _bundles[0] = _bundle;
 

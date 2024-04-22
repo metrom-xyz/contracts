@@ -13,6 +13,7 @@ struct Campaign {
     uint32 to;
     bytes32 specification;
     bytes32 root;
+    bytes32 data;
     address[] rewards;
     mapping(address token => Reward) reward;
 }
@@ -46,6 +47,7 @@ struct CreateBundle {
 struct DistributeRewardsBundle {
     bytes32 campaignId;
     bytes32 root;
+    bytes32 data;
 }
 
 struct ClaimRewardsBundle {
@@ -87,6 +89,7 @@ interface IMetrom {
 
     error CampaignAlreadyExists();
     error Forbidden();
+    error InvalidData();
     error InvalidFee();
     error InvalidFrom();
     error InvalidOwner();

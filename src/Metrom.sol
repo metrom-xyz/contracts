@@ -153,7 +153,10 @@ contract Metrom is IMetrom {
         for (uint256 _i; _i < _bundles.length; _i++) {
             DistributeRewardsBundle calldata _bundle = _bundles[_i];
             if (_bundle.root == bytes32(0)) revert InvalidRoot();
-            _getExistingCampaign(_bundle.campaignId).root = _bundle.root;
+            if (_bundle.data == bytes32(0)) revert InvalidData();
+            Campaign storage campaign = _getExistingCampaign(_bundle.campaignId);
+            campaign.root = _bundle.root;
+            campaign.data = _bundle.data;
             emit DistributeReward(_bundle.campaignId, _bundle.root);
         }
     }
