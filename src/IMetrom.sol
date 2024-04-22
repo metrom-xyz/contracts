@@ -70,7 +70,8 @@ interface IMetrom {
     event CreateCampaign(
         bytes32 indexed id,
         address indexed owner,
-        address indexed pool,
+        uint256 chainId,
+        address pool,
         uint32 from,
         uint32 to,
         bytes32 specification,
