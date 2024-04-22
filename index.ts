@@ -5,20 +5,9 @@ export enum SupportedChain {
     CeloAlfajores = celoAlfajores.id,
 }
 
-export interface MetromContracts {
-    factory: ChainContract;
-    batchUpdater: ChainContract;
-}
-
-export const ADDRESSES: Record<SupportedChain, MetromContracts> = {
+export const ADDRESSES: Record<SupportedChain, ChainContract> = {
     [SupportedChain.CeloAlfajores]: {
-        factory: {
-            address: "0xb4F8FB8cC48A9Eb8d8E0A530C9775eD06728BaDd",
-            blockCreated: 23576703,
-        },
-        batchUpdater: {
-            address: "0xcA9b84f307c7E7825C6e9B1da732f0a7e953889D",
-            blockCreated: 23576703,
-        },
+        address: "0x97fdbf49e4C5649477e4f2f26cCE772bEa4e6165",
+        blockCreated: 23_681_326,
     },
 };

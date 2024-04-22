@@ -62,9 +62,8 @@ Brief explainer of the env variables:
   that will be able to set some protocol parameters.
 - `UPDATER`: the address that will be allowed to update Merkle trees for the
   campaigns.
-- `FEE_RECEIVER`: the address of the fee receiver. This address will collect all
-  the protocol fees.
 - `FEE`: the basis points fee to charge on campaigns creation.
+- `MINIMUM_CAMPAIGN_DURATION`: the minimum campaign duration.
 - `ETHERSCAN_API_KEY`: the Etherscan (or Blockscout) API key used to verify
   contracts.
 - `VERIFIER_URL`: the Etherscan pr Blockscout API URL that will be used to
@@ -78,10 +77,10 @@ deployment:
 
 ```
 // to verify on etherscan
-FOUNDRY_PROFILE=production forge script --broadcast --rpc-url $RPC_URL --sig 'run(address,address,address,uint32)' --verify Deploy $OWNER $UPDATER $FEE_RECEIVER $FEE
+FOUNDRY_PROFILE=production forge script --broadcast --rpc-url $RPC_URL --sig 'run(address,address,uint32,uint32)' --verify Deploy $OWNER $UPDATER $FEE $MINIMUM_CAMPAIGN_DURATION
 
 // if you instead want to verify on blockscout
-FOUNDRY_PROFILE=production forge script --broadcast --rpc-url $RPC_URL --sig 'run(address,address,address,uint32)' --verify --verifier blockscout --verifier-url $BLOCKSCOUT_INSTANCE_URL/api? Deploy $OWNER $UPDATER $FEE_RECEIVER $FEE
+FOUNDRY_PROFILE=production forge script --broadcast --rpc-url $RPC_URL --sig 'run(address,address,uint32,uint32)' --verify --verifier blockscout --verifier-url $BLOCKSCOUT_INSTANCE_URL/api? Deploy $OWNER $UPDATER $FEE $MINIMUM_CAMPAIGN_DURATION
 ```
 
 ### Addresses
