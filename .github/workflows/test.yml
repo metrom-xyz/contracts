@@ -1,34 +1,42 @@
-name: test
-
-on: workflow_dispatch
-
-env:
-    FOUNDRY_PROFILE: ci
-
+name: Tests
+on:
+    push:
+        branches:
+            - develop
+            - staging
+            - main
+    pull_request:
+        types: [opened, synchronize, reopened]
+        branches:
+            - develop
+            - staging
+            - main
+concurrency:
+    group: ci-${{ github.ref }}
+    cancel-in-progress: true
 jobs:
-    check:
-        strategy:
-            fail-fast: true
-
-        name: Foundry project
+    forge-tests:
+        name: Test
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v4
+            - name: Checkout
+              uses: actions/checkout@v3
               with:
                   submodules: recursive
-
+            - name: Setup Node
+              uses: actions/setup-node@v3
+              with:
+                  node-version: 20
+                  cache: "pnpm"
             - name: Install Foundry
               uses: foundry-rs/foundry-toolchain@v1
               with:
                   version: nightly
-
-            - name: Run Forge build
-              run: |
-                  forge --version
-                  forge build --sizes
-              id: build
-
-            - name: Run Forge tests
-              run: |
-                  forge test -vvv
-              id: test
+            - name: Build
+              run: forge build
+              env:
+                  FOUNDRY_PROFILE: ci
+            - name: Test
+              run: forge test
+              env:
+                  FOUNDRY_PROFILE: ci
