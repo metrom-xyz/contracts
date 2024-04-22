@@ -8,12 +8,12 @@ import {MintableERC20} from "./dependencies/MintableERC20.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 contract CreateCampaignTest is BaseTest {
-    function test_CceateCampaignSuccessNoBundles() public {
+    function test_successNoBundles() public {
         CreateBundle[] memory _bundles = new CreateBundle[](0);
         metrom.createCampaigns(_bundles);
     }
 
-    function test_createCampaignFailInvalidPool() public {
+    function test_failInvalidPool() public {
         address[] memory _rewardTokens = new address[](0);
         uint256[] memory _rewardAmounts = new uint256[](0);
 
@@ -34,7 +34,7 @@ contract CreateCampaignTest is BaseTest {
         metrom.createCampaigns(_bundles);
     }
 
-    function test_createCampaignFailInvalidFrom() public {
+    function test_failInvalidFrom() public {
         address[] memory _rewardTokens = new address[](0);
         uint256[] memory _rewardAmounts = new uint256[](0);
 
@@ -55,7 +55,7 @@ contract CreateCampaignTest is BaseTest {
         metrom.createCampaigns(_bundles);
     }
 
-    function test_createCampaignFailInvalidToBeforeFrom() public {
+    function test_failInvalidToBeforeFrom() public {
         address[] memory _rewardTokens = new address[](0);
         uint256[] memory _rewardAmounts = new uint256[](0);
 
@@ -76,7 +76,7 @@ contract CreateCampaignTest is BaseTest {
         metrom.createCampaigns(_bundles);
     }
 
-    function test_createCampaignFailInvalidToBeforeMinimumCampaignDuration() public {
+    function test_failInvalidToBeforeMinimumCampaignDuration() public {
         uint32 _minimumCampaignDuration = 120;
         vm.prank(owner);
         metrom.setMinimumCampaignDuration(_minimumCampaignDuration);
@@ -102,7 +102,7 @@ contract CreateCampaignTest is BaseTest {
         metrom.createCampaigns(_bundles);
     }
 
-    function test_createCampaignFailNoRewards() public {
+    function test_failNoRewards() public {
         address[] memory _rewardTokens = new address[](0);
         uint256[] memory _rewardAmounts = new uint256[](0);
 
@@ -123,7 +123,7 @@ contract CreateCampaignTest is BaseTest {
         metrom.createCampaigns(_bundles);
     }
 
-    function test_createCampaignFailTooManyRewards() public {
+    function test_failTooManyRewards() public {
         address[] memory _rewardTokens = new address[](6);
         uint256[] memory _rewardAmounts = new uint256[](0);
 
@@ -144,7 +144,7 @@ contract CreateCampaignTest is BaseTest {
         metrom.createCampaigns(_bundles);
     }
 
-    function test_createCampaignFailInconsistentTokensAndAmounts() public {
+    function test_failInconsistentTokensAndAmounts() public {
         address[] memory _rewardTokens = new address[](3);
         uint256[] memory _rewardAmounts = new uint256[](1);
 
@@ -165,7 +165,7 @@ contract CreateCampaignTest is BaseTest {
         metrom.createCampaigns(_bundles);
     }
 
-    function test_createCampaignFailAlreadyExists() public {
+    function test_failAlreadyExists() public {
         MintableERC20 _mintableErc20 = new MintableERC20("Test", "TST");
         _mintableErc20.mint(address(this), 10.1 ether);
         _mintableErc20.approve(address(metrom), 10.1 ether);
@@ -195,7 +195,7 @@ contract CreateCampaignTest is BaseTest {
         metrom.createCampaigns(_bundles);
     }
 
-    function test_createCampaignFailZeroRewardAmount() public {
+    function test_failZeroRewardAmount() public {
         address[] memory _rewardTokens = new address[](1);
         _rewardTokens[0] = address(1);
 
@@ -219,7 +219,7 @@ contract CreateCampaignTest is BaseTest {
         metrom.createCampaigns(_bundles);
     }
 
-    function test_createCampaignFailDuplicatedRewardToken() public {
+    function test_failDuplicatedRewardToken() public {
         address[] memory _rewardTokens = new address[](2);
         _rewardTokens[0] = address(1);
         _rewardTokens[1] = address(1);
@@ -245,7 +245,7 @@ contract CreateCampaignTest is BaseTest {
         metrom.createCampaigns(_bundles);
     }
 
-    function test_createCampaignSuccessSingleSingleReward() public {
+    function test_successSingleSingleReward() public {
         MintableERC20 _mintableErc20 = new MintableERC20("Test", "TST");
         _mintableErc20.mint(address(this), 10.1 ether);
         _mintableErc20.approve(address(metrom), 10.1 ether);
@@ -300,7 +300,7 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(_createdCampaign.rewards[0].unclaimed, 10 ether);
     }
 
-    function test_createCampaignSuccessMultipleSingleReward() public {
+    function test_successMultipleSingleReward() public {
         MintableERC20 _mintableErc20 = new MintableERC20("Test", "TST");
         _mintableErc20.mint(address(this), 15.15 ether);
         _mintableErc20.approve(address(metrom), 15.15 ether);
@@ -395,7 +395,7 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(_createdCampaign2.rewards[0].unclaimed, 5 ether);
     }
 
-    function test_createCampaignSuccessSingleMultipleeward() public {
+    function test_successSingleMultipleeward() public {
         MintableERC20 _mintableErc201 = new MintableERC20("Test 1", "TST1");
         _mintableErc201.mint(address(this), 10.1 ether);
         _mintableErc201.approve(address(metrom), 10.1 ether);
@@ -463,7 +463,7 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(_createdCampaign.rewards[1].unclaimed, 5 ether);
     }
 
-    function test_createCampaignSuccessMultipleMultipleReward() public {
+    function test_successMultipleMultipleReward() public {
         MintableERC20 _mintableErc201 = new MintableERC20("Test", "TST");
         _mintableErc201.mint(address(this), 15.15 ether);
         _mintableErc201.approve(address(metrom), 15.15 ether);

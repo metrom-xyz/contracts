@@ -7,22 +7,22 @@ import {IMetrom} from "../src/IMetrom.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 contract ConstructorTest is BaseTest {
-    function test_newInvalidOwner() public {
+    function test_failInvalidOwner() public {
         vm.expectRevert(IMetrom.InvalidOwner.selector);
         new MetromHarness(address(0), address(0), 10, 10);
     }
 
-    function test_newInvalidUpdater() public {
+    function test_failInvalidUpdater() public {
         vm.expectRevert(IMetrom.InvalidUpdater.selector);
         new MetromHarness(address(1), address(0), 10, 10);
     }
 
-    function test_newInvalidFee() public {
+    function test_failInvalidFee() public {
         vm.expectRevert(IMetrom.InvalidFee.selector);
         new MetromHarness(address(1), address(1), uint32(MAX_FEE + 1), 10);
     }
 
-    function test_newSuccess() public {
+    function test_success() public {
         address _owner = address(1);
         address _updater = address(2);
         uint32 _fee = 10;
@@ -40,7 +40,7 @@ contract ConstructorTest is BaseTest {
         vm.assertEq(_metrom.minimumCampaignDuration(), _minimumCampaignDuration);
     }
 
-    function testFuzz_new(address _owner, address _updater, uint32 _fee, uint32 _minimumCampaignDuration) public {
+    function testFuzz_success(address _owner, address _updater, uint32 _fee, uint32 _minimumCampaignDuration) public {
         vm.assume(_owner != address(0));
         vm.assume(_updater != address(0));
         vm.assume(_fee <= MAX_FEE);

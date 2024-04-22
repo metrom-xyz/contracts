@@ -88,13 +88,13 @@ interface IMetrom {
     error CampaignAlreadyExists();
     error Forbidden();
     error InvalidFee();
-    error InvalidFeeCollection();
     error InvalidFrom();
     error InvalidOwner();
     error InvalidPool();
     error InvalidProof();
     error InvalidReceiver();
     error InvalidRewards();
+    error InvalidRoot();
     error InvalidTo();
     error InvalidToken();
     error InvalidUpdater();

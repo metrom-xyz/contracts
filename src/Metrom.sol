@@ -152,6 +152,7 @@ contract Metrom is IMetrom {
 
         for (uint256 _i; _i < _bundles.length; _i++) {
             DistributeRewardsBundle calldata _bundle = _bundles[_i];
+            if (_bundle.root == bytes32(0)) revert InvalidRoot();
             _getExistingCampaign(_bundle.campaignId).root = _bundle.root;
             emit DistributeReward(_bundle.campaignId, _bundle.root);
         }
@@ -188,7 +189,7 @@ contract Metrom is IMetrom {
             if (_bundle.receiver == address(0)) revert InvalidReceiver();
 
             uint256 _claimAmount = accruedFees[_bundle.token];
-            if (_claimAmount == 0) revert InvalidFeeCollection();
+            if (_claimAmount == 0) revert ZeroAmount();
 
             delete accruedFees[_bundle.token];
             IERC20(_bundle.token).safeTransfer(_bundle.receiver, _claimAmount);

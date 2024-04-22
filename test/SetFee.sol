@@ -7,18 +7,18 @@ import {IMetrom} from "../src/IMetrom.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 contract SetFeeTest is BaseTest {
-    function test_setFeeFailForbidden() public {
+    function test_failForbidden() public {
         vm.expectRevert(IMetrom.Forbidden.selector);
         metrom.setFee(10);
     }
 
-    function test_setFeeFailInvalid() public {
+    function test_failInvalid() public {
         vm.expectRevert(IMetrom.InvalidFee.selector);
         vm.prank(owner);
         metrom.setFee(uint32(MAX_FEE + 1));
     }
 
-    function test_setFeeSuccess() public {
+    function test_success() public {
         vm.assertEq(metrom.fee(), fee);
 
         uint32 _newFee = uint32(10_000);
@@ -28,7 +28,7 @@ contract SetFeeTest is BaseTest {
         vm.assertEq(metrom.fee(), _newFee);
     }
 
-    function testFuzz_setFee(uint32 _newFee) public {
+    function testFuzz_success(uint32 _newFee) public {
         vm.assume(_newFee < MAX_FEE);
 
         vm.assertEq(metrom.fee(), fee);

@@ -7,12 +7,12 @@ import {IMetrom} from "../src/IMetrom.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 contract AcceptOwnershipTest is BaseTest {
-    function test_acceptOwnershipFail() public {
+    function test_fail() public {
         vm.expectRevert(IMetrom.Forbidden.selector);
         metrom.acceptOwnership();
     }
 
-    function test_acceptOwnershipSuccess() public {
+    function test_success() public {
         vm.assertEq(metrom.owner(), owner);
 
         address _newOwner = address(10001);
@@ -30,7 +30,7 @@ contract AcceptOwnershipTest is BaseTest {
         vm.assertEq(metrom.owner(), _newOwner);
     }
 
-    function testFuzz_acceptOwnership(address _newOwner) public {
+    function testFuzz_success(address _newOwner) public {
         vm.assertEq(metrom.owner(), owner);
 
         vm.prank(owner);

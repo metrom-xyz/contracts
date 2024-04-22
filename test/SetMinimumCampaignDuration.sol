@@ -7,12 +7,12 @@ import {IMetrom} from "../src/IMetrom.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 contract SetMinimumCampaignDurationTest is BaseTest {
-    function test_setMinimumCampaignDurationFailForbidden() public {
+    function test_failForbidden() public {
         vm.expectRevert(IMetrom.Forbidden.selector);
         metrom.setMinimumCampaignDuration(10);
     }
 
-    function test_setMinimumCampaignDurationSuccess() public {
+    function test_success() public {
         vm.assertEq(metrom.minimumCampaignDuration(), minimumCampaignDuration);
 
         uint32 _newMinimumCampaignDuration = uint32(10_000);
@@ -22,7 +22,7 @@ contract SetMinimumCampaignDurationTest is BaseTest {
         vm.assertEq(metrom.minimumCampaignDuration(), _newMinimumCampaignDuration);
     }
 
-    function testFuzz_setMinimumCampaignDuration(uint32 _newMinimumCampaignDuration) public {
+    function testFuzz_success(uint32 _newMinimumCampaignDuration) public {
         vm.assertEq(metrom.minimumCampaignDuration(), minimumCampaignDuration);
 
         vm.prank(owner);
