@@ -3,20 +3,20 @@ pragma solidity 0.8.25;
 import {MetromHarness} from "./harnesses/MetromHarness.sol";
 import {BaseTest} from "./Base.t.sol";
 import {MAX_FEE} from "../src/Metrom.sol";
-import {IMetrom, CreateBundle, ClaimRewardsBundle, ReadonlyCampaign} from "../src/IMetrom.sol";
+import {IMetrom, CreateBundle, ClaimRewardBundle, ReadonlyCampaign} from "../src/IMetrom.sol";
 import {MintableERC20} from "./dependencies/MintableERC20.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 contract DistributeRewardsTest is BaseTest {
     function test_successNoBundles() public {
-        ClaimRewardsBundle[] memory _bundles = new ClaimRewardsBundle[](0);
+        ClaimRewardBundle[] memory _bundles = new ClaimRewardBundle[](0);
         metrom.claimRewards(_bundles);
     }
 
     function test_FailInvalidRoot() public {
         bytes32[] memory _proof = new bytes32[](0);
 
-        ClaimRewardsBundle memory _bundle = ClaimRewardsBundle({
+        ClaimRewardBundle memory _bundle = ClaimRewardBundle({
             campaignId: bytes32(0),
             proof: _proof,
             token: address(0),
@@ -24,7 +24,7 @@ contract DistributeRewardsTest is BaseTest {
             receiver: address(0)
         });
 
-        ClaimRewardsBundle[] memory _bundles = new ClaimRewardsBundle[](1);
+        ClaimRewardBundle[] memory _bundles = new ClaimRewardBundle[](1);
         _bundles[0] = _bundle;
 
         vm.expectRevert(IMetrom.InvalidToken.selector);
@@ -34,7 +34,7 @@ contract DistributeRewardsTest is BaseTest {
     function test_failZeroAmount() public {
         bytes32[] memory _proof = new bytes32[](0);
 
-        ClaimRewardsBundle memory _bundle = ClaimRewardsBundle({
+        ClaimRewardBundle memory _bundle = ClaimRewardBundle({
             campaignId: bytes32(0),
             proof: _proof,
             token: address(1),
@@ -42,7 +42,7 @@ contract DistributeRewardsTest is BaseTest {
             receiver: address(0)
         });
 
-        ClaimRewardsBundle[] memory _bundles = new ClaimRewardsBundle[](1);
+        ClaimRewardBundle[] memory _bundles = new ClaimRewardBundle[](1);
         _bundles[0] = _bundle;
 
         vm.expectRevert(IMetrom.ZeroAmount.selector);
@@ -52,7 +52,7 @@ contract DistributeRewardsTest is BaseTest {
     function test_failNonExistentCampaign() public {
         bytes32[] memory _proof = new bytes32[](0);
 
-        ClaimRewardsBundle memory _bundle = ClaimRewardsBundle({
+        ClaimRewardBundle memory _bundle = ClaimRewardBundle({
             campaignId: bytes32(0),
             proof: _proof,
             token: address(1),
@@ -60,7 +60,7 @@ contract DistributeRewardsTest is BaseTest {
             receiver: address(0)
         });
 
-        ClaimRewardsBundle[] memory _bundles = new ClaimRewardsBundle[](1);
+        ClaimRewardBundle[] memory _bundles = new ClaimRewardBundle[](1);
         _bundles[0] = _bundle;
 
         vm.expectRevert(IMetrom.NonExistentCampaign.selector);
@@ -96,7 +96,7 @@ contract DistributeRewardsTest is BaseTest {
 
         bytes32[] memory _proof = new bytes32[](0);
 
-        ClaimRewardsBundle memory _bundle = ClaimRewardsBundle({
+        ClaimRewardBundle memory _bundle = ClaimRewardBundle({
             campaignId: metrom.campaignId(_createBundle),
             proof: _proof,
             token: address(1),
@@ -104,7 +104,7 @@ contract DistributeRewardsTest is BaseTest {
             receiver: address(0)
         });
 
-        ClaimRewardsBundle[] memory _bundles = new ClaimRewardsBundle[](1);
+        ClaimRewardBundle[] memory _bundles = new ClaimRewardBundle[](1);
         _bundles[0] = _bundle;
 
         vm.expectRevert(IMetrom.InvalidProof.selector);

@@ -3,54 +3,54 @@ pragma solidity 0.8.25;
 import {MetromHarness} from "./harnesses/MetromHarness.sol";
 import {BaseTest} from "./Base.t.sol";
 import {MAX_FEE} from "../src/Metrom.sol";
-import {IMetrom, CreateBundle, CollectFeesBundle, ReadonlyCampaign} from "../src/IMetrom.sol";
+import {IMetrom, CreateBundle, ClaimFeeBundle, ReadonlyCampaign} from "../src/IMetrom.sol";
 import {MintableERC20} from "./dependencies/MintableERC20.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 contract CollectFeesTest is BaseTest {
     function test_failForbidden() public {
-        CollectFeesBundle[] memory _bundles = new CollectFeesBundle[](0);
+        ClaimFeeBundle[] memory _bundles = new ClaimFeeBundle[](0);
         vm.expectRevert(IMetrom.Forbidden.selector);
-        metrom.collectFees(_bundles);
+        metrom.claimFees(_bundles);
     }
 
     function test_successNoBundles() public {
-        CollectFeesBundle[] memory _bundles = new CollectFeesBundle[](0);
+        ClaimFeeBundle[] memory _bundles = new ClaimFeeBundle[](0);
         vm.prank(owner);
-        metrom.collectFees(_bundles);
+        metrom.claimFees(_bundles);
     }
 
     function test_failInvalidToken() public {
-        CollectFeesBundle memory _bundle = CollectFeesBundle({token: address(0), receiver: address(0)});
+        ClaimFeeBundle memory _bundle = ClaimFeeBundle({token: address(0), receiver: address(0)});
 
-        CollectFeesBundle[] memory _bundles = new CollectFeesBundle[](1);
+        ClaimFeeBundle[] memory _bundles = new ClaimFeeBundle[](1);
         _bundles[0] = _bundle;
 
         vm.expectRevert(IMetrom.InvalidToken.selector);
         vm.prank(owner);
-        metrom.collectFees(_bundles);
+        metrom.claimFees(_bundles);
     }
 
     function test_failInvalidReceiver() public {
-        CollectFeesBundle memory _bundle = CollectFeesBundle({token: address(1), receiver: address(0)});
+        ClaimFeeBundle memory _bundle = ClaimFeeBundle({token: address(1), receiver: address(0)});
 
-        CollectFeesBundle[] memory _bundles = new CollectFeesBundle[](1);
+        ClaimFeeBundle[] memory _bundles = new ClaimFeeBundle[](1);
         _bundles[0] = _bundle;
 
         vm.expectRevert(IMetrom.InvalidReceiver.selector);
         vm.prank(owner);
-        metrom.collectFees(_bundles);
+        metrom.claimFees(_bundles);
     }
 
     function test_failZeroAmount() public {
-        CollectFeesBundle memory _bundle = CollectFeesBundle({token: address(1), receiver: address(1)});
+        ClaimFeeBundle memory _bundle = ClaimFeeBundle({token: address(1), receiver: address(1)});
 
-        CollectFeesBundle[] memory _bundles = new CollectFeesBundle[](1);
+        ClaimFeeBundle[] memory _bundles = new ClaimFeeBundle[](1);
         _bundles[0] = _bundle;
 
         vm.expectRevert(IMetrom.ZeroAmount.selector);
         vm.prank(owner);
-        metrom.collectFees(_bundles);
+        metrom.claimFees(_bundles);
     }
 
     function test_success() public {
@@ -83,16 +83,16 @@ contract CollectFeesTest is BaseTest {
         vm.assertEq(metrom.claimableFees(address(_mintableErc20)), 0.1 ether);
         vm.assertEq(_mintableErc20.balanceOf(address(this)), 0);
 
-        CollectFeesBundle memory _bundle = CollectFeesBundle({token: address(_mintableErc20), receiver: address(this)});
+        ClaimFeeBundle memory _bundle = ClaimFeeBundle({token: address(_mintableErc20), receiver: address(this)});
 
-        CollectFeesBundle[] memory _bundles = new CollectFeesBundle[](1);
+        ClaimFeeBundle[] memory _bundles = new ClaimFeeBundle[](1);
         _bundles[0] = _bundle;
 
         vm.expectEmit();
-        emit IMetrom.CollectFee(_bundle.token, 0.1 ether, _bundle.receiver);
+        emit IMetrom.ClaimFee(_bundle.token, 0.1 ether, _bundle.receiver);
 
         vm.prank(owner);
-        metrom.collectFees(_bundles);
+        metrom.claimFees(_bundles);
 
         vm.assertEq(metrom.claimableFees(address(_mintableErc20)), 0 ether);
         vm.assertEq(_mintableErc20.balanceOf(address(this)), 0.1 ether);

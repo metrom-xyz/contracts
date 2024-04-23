@@ -50,7 +50,7 @@ struct DistributeRewardsBundle {
     bytes32 data;
 }
 
-struct ClaimRewardsBundle {
+struct ClaimRewardBundle {
     bytes32 campaignId;
     bytes32[] proof;
     address token;
@@ -58,7 +58,7 @@ struct ClaimRewardsBundle {
     address receiver;
 }
 
-struct CollectFeesBundle {
+struct ClaimFeeBundle {
     address token;
     address receiver;
 }
@@ -81,7 +81,7 @@ interface IMetrom {
     );
     event DistributeReward(bytes32 indexed campaignId, bytes32 root, bytes32 data);
     event ClaimReward(bytes32 indexed campaignId, address token, uint256 amount, address indexed receiver);
-    event CollectFee(address token, uint256 amount, address indexed receiver);
+    event ClaimFee(address token, uint256 amount, address indexed receiver);
 
     event TransferOwnership(address indexed owner);
     event AcceptOwnership();
@@ -117,11 +117,11 @@ interface IMetrom {
 
     function createCampaigns(CreateBundle[] calldata bundles) external;
     function distributeRewards(DistributeRewardsBundle[] calldata bundles) external;
-    function claimRewards(ClaimRewardsBundle[] calldata bundles) external;
-    function collectFees(CollectFeesBundle[] calldata bundles) external;
+    function claimRewards(ClaimRewardBundle[] calldata bundles) external;
 
     function transferOwnership(address owner) external;
     function acceptOwnership() external;
+    function claimFees(ClaimFeeBundle[] calldata bundles) external;
     function setUpdater(address updater) external;
     function setFee(uint32 fee) external;
     function setMinimumCampaignDuration(uint32 minimumCampaignDuration) external;

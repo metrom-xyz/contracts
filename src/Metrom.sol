@@ -13,8 +13,8 @@ import {
     ReadonlyReward,
     CreateBundle,
     DistributeRewardsBundle,
-    ClaimRewardsBundle,
-    CollectFeesBundle
+    ClaimRewardBundle,
+    ClaimFeeBundle
 } from "./IMetrom.sol";
 
 uint256 constant UNIT = 1_000_000;
@@ -166,9 +166,9 @@ contract Metrom is IMetrom {
         }
     }
 
-    function claimRewards(ClaimRewardsBundle[] calldata _bundles) external override {
+    function claimRewards(ClaimRewardBundle[] calldata _bundles) external override {
         for (uint256 _i; _i < _bundles.length; _i++) {
-            ClaimRewardsBundle calldata _bundle = _bundles[_i];
+            ClaimRewardBundle calldata _bundle = _bundles[_i];
             if (_bundle.token == address(0)) revert InvalidToken();
             if (_bundle.amount == 0) revert ZeroAmount();
 
@@ -187,11 +187,11 @@ contract Metrom is IMetrom {
         }
     }
 
-    function collectFees(CollectFeesBundle[] calldata _bundles) external {
+    function claimFees(ClaimFeeBundle[] calldata _bundles) external {
         if (msg.sender != owner) revert Forbidden();
 
         for (uint256 _i = 0; _i < _bundles.length; _i++) {
-            CollectFeesBundle calldata _bundle = _bundles[_i];
+            ClaimFeeBundle calldata _bundle = _bundles[_i];
 
             if (_bundle.token == address(0)) revert InvalidToken();
             if (_bundle.receiver == address(0)) revert InvalidReceiver();
@@ -201,7 +201,7 @@ contract Metrom is IMetrom {
 
             delete claimableFees[_bundle.token];
             IERC20(_bundle.token).safeTransfer(_bundle.receiver, _claimAmount);
-            emit CollectFee(_bundle.token, _claimAmount, _bundle.receiver);
+            emit ClaimFee(_bundle.token, _claimAmount, _bundle.receiver);
         }
     }
 
