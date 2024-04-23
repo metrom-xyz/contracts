@@ -7,7 +7,7 @@ export enum SupportedChain {
 
 export const ADDRESS: Record<SupportedChain, ChainContract> = {
     [SupportedChain.CeloAlfajores]: {
-        address: "0xDD15Dc3D5Ae4Dc6c59F1461d1b6233cf88b2a871",
-        blockCreated: 23693186,
+        address: "0xBC4c6C3213d029c1E72347624492D71B04752eD9",
+        blockCreated: 23693380,
     },
 };

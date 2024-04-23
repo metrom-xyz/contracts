@@ -273,7 +273,7 @@ contract CreateCampaignTest is BaseTest {
         metrom.createCampaigns(_bundles);
 
         vm.assertEq(_mintableErc20.balanceOf(address(this)), 0);
-        vm.assertEq(metrom.accruedFees(address(_mintableErc20)), 0.1 ether);
+        vm.assertEq(metrom.claimableFees(address(_mintableErc20)), 0.1 ether);
 
         bytes32 _createdCampaignId = metrom.campaignId(_bundle);
         ReadonlyCampaign memory _createdCampaign = metrom.campaignById(_createdCampaignId);
@@ -335,7 +335,7 @@ contract CreateCampaignTest is BaseTest {
         metrom.createCampaigns(_bundles);
 
         vm.assertEq(_mintableErc20.balanceOf(address(this)), 0);
-        vm.assertEq(metrom.accruedFees(address(_mintableErc20)), 0.15 ether);
+        vm.assertEq(metrom.claimableFees(address(_mintableErc20)), 0.15 ether);
 
         bytes32 _createdCampaignId1 = metrom.campaignId(_bundle1);
         ReadonlyCampaign memory _createdCampaign1 = metrom.campaignById(_createdCampaignId1);
@@ -401,10 +401,10 @@ contract CreateCampaignTest is BaseTest {
         metrom.createCampaigns(_bundles);
 
         vm.assertEq(_mintableErc201.balanceOf(address(this)), 0);
-        vm.assertEq(metrom.accruedFees(address(_mintableErc201)), 0.1 ether);
+        vm.assertEq(metrom.claimableFees(address(_mintableErc201)), 0.1 ether);
 
         vm.assertEq(_mintableErc202.balanceOf(address(this)), 0);
-        vm.assertEq(metrom.accruedFees(address(_mintableErc202)), 0.05 ether);
+        vm.assertEq(metrom.claimableFees(address(_mintableErc202)), 0.05 ether);
 
         bytes32 _createdCampaignId = metrom.campaignId(_bundle);
         ReadonlyCampaign memory _createdCampaign = metrom.campaignById(_createdCampaignId);
@@ -478,10 +478,10 @@ contract CreateCampaignTest is BaseTest {
         metrom.createCampaigns(_bundles);
 
         vm.assertEq(_mintableErc201.balanceOf(address(this)), 0);
-        vm.assertEq(metrom.accruedFees(address(_mintableErc201)), 0.15 ether);
+        vm.assertEq(metrom.claimableFees(address(_mintableErc201)), 0.15 ether);
 
         vm.assertEq(_mintableErc202.balanceOf(address(this)), 0);
-        vm.assertEq(metrom.accruedFees(address(_mintableErc202)), 0.1 ether);
+        vm.assertEq(metrom.claimableFees(address(_mintableErc202)), 0.1 ether);
 
         bytes32 _createdCampaignId1 = metrom.campaignId(_bundle1);
         ReadonlyCampaign memory _createdCampaign1 = metrom.campaignById(_createdCampaignId1);

@@ -31,7 +31,7 @@ contract Metrom is IMetrom {
     uint32 public override fee;
     uint32 public override minimumCampaignDuration;
     mapping(bytes32 id => Campaign) internal campaigns;
-    mapping(address token => uint256 amount) public override accruedFees;
+    mapping(address token => uint256 amount) public override claimableFees;
 
     constructor(address _owner, address _updater, uint32 _fee, uint32 _minimumCampaignDuration) {
         if (_owner == address(0)) revert InvalidOwner();
@@ -131,7 +131,7 @@ contract Metrom is IMetrom {
 
                 uint256 _feeAmount = _amount * _fee / UNIT;
                 uint256 _rewardAmountPlusFees = _amount + _feeAmount;
-                accruedFees[_token] += _feeAmount;
+                claimableFees[_token] += _feeAmount;
                 _feeAmounts[_j] = _feeAmount;
 
                 IERC20(_token).safeTransferFrom(msg.sender, address(this), _rewardAmountPlusFees);
@@ -196,10 +196,10 @@ contract Metrom is IMetrom {
             if (_bundle.token == address(0)) revert InvalidToken();
             if (_bundle.receiver == address(0)) revert InvalidReceiver();
 
-            uint256 _claimAmount = accruedFees[_bundle.token];
+            uint256 _claimAmount = claimableFees[_bundle.token];
             if (_claimAmount == 0) revert ZeroAmount();
 
-            delete accruedFees[_bundle.token];
+            delete claimableFees[_bundle.token];
             IERC20(_bundle.token).safeTransfer(_bundle.receiver, _claimAmount);
             emit CollectFee(_bundle.token, _claimAmount, _bundle.receiver);
         }

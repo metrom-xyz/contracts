@@ -112,7 +112,7 @@ interface IMetrom {
     function updater() external view returns (address);
     function fee() external view returns (uint32);
     function minimumCampaignDuration() external view returns (uint32);
-    function accruedFees(address token) external returns (uint256);
+    function claimableFees(address token) external returns (uint256);
     function campaignById(bytes32 id) external view returns (ReadonlyCampaign memory);
 
     function createCampaigns(CreateBundle[] calldata bundles) external;

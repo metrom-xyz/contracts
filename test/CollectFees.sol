@@ -80,7 +80,7 @@ contract CollectFeesTest is BaseTest {
 
         metrom.createCampaigns(_createBundles);
 
-        vm.assertEq(metrom.accruedFees(address(_mintableErc20)), 0.1 ether);
+        vm.assertEq(metrom.claimableFees(address(_mintableErc20)), 0.1 ether);
         vm.assertEq(_mintableErc20.balanceOf(address(this)), 0);
 
         CollectFeesBundle memory _bundle = CollectFeesBundle({token: address(_mintableErc20), receiver: address(this)});
@@ -94,7 +94,7 @@ contract CollectFeesTest is BaseTest {
         vm.prank(owner);
         metrom.collectFees(_bundles);
 
-        vm.assertEq(metrom.accruedFees(address(_mintableErc20)), 0 ether);
+        vm.assertEq(metrom.claimableFees(address(_mintableErc20)), 0 ether);
         vm.assertEq(_mintableErc20.balanceOf(address(this)), 0.1 ether);
     }
 }
