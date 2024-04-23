@@ -113,6 +113,7 @@ contract Metrom is IMetrom {
             campaign.specification = _bundle.specification;
             campaign.rewards = _bundle.rewardTokens;
 
+            uint256[] memory _feeAmounts = new uint256[](_bundle.rewardTokens.length);
             for (uint256 _j = 0; _j < _bundle.rewardTokens.length; _j++) {
                 address _token = _bundle.rewardTokens[_j];
                 if (_token == address(0)) revert InvalidRewards();
@@ -131,6 +132,7 @@ contract Metrom is IMetrom {
                 uint256 _feeAmount = _amount * _fee / UNIT;
                 uint256 _rewardAmountPlusFees = _amount + _feeAmount;
                 accruedFees[_token] += _feeAmount;
+                _feeAmounts[_j] = _feeAmount;
 
                 IERC20(_token).safeTransferFrom(msg.sender, address(this), _rewardAmountPlusFees);
             }
@@ -144,7 +146,8 @@ contract Metrom is IMetrom {
                 _bundle.to,
                 _bundle.specification,
                 _bundle.rewardTokens,
-                _bundle.rewardAmounts
+                _bundle.rewardAmounts,
+                _feeAmounts
             );
         }
     }
