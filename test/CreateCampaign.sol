@@ -322,7 +322,7 @@ contract CreateCampaignTest is BaseTest {
             chainId: 2,
             pool: address(2),
             from: uint32(block.timestamp + 100),
-            to: uint32(block.timestamp + 1020),
+            to: uint32(block.timestamp + 120),
             specification: bytes32("test-spec"),
             rewardTokens: _rewardTokens2,
             rewardAmounts: _rewardAmounts2

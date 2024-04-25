@@ -65,7 +65,13 @@ struct ClaimFeeBundle {
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 interface IMetrom {
-    event Initialize(address indexed owner, address updater, uint32 fee, uint32 minimumCampaignDuration);
+    event Initialize(
+        address indexed owner,
+        address updater,
+        uint32 fee,
+        uint32 minimumCampaignDuration,
+        uint32 maximumCampaignDuration
+    );
 
     event CreateCampaign(
         bytes32 indexed id,
@@ -88,13 +94,16 @@ interface IMetrom {
 
     event SetUpdater(address indexed updater);
     event SetFee(uint32 fee);
-    event SetMinimumCampaignDuration(uint32 minimumDuration);
+    event SetMinimumCampaignDuration(uint32 minimumCampaignDuration);
+    event SetMaximumCampaignDuration(uint32 maximumCampaignDuration);
 
     error CampaignAlreadyExists();
     error Forbidden();
     error InvalidData();
     error InvalidFee();
     error InvalidFrom();
+    error InvalidMaximumCampaignDuration();
+    error InvalidMinimumCampaignDuration();
     error InvalidOwner();
     error InvalidPool();
     error InvalidProof();
@@ -112,6 +121,7 @@ interface IMetrom {
     function updater() external view returns (address);
     function fee() external view returns (uint32);
     function minimumCampaignDuration() external view returns (uint32);
+    function maximumCampaignDuration() external view returns (uint32);
     function claimableFees(address token) external returns (uint256);
     function campaignById(bytes32 id) external view returns (ReadonlyCampaign memory);
 
@@ -125,4 +135,5 @@ interface IMetrom {
     function setUpdater(address updater) external;
     function setFee(uint32 fee) external;
     function setMinimumCampaignDuration(uint32 minimumCampaignDuration) external;
+    function setMaximumCampaignDuration(uint32 maximumCampaignDuration) external;
 }

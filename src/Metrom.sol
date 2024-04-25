@@ -30,20 +30,29 @@ contract Metrom is IMetrom {
     address public override updater;
     uint32 public override fee;
     uint32 public override minimumCampaignDuration;
+    uint32 public override maximumCampaignDuration;
     mapping(bytes32 id => Campaign) internal campaigns;
     mapping(address token => uint256 amount) public override claimableFees;
 
-    constructor(address _owner, address _updater, uint32 _fee, uint32 _minimumCampaignDuration) {
+    constructor(
+        address _owner,
+        address _updater,
+        uint32 _fee,
+        uint32 _minimumCampaignDuration,
+        uint32 _maximumCampaignDuration
+    ) {
         if (_owner == address(0)) revert InvalidOwner();
         if (_updater == address(0)) revert InvalidUpdater();
         if (_fee > MAX_FEE) revert InvalidFee();
+        if (_minimumCampaignDuration >= _maximumCampaignDuration) revert InvalidMinimumCampaignDuration();
 
         owner = _owner;
         updater = _updater;
         minimumCampaignDuration = _minimumCampaignDuration;
+        maximumCampaignDuration = _maximumCampaignDuration;
         fee = _fee;
 
-        emit Initialize(_owner, _updater, _fee, _minimumCampaignDuration);
+        emit Initialize(_owner, _updater, _fee, _minimumCampaignDuration, _maximumCampaignDuration);
     }
 
     function _campaignId(CreateBundle memory _bundle) internal pure returns (bytes32) {
@@ -90,13 +99,17 @@ contract Metrom is IMetrom {
     function createCampaigns(CreateBundle[] calldata _bundles) external {
         uint32 _fee = fee;
         uint32 _minimumCampaignDuration = minimumCampaignDuration;
+        uint32 _maximumCampaignDuration = maximumCampaignDuration;
 
         for (uint256 _i = 0; _i < _bundles.length; _i++) {
             CreateBundle memory _bundle = _bundles[_i];
 
             if (_bundle.pool == address(0)) revert InvalidPool();
             if (_bundle.from <= block.timestamp) revert InvalidFrom();
-            if (_bundle.to <= _bundle.from + _minimumCampaignDuration) revert InvalidTo();
+            if (
+                _bundle.to < _bundle.from + _minimumCampaignDuration
+                    || _bundle.to - _bundle.from > _maximumCampaignDuration
+            ) revert InvalidTo();
             if (
                 _bundle.rewardTokens.length == 0 || _bundle.rewardTokens.length > MAX_REWARDS_PER_CAMPAIGN
                     || _bundle.rewardTokens.length != _bundle.rewardAmounts.length
@@ -233,8 +246,16 @@ contract Metrom is IMetrom {
     }
 
     function setMinimumCampaignDuration(uint32 _minimumCampaignDuration) external override {
+        if (_minimumCampaignDuration >= maximumCampaignDuration) revert InvalidMinimumCampaignDuration();
         if (msg.sender != owner) revert Forbidden();
         minimumCampaignDuration = _minimumCampaignDuration;
         emit SetMinimumCampaignDuration(_minimumCampaignDuration);
+    }
+
+    function setMaximumCampaignDuration(uint32 _maximumCampaignDuration) external override {
+        if (_maximumCampaignDuration <= minimumCampaignDuration) revert InvalidMaximumCampaignDuration();
+        if (msg.sender != owner) revert Forbidden();
+        maximumCampaignDuration = _maximumCampaignDuration;
+        emit SetMaximumCampaignDuration(_maximumCampaignDuration);
     }
 }
