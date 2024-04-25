@@ -6,6 +6,11 @@ struct Reward {
     mapping(address user => uint256 amount) claimed;
 }
 
+struct SpecificFee {
+    uint32 fee;
+    bool none;
+}
+
 struct Campaign {
     uint256 chainId;
     address pool;
@@ -68,7 +73,7 @@ interface IMetrom {
     event Initialize(
         address indexed owner,
         address updater,
-        uint32 fee,
+        uint32 globalFee,
         uint32 minimumCampaignDuration,
         uint32 maximumCampaignDuration
     );
@@ -93,15 +98,17 @@ interface IMetrom {
     event AcceptOwnership();
 
     event SetUpdater(address indexed updater);
-    event SetFee(uint32 fee);
+    event SetGlobalFee(uint32 globalFee);
+    event SetSpecificFee(address account, uint32 specificFee);
     event SetMinimumCampaignDuration(uint32 minimumCampaignDuration);
     event SetMaximumCampaignDuration(uint32 maximumCampaignDuration);
 
     error CampaignAlreadyExists();
     error Forbidden();
+    error InvalidAccount();
     error InvalidData();
-    error InvalidFee();
     error InvalidFrom();
+    error InvalidGlobalFee();
     error InvalidMaximumCampaignDuration();
     error InvalidMinimumCampaignDuration();
     error InvalidOwner();
@@ -109,6 +116,7 @@ interface IMetrom {
     error InvalidProof();
     error InvalidReceiver();
     error InvalidRewards();
+    error InvalidSpecificFee();
     error InvalidRoot();
     error InvalidTo();
     error InvalidToken();
@@ -119,7 +127,8 @@ interface IMetrom {
     function owner() external view returns (address);
     function pendingOwner() external view returns (address);
     function updater() external view returns (address);
-    function fee() external view returns (uint32);
+    function globalFee() external view returns (uint32);
+    function specificFeeFor(address account) external view returns (SpecificFee memory);
     function minimumCampaignDuration() external view returns (uint32);
     function maximumCampaignDuration() external view returns (uint32);
     function claimableFees(address token) external returns (uint256);
@@ -133,7 +142,8 @@ interface IMetrom {
     function acceptOwnership() external;
     function claimFees(ClaimFeeBundle[] calldata bundles) external;
     function setUpdater(address updater) external;
-    function setFee(uint32 fee) external;
+    function setGlobalFee(uint32 fee) external;
+    function setSpecificFee(address account, uint32 fee) external;
     function setMinimumCampaignDuration(uint32 minimumCampaignDuration) external;
     function setMaximumCampaignDuration(uint32 maximumCampaignDuration) external;
 }

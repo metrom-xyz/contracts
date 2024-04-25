@@ -37,7 +37,7 @@ contract CreateCampaign is Script {
         CreateBundle[] memory _bundles = new CreateBundle[](1);
         _bundles[0] = _bundle;
 
-        uint32 _fee = IMetrom(_metrom).fee();
+        uint32 _fee = IMetrom(_metrom).globalFee();
         IERC20(_rewardToken).approve(_metrom, _rewardAmount + ((_rewardAmount * _fee) / 1_000_000));
 
         IMetrom(_metrom).createCampaigns(_bundles);

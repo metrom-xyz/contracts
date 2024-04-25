@@ -10,7 +10,7 @@ import {IMetrom} from "../src/IMetrom.sol";
 contract BaseTest is Test {
     address internal owner;
     address internal updater;
-    uint32 internal fee;
+    uint32 internal globalFee;
     uint32 internal minimumCampaignDuration;
     uint32 internal maximumCampaignDuration;
     MetromHarness internal metrom;
@@ -18,9 +18,9 @@ contract BaseTest is Test {
     function setUp() external {
         owner = address(1);
         updater = address(2);
-        fee = 10_000;
+        globalFee = 10_000;
         minimumCampaignDuration = 1 seconds;
         maximumCampaignDuration = 10 minutes;
-        metrom = new MetromHarness(owner, updater, fee, minimumCampaignDuration, maximumCampaignDuration);
+        metrom = new MetromHarness(owner, updater, globalFee, minimumCampaignDuration, maximumCampaignDuration);
     }
 }

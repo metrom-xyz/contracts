@@ -18,7 +18,7 @@ contract ConstructorTest is BaseTest {
     }
 
     function test_failInvalidFee() public {
-        vm.expectRevert(IMetrom.InvalidFee.selector);
+        vm.expectRevert(IMetrom.InvalidGlobalFee.selector);
         new MetromHarness(address(1), address(1), uint32(MAX_FEE + 1), 10, 10);
     }
 
@@ -48,7 +48,7 @@ contract ConstructorTest is BaseTest {
         vm.assertEq(_metrom.owner(), _owner);
         vm.assertEq(_metrom.pendingOwner(), address(0));
         vm.assertEq(_metrom.updater(), _updater);
-        vm.assertEq(_metrom.fee(), _fee);
+        vm.assertEq(_metrom.globalFee(), _fee);
         vm.assertEq(_metrom.minimumCampaignDuration(), _minimumCampaignDuration);
         vm.assertEq(_metrom.maximumCampaignDuration(), _maximumCampaignDuration);
     }
@@ -70,7 +70,7 @@ contract ConstructorTest is BaseTest {
         vm.assertEq(_metrom.owner(), _owner);
         vm.assertEq(_metrom.pendingOwner(), address(0));
         vm.assertEq(_metrom.updater(), _updater);
-        vm.assertEq(_metrom.fee(), _fee);
+        vm.assertEq(_metrom.globalFee(), _fee);
         vm.assertEq(_metrom.minimumCampaignDuration(), _minimumCampaignDuration);
         vm.assertEq(_metrom.maximumCampaignDuration(), _maximumCampaignDuration);
     }

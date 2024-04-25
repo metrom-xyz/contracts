@@ -7,10 +7,10 @@ contract MetromHarness is Metrom {
     constructor(
         address _owner,
         address _updater,
-        uint32 _fee,
+        uint32 _globalFee,
         uint32 _minimumCampaignDuration,
         uint32 _maximumCampaignDuration
-    ) Metrom(_owner, _updater, _fee, _minimumCampaignDuration, _maximumCampaignDuration) {}
+    ) Metrom(_owner, _updater, _globalFee, _minimumCampaignDuration, _maximumCampaignDuration) {}
 
     function campaignExists(bytes32 _id) external view {
         _getExistingCampaign(_id);

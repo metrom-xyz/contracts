@@ -3,10 +3,10 @@ pragma solidity 0.8.25;
 import {IERC20} from "oz/token/ERC20/IERC20.sol";
 import {SafeERC20} from "oz/token/ERC20/utils/SafeERC20.sol";
 import {MerkleProof} from "oz/utils/cryptography/MerkleProof.sol";
-import {console2} from "forge-std/console2.sol";
 
 import {
     IMetrom,
+    SpecificFee,
     Campaign,
     Reward,
     ReadonlyCampaign,
@@ -28,31 +28,32 @@ contract Metrom is IMetrom {
     address public override owner;
     address public override pendingOwner;
     address public override updater;
-    uint32 public override fee;
+    uint32 public override globalFee;
     uint32 public override minimumCampaignDuration;
     uint32 public override maximumCampaignDuration;
     mapping(bytes32 id => Campaign) internal campaigns;
+    mapping(address account => SpecificFee) internal specificFee;
     mapping(address token => uint256 amount) public override claimableFees;
 
     constructor(
         address _owner,
         address _updater,
-        uint32 _fee,
+        uint32 _globalFee,
         uint32 _minimumCampaignDuration,
         uint32 _maximumCampaignDuration
     ) {
         if (_owner == address(0)) revert InvalidOwner();
         if (_updater == address(0)) revert InvalidUpdater();
-        if (_fee > MAX_FEE) revert InvalidFee();
+        if (_globalFee > MAX_FEE) revert InvalidGlobalFee();
         if (_minimumCampaignDuration >= _maximumCampaignDuration) revert InvalidMinimumCampaignDuration();
 
         owner = _owner;
         updater = _updater;
         minimumCampaignDuration = _minimumCampaignDuration;
         maximumCampaignDuration = _maximumCampaignDuration;
-        fee = _fee;
+        globalFee = _globalFee;
 
-        emit Initialize(_owner, _updater, _fee, _minimumCampaignDuration, _maximumCampaignDuration);
+        emit Initialize(_owner, _updater, _globalFee, _minimumCampaignDuration, _maximumCampaignDuration);
     }
 
     function _campaignId(CreateBundle memory _bundle) internal pure returns (bytes32) {
@@ -72,6 +73,17 @@ contract Metrom is IMetrom {
         Campaign storage campaign = campaigns[_id];
         if (campaign.from == 0) revert NonExistentCampaign();
         return campaign;
+    }
+
+    function _resolvedFee() internal view returns (uint32) {
+        SpecificFee memory _specificFee = specificFee[msg.sender];
+        if (_specificFee.none) {
+            return 0;
+        } else if (_specificFee.fee > 0) {
+            return _specificFee.fee;
+        } else {
+            return globalFee;
+        }
     }
 
     function campaignById(bytes32 _id) external view override returns (ReadonlyCampaign memory) {
@@ -96,8 +108,13 @@ contract Metrom is IMetrom {
         });
     }
 
+    function specificFeeFor(address _account) external view returns (SpecificFee memory) {
+        SpecificFee memory _specificFee = specificFee[_account];
+        return _specificFee;
+    }
+
     function createCampaigns(CreateBundle[] calldata _bundles) external {
-        uint32 _fee = fee;
+        uint32 _fee = _resolvedFee();
         uint32 _minimumCampaignDuration = minimumCampaignDuration;
         uint32 _maximumCampaignDuration = maximumCampaignDuration;
 
@@ -238,11 +255,19 @@ contract Metrom is IMetrom {
         emit SetUpdater(_updater);
     }
 
-    function setFee(uint32 _fee) external override {
+    function setGlobalFee(uint32 _globalFee) external override {
+        if (_globalFee > MAX_FEE) revert InvalidGlobalFee();
         if (msg.sender != owner) revert Forbidden();
-        if (_fee > MAX_FEE) revert InvalidFee();
-        fee = _fee;
-        emit SetFee(_fee);
+        globalFee = _globalFee;
+        emit SetGlobalFee(_globalFee);
+    }
+
+    function setSpecificFee(address _account, uint32 _specificFee) external override {
+        if (_account == address(0)) revert InvalidAccount();
+        if (_specificFee > MAX_FEE) revert InvalidSpecificFee();
+        if (msg.sender != owner) revert Forbidden();
+        specificFee[_account] = SpecificFee({fee: _specificFee, none: _specificFee == 0});
+        emit SetSpecificFee(_account, _specificFee);
     }
 
     function setMinimumCampaignDuration(uint32 _minimumCampaignDuration) external override {
