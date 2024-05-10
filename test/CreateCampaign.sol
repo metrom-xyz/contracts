@@ -247,9 +247,9 @@ contract CreateCampaignTest is BaseTest {
 
     function test_successSingleSingleReward() public {
         MintableERC20 _mintableErc20 = new MintableERC20("Test", "TST");
-        _mintableErc20.mint(address(this), 10.1 ether);
-        _mintableErc20.approve(address(metrom), 10.1 ether);
-        vm.assertEq(_mintableErc20.balanceOf(address(this)), 10.1 ether);
+        _mintableErc20.mint(address(this), 10 ether);
+        _mintableErc20.approve(address(metrom), 10 ether);
+        vm.assertEq(_mintableErc20.balanceOf(address(this)), 10 ether);
 
         address[] memory _rewardTokens = new address[](1);
         _rewardTokens[0] = address(_mintableErc20);
@@ -286,8 +286,8 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(_createdCampaign.root, bytes32(0));
         vm.assertEq(_createdCampaign.rewards.length, 1);
         vm.assertEq(_createdCampaign.rewards[0].token, address(_mintableErc20));
-        vm.assertEq(_createdCampaign.rewards[0].amount, 10 ether);
-        vm.assertEq(_createdCampaign.rewards[0].unclaimed, 10 ether);
+        vm.assertEq(_createdCampaign.rewards[0].amount, 9.9 ether);
+        vm.assertEq(_createdCampaign.rewards[0].unclaimed, 9.9 ether);
     }
 
     function test_successSingleSingleRewardSpecificFee() public {
@@ -340,9 +340,9 @@ contract CreateCampaignTest is BaseTest {
 
     function test_successMultipleSingleReward() public {
         MintableERC20 _mintableErc20 = new MintableERC20("Test", "TST");
-        _mintableErc20.mint(address(this), 15.15 ether);
-        _mintableErc20.approve(address(metrom), 15.15 ether);
-        vm.assertEq(_mintableErc20.balanceOf(address(this)), 15.15 ether);
+        _mintableErc20.mint(address(this), 15 ether);
+        _mintableErc20.approve(address(metrom), 15 ether);
+        vm.assertEq(_mintableErc20.balanceOf(address(this)), 15 ether);
 
         address[] memory _rewardTokens1 = new address[](1);
         _rewardTokens1[0] = address(_mintableErc20);
@@ -396,8 +396,8 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(_createdCampaign1.root, bytes32(0));
         vm.assertEq(_createdCampaign1.rewards.length, 1);
         vm.assertEq(_createdCampaign1.rewards[0].token, address(_mintableErc20));
-        vm.assertEq(_createdCampaign1.rewards[0].amount, 10 ether);
-        vm.assertEq(_createdCampaign1.rewards[0].unclaimed, 10 ether);
+        vm.assertEq(_createdCampaign1.rewards[0].amount, 9.9 ether);
+        vm.assertEq(_createdCampaign1.rewards[0].unclaimed, 9.9 ether);
 
         bytes32 _createdCampaignId2 = metrom.campaignId(_bundle2);
         ReadonlyCampaign memory _createdCampaign2 = metrom.campaignById(_createdCampaignId2);
@@ -410,20 +410,20 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(_createdCampaign2.root, bytes32(0));
         vm.assertEq(_createdCampaign2.rewards.length, 1);
         vm.assertEq(_createdCampaign2.rewards[0].token, address(_mintableErc20));
-        vm.assertEq(_createdCampaign2.rewards[0].amount, 5 ether);
-        vm.assertEq(_createdCampaign2.rewards[0].unclaimed, 5 ether);
+        vm.assertEq(_createdCampaign2.rewards[0].amount, 4.95 ether);
+        vm.assertEq(_createdCampaign2.rewards[0].unclaimed, 4.95 ether);
     }
 
     function test_successSingleMultipleReward() public {
         MintableERC20 _mintableErc201 = new MintableERC20("Test 1", "TST1");
-        _mintableErc201.mint(address(this), 10.1 ether);
-        _mintableErc201.approve(address(metrom), 10.1 ether);
-        vm.assertEq(_mintableErc201.balanceOf(address(this)), 10.1 ether);
+        _mintableErc201.mint(address(this), 10 ether);
+        _mintableErc201.approve(address(metrom), 10 ether);
+        vm.assertEq(_mintableErc201.balanceOf(address(this)), 10 ether);
 
         MintableERC20 _mintableErc202 = new MintableERC20("Test 2", "TST2");
-        _mintableErc202.mint(address(this), 5.05 ether);
-        _mintableErc202.approve(address(metrom), 5.05 ether);
-        vm.assertEq(_mintableErc202.balanceOf(address(this)), 5.05 ether);
+        _mintableErc202.mint(address(this), 5 ether);
+        _mintableErc202.approve(address(metrom), 5 ether);
+        vm.assertEq(_mintableErc202.balanceOf(address(this)), 5 ether);
 
         address[] memory _rewardTokens = new address[](2);
         _rewardTokens[0] = address(_mintableErc201);
@@ -465,23 +465,23 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(_createdCampaign.root, bytes32(0));
         vm.assertEq(_createdCampaign.rewards.length, 2);
         vm.assertEq(_createdCampaign.rewards[0].token, address(_mintableErc201));
-        vm.assertEq(_createdCampaign.rewards[0].amount, 10 ether);
-        vm.assertEq(_createdCampaign.rewards[0].unclaimed, 10 ether);
+        vm.assertEq(_createdCampaign.rewards[0].amount, 9.9 ether);
+        vm.assertEq(_createdCampaign.rewards[0].unclaimed, 9.9 ether);
         vm.assertEq(_createdCampaign.rewards[1].token, address(_mintableErc202));
-        vm.assertEq(_createdCampaign.rewards[1].amount, 5 ether);
-        vm.assertEq(_createdCampaign.rewards[1].unclaimed, 5 ether);
+        vm.assertEq(_createdCampaign.rewards[1].amount, 4.95 ether);
+        vm.assertEq(_createdCampaign.rewards[1].unclaimed, 4.95 ether);
     }
 
     function test_successMultipleMultipleReward() public {
         MintableERC20 _mintableErc201 = new MintableERC20("Test", "TST");
-        _mintableErc201.mint(address(this), 15.15 ether);
-        _mintableErc201.approve(address(metrom), 15.15 ether);
-        vm.assertEq(_mintableErc201.balanceOf(address(this)), 15.15 ether);
+        _mintableErc201.mint(address(this), 15 ether);
+        _mintableErc201.approve(address(metrom), 15 ether);
+        vm.assertEq(_mintableErc201.balanceOf(address(this)), 15 ether);
 
         MintableERC20 _mintableErc202 = new MintableERC20("Test", "TST");
-        _mintableErc202.mint(address(this), 10.1 ether);
-        _mintableErc202.approve(address(metrom), 10.1 ether);
-        vm.assertEq(_mintableErc202.balanceOf(address(this)), 10.1 ether);
+        _mintableErc202.mint(address(this), 10 ether);
+        _mintableErc202.approve(address(metrom), 10 ether);
+        vm.assertEq(_mintableErc202.balanceOf(address(this)), 10 ether);
 
         address[] memory _rewardTokens1 = new address[](2);
         _rewardTokens1[0] = address(_mintableErc201);
@@ -542,11 +542,11 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(_createdCampaign1.root, bytes32(0));
         vm.assertEq(_createdCampaign1.rewards.length, 2);
         vm.assertEq(_createdCampaign1.rewards[0].token, address(_mintableErc201));
-        vm.assertEq(_createdCampaign1.rewards[0].amount, 10 ether);
-        vm.assertEq(_createdCampaign1.rewards[0].unclaimed, 10 ether);
+        vm.assertEq(_createdCampaign1.rewards[0].amount, 9.9 ether);
+        vm.assertEq(_createdCampaign1.rewards[0].unclaimed, 9.9 ether);
         vm.assertEq(_createdCampaign1.rewards[1].token, address(_mintableErc202));
-        vm.assertEq(_createdCampaign1.rewards[1].amount, 5 ether);
-        vm.assertEq(_createdCampaign1.rewards[1].unclaimed, 5 ether);
+        vm.assertEq(_createdCampaign1.rewards[1].amount, 4.95 ether);
+        vm.assertEq(_createdCampaign1.rewards[1].unclaimed, 4.95 ether);
 
         bytes32 _createdCampaignId2 = metrom.campaignId(_bundle2);
         ReadonlyCampaign memory _createdCampaign2 = metrom.campaignById(_createdCampaignId2);
@@ -559,10 +559,10 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(_createdCampaign2.root, bytes32(0));
         vm.assertEq(_createdCampaign2.rewards.length, 2);
         vm.assertEq(_createdCampaign2.rewards[0].token, address(_mintableErc201));
-        vm.assertEq(_createdCampaign2.rewards[0].amount, 5 ether);
-        vm.assertEq(_createdCampaign2.rewards[0].unclaimed, 5 ether);
+        vm.assertEq(_createdCampaign2.rewards[0].amount, 4.95 ether);
+        vm.assertEq(_createdCampaign2.rewards[0].unclaimed, 4.95 ether);
         vm.assertEq(_createdCampaign2.rewards[1].token, address(_mintableErc202));
-        vm.assertEq(_createdCampaign2.rewards[1].amount, 5 ether);
-        vm.assertEq(_createdCampaign2.rewards[1].unclaimed, 5 ether);
+        vm.assertEq(_createdCampaign2.rewards[1].amount, 4.95 ether);
+        vm.assertEq(_createdCampaign2.rewards[1].unclaimed, 4.95 ether);
     }
 }

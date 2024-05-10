@@ -55,9 +55,9 @@ contract CollectFeesTest is BaseTest {
 
     function test_success() public {
         MintableERC20 _mintableErc20 = new MintableERC20("Test", "TST");
-        _mintableErc20.mint(address(this), 10.1 ether);
-        _mintableErc20.approve(address(metrom), 10.1 ether);
-        vm.assertEq(_mintableErc20.balanceOf(address(this)), 10.1 ether);
+        _mintableErc20.mint(address(this), 10 ether);
+        _mintableErc20.approve(address(metrom), 10 ether);
+        vm.assertEq(_mintableErc20.balanceOf(address(this)), 10 ether);
 
         address[] memory _rewardTokens = new address[](1);
         _rewardTokens[0] = address(_mintableErc20);
@@ -79,6 +79,9 @@ contract CollectFeesTest is BaseTest {
         _createBundles[0] = _createBundle;
 
         metrom.createCampaigns(_createBundles);
+
+        ReadonlyCampaign memory _onChainCampaign = metrom.campaignById(metrom.campaignId(_createBundle));
+        vm.assertEq(_onChainCampaign.rewards[0].amount, 9.9 ether);
 
         vm.assertEq(metrom.claimableFees(address(_mintableErc20)), 0.1 ether);
         vm.assertEq(_mintableErc20.balanceOf(address(this)), 0);

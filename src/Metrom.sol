@@ -144,6 +144,7 @@ contract Metrom is IMetrom {
             campaign.rewards = _bundle.rewardTokens;
 
             uint256[] memory _feeAmounts = new uint256[](_bundle.rewardTokens.length);
+            uint256[] memory _rewardAmountsMinusFees = new uint256[](_bundle.rewardTokens.length);
             for (uint256 _j = 0; _j < _bundle.rewardTokens.length; _j++) {
                 address _token = _bundle.rewardTokens[_j];
                 if (_token == address(0)) revert InvalidRewards();
@@ -155,16 +156,18 @@ contract Metrom is IMetrom {
                     if (_token == _bundle.rewardTokens[_k]) revert InvalidRewards();
                 }
 
-                Reward storage reward = campaign.reward[_token];
-                reward.amount = _amount;
-                reward.unclaimed = _amount;
-
                 uint256 _feeAmount = _amount * _fee / UNIT;
-                uint256 _rewardAmountPlusFees = _amount + _feeAmount;
+                uint256 _rewardAmountMinusFees = _amount - _feeAmount;
                 claimableFees[_token] += _feeAmount;
-                _feeAmounts[_j] = _feeAmount;
 
-                IERC20(_token).safeTransferFrom(msg.sender, address(this), _rewardAmountPlusFees);
+                _feeAmounts[_j] = _feeAmount;
+                _rewardAmountsMinusFees[_j] = _rewardAmountMinusFees;
+
+                Reward storage reward = campaign.reward[_token];
+                reward.amount = _rewardAmountMinusFees;
+                reward.unclaimed = _rewardAmountMinusFees;
+
+                IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
             }
 
             emit CreateCampaign(
@@ -176,7 +179,7 @@ contract Metrom is IMetrom {
                 _bundle.to,
                 _bundle.specification,
                 _bundle.rewardTokens,
-                _bundle.rewardAmounts,
+                _rewardAmountsMinusFees,
                 _feeAmounts
             );
         }
@@ -196,23 +199,36 @@ contract Metrom is IMetrom {
         }
     }
 
+    function _processRewardClaim(ClaimRewardBundle calldata _bundle, address _claimOwner) internal returns (uint256) {
+        if (_bundle.token == address(0)) revert InvalidToken();
+        if (_bundle.amount == 0) revert ZeroAmount();
+
+        Campaign storage campaign = _getExistingCampaign(_bundle.campaignId);
+
+        bytes32 _leaf = keccak256(abi.encodePacked(_claimOwner, _bundle.token, _bundle.amount));
+        if (!MerkleProof.verifyCalldata(_bundle.proof, campaign.root, _leaf)) revert InvalidProof();
+
+        Reward storage reward = campaign.reward[_bundle.token];
+        uint256 _claimedAmount = _bundle.amount - reward.claimed[msg.sender];
+        reward.unclaimed -= _claimedAmount;
+
+        IERC20(_bundle.token).safeTransfer(_bundle.receiver, _claimedAmount);
+
+        return _claimedAmount;
+    }
+
     function claimRewards(ClaimRewardBundle[] calldata _bundles) external override {
         for (uint256 _i; _i < _bundles.length; _i++) {
             ClaimRewardBundle calldata _bundle = _bundles[_i];
-            if (_bundle.token == address(0)) revert InvalidToken();
-            if (_bundle.amount == 0) revert ZeroAmount();
+            uint256 _claimedAmount = _processRewardClaim(_bundle, msg.sender);
+            emit ClaimReward(_bundle.campaignId, _bundle.token, _claimedAmount, _bundle.receiver);
+        }
+    }
 
-            Campaign storage campaign = _getExistingCampaign(_bundle.campaignId);
-
-            bytes32 _leaf = keccak256(abi.encodePacked(msg.sender, _bundle.token, _bundle.amount));
-            if (!MerkleProof.verifyCalldata(_bundle.proof, campaign.root, _leaf)) revert InvalidProof();
-
-            Reward storage reward = campaign.reward[_bundle.token];
-            uint256 _claimedAmount = _bundle.amount - reward.claimed[msg.sender];
-            reward.unclaimed -= _claimedAmount;
-
-            IERC20(_bundle.token).safeTransfer(_bundle.receiver, _claimedAmount);
-
+    function recoverRewards(ClaimRewardBundle[] calldata _bundles) external override {
+        for (uint256 _i; _i < _bundles.length; _i++) {
+            ClaimRewardBundle calldata _bundle = _bundles[_i];
+            uint256 _claimedAmount = _processRewardClaim(_bundle, address(0));
             emit ClaimReward(_bundle.campaignId, _bundle.token, _claimedAmount, _bundle.receiver);
         }
     }

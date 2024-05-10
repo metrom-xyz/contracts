@@ -137,6 +137,7 @@ interface IMetrom {
     function createCampaigns(CreateBundle[] calldata bundles) external;
     function distributeRewards(DistributeRewardsBundle[] calldata bundles) external;
     function claimRewards(ClaimRewardBundle[] calldata bundles) external;
+    function recoverRewards(ClaimRewardBundle[] calldata bundles) external;
 
     function transferOwnership(address owner) external;
     function acceptOwnership() external;
