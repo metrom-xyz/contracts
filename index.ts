@@ -7,7 +7,7 @@ export enum SupportedChain {
 
 export const ADDRESS: Record<SupportedChain, ChainContract> = {
     [SupportedChain.Holesky]: {
-        address: "0xDD15Dc3D5Ae4Dc6c59F1461d1b6233cf88b2a871",
-        blockCreated: 1516321,
+        address: "0xA310dee8A01880977Ba24d39e58049AE02F77EC3",
+        blockCreated: 1516415,
     },
 };
