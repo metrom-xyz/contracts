@@ -229,7 +229,7 @@ contract Metrom is IMetrom {
         for (uint256 _i; _i < _bundles.length; _i++) {
             ClaimRewardBundle calldata _bundle = _bundles[_i];
             uint256 _claimedAmount = _processRewardClaim(_bundle, address(0));
-            emit ClaimReward(_bundle.campaignId, _bundle.token, _claimedAmount, _bundle.receiver);
+            emit RecoverReward(_bundle.campaignId, _bundle.token, _claimedAmount, _bundle.receiver);
         }
     }
 
