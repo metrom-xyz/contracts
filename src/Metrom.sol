@@ -99,6 +99,8 @@ contract Metrom is IMetrom {
         }
 
         return ReadonlyCampaign({
+            owner: campaign.owner,
+            pendingOwner: campaign.pendingOwner,
             chainId: campaign.chainId,
             pool: campaign.pool,
             from: campaign.from,
@@ -257,6 +259,29 @@ contract Metrom is IMetrom {
             IERC20(_bundle.token).safeTransfer(_bundle.receiver, _claimAmount);
             emit ClaimFee(_bundle.token, _claimAmount, _bundle.receiver);
         }
+    }
+
+    function campaignOwner(bytes32 _id) external view override returns (address) {
+        return campaigns[_id].owner;
+    }
+
+    function campaignPendingOwner(bytes32 _id) external view override returns (address) {
+        return campaigns[_id].pendingOwner;
+    }
+
+    function transferCampaignOwnership(bytes32 _id, address _owner) external override {
+        Campaign storage campaign = _getExistingCampaign(_id);
+        if (msg.sender != campaign.owner) revert Forbidden();
+        campaign.pendingOwner = _owner;
+        emit TransferCampaignOwnership(_id, _owner);
+    }
+
+    function acceptCampaignOwnership(bytes32 _id) external override {
+        Campaign storage campaign = _getExistingCampaign(_id);
+        if (msg.sender != campaign.pendingOwner) revert Forbidden();
+        delete campaign.pendingOwner;
+        campaign.owner = msg.sender;
+        emit AcceptCampaignOwnership(_id);
     }
 
     function transferOwnership(address _owner) external override {

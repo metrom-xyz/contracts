@@ -32,6 +32,8 @@ struct ReadonlyReward {
 }
 
 struct ReadonlyCampaign {
+    address owner;
+    address pendingOwner;
     uint256 chainId;
     address pool;
     uint32 from;
@@ -97,9 +99,11 @@ interface IMetrom {
     event RecoverReward(bytes32 indexed campaignId, address token, uint256 amount, address indexed receiver);
     event ClaimFee(address token, uint256 amount, address indexed receiver);
 
+    event TransferCampaignOwnership(bytes32 indexed id, address indexed owner);
+    event AcceptCampaignOwnership(bytes32 indexed id);
+
     event TransferOwnership(address indexed owner);
     event AcceptOwnership();
-
     event SetUpdater(address indexed updater);
     event SetGlobalFee(uint32 globalFee);
     event SetSpecificFee(address account, uint32 specificFee);
@@ -142,6 +146,11 @@ interface IMetrom {
     function distributeRewards(DistributeRewardsBundle[] calldata bundles) external;
     function claimRewards(ClaimRewardBundle[] calldata bundles) external;
     function recoverRewards(ClaimRewardBundle[] calldata bundles) external;
+
+    function campaignOwner(bytes32 _id) external view returns (address);
+    function campaignPendingOwner(bytes32 _id) external view returns (address);
+    function transferCampaignOwnership(bytes32 _id, address _owner) external;
+    function acceptCampaignOwnership(bytes32 _id) external;
 
     function transferOwnership(address owner) external;
     function acceptOwnership() external;
