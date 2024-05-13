@@ -12,6 +12,8 @@ struct SpecificFee {
 }
 
 struct Campaign {
+    address owner;
+    address pendingOwner;
     uint256 chainId;
     address pool;
     uint32 from;
@@ -107,6 +109,7 @@ interface IMetrom {
     error CampaignAlreadyExists();
     error Forbidden();
     error InvalidAccount();
+    error InvalidAmount();
     error InvalidData();
     error InvalidFrom();
     error InvalidGlobalFee();

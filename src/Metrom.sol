@@ -59,6 +59,7 @@ contract Metrom is IMetrom {
     function _campaignId(CreateBundle memory _bundle) internal pure returns (bytes32) {
         return keccak256(
             abi.encodePacked(
+                _bundle.chainId,
                 _bundle.pool,
                 _bundle.from,
                 _bundle.to,
@@ -136,6 +137,7 @@ contract Metrom is IMetrom {
             Campaign storage campaign = campaigns[_id];
             if (campaign.from != 0) revert CampaignAlreadyExists();
 
+            campaign.owner = msg.sender;
             campaign.chainId = _bundle.chainId;
             campaign.pool = _bundle.pool;
             campaign.from = _bundle.from;
@@ -199,17 +201,19 @@ contract Metrom is IMetrom {
         }
     }
 
-    function _processRewardClaim(ClaimRewardBundle calldata _bundle, address _claimOwner) internal returns (uint256) {
+    function _processRewardClaim(Campaign storage campaign, ClaimRewardBundle calldata _bundle, address _claimOwner)
+        internal
+        returns (uint256)
+    {
         if (_bundle.token == address(0)) revert InvalidToken();
-        if (_bundle.amount == 0) revert ZeroAmount();
+        if (_bundle.amount == 0) revert InvalidAmount();
 
-        Campaign storage campaign = _getExistingCampaign(_bundle.campaignId);
-
-        bytes32 _leaf = keccak256(abi.encodePacked(_claimOwner, _bundle.token, _bundle.amount));
+        bytes32 _leaf = keccak256(bytes.concat(keccak256(abi.encode(_claimOwner, _bundle.token, _bundle.amount))));
         if (!MerkleProof.verifyCalldata(_bundle.proof, campaign.root, _leaf)) revert InvalidProof();
 
         Reward storage reward = campaign.reward[_bundle.token];
         uint256 _claimedAmount = _bundle.amount - reward.claimed[msg.sender];
+        reward.claimed[msg.sender] += _claimedAmount;
         reward.unclaimed -= _claimedAmount;
 
         IERC20(_bundle.token).safeTransfer(_bundle.receiver, _claimedAmount);
@@ -220,7 +224,7 @@ contract Metrom is IMetrom {
     function claimRewards(ClaimRewardBundle[] calldata _bundles) external override {
         for (uint256 _i; _i < _bundles.length; _i++) {
             ClaimRewardBundle calldata _bundle = _bundles[_i];
-            uint256 _claimedAmount = _processRewardClaim(_bundle, msg.sender);
+            uint256 _claimedAmount = _processRewardClaim(_getExistingCampaign(_bundle.campaignId), _bundle, msg.sender);
             emit ClaimReward(_bundle.campaignId, _bundle.token, _claimedAmount, _bundle.receiver);
         }
     }
@@ -228,7 +232,11 @@ contract Metrom is IMetrom {
     function recoverRewards(ClaimRewardBundle[] calldata _bundles) external override {
         for (uint256 _i; _i < _bundles.length; _i++) {
             ClaimRewardBundle calldata _bundle = _bundles[_i];
-            uint256 _claimedAmount = _processRewardClaim(_bundle, address(0));
+
+            Campaign storage campaign = _getExistingCampaign(_bundle.campaignId);
+            if (msg.sender != campaign.owner) revert Forbidden();
+
+            uint256 _claimedAmount = _processRewardClaim(campaign, _bundle, address(0));
             emit RecoverReward(_bundle.campaignId, _bundle.token, _claimedAmount, _bundle.receiver);
         }
     }
