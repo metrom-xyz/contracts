@@ -2,8 +2,7 @@
 remappings = [
     'forge-std/=lib/forge-std/src/',
     'oz/=lib/openzeppelin-contracts/contracts/',
-    'oz-up/=lib/openzeppelin-contracts-upgradeable/contracts/',
-    'carrot/=lib/carrot/contracts/'
+    'oz-up/=lib/openzeppelin-contracts-upgradeable/contracts/'
 ]
 optimizer = false
 

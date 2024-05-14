@@ -3,7 +3,7 @@
     "name": "@metrom-xyz/contracts",
     "version": "0.6.2",
     "description": "Smart contracts for Metrom.",
-    "author": "Federico Luzzi <federico.luzzi@carrot-labs.xyz>",
+    "author": "Federico Luzzi <federico.luzzi@metrom.xyz>",
     "license": "GPL-3.0-or-later",
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
