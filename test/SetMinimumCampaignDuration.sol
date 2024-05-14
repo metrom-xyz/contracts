@@ -39,9 +39,10 @@ contract SetMinimumCampaignDurationTest is BaseTest {
         vm.assertEq(metrom.minimumCampaignDuration(), _newMinimumCampaignDuration);
     }
 
-    function testFuzz_success(uint32 _newMinimumCampaignDuration) public {
+    function testFuzz_success(uint32 _rawNewMinimumCampaignDuration) public {
         uint256 _maximumCampaignDuration = metrom.maximumCampaignDuration();
-        vm.assume(_newMinimumCampaignDuration < _maximumCampaignDuration);
+        uint32 _newMinimumCampaignDuration =
+            uint32(bound(_rawNewMinimumCampaignDuration, 0, _maximumCampaignDuration - 1));
 
         vm.assertEq(metrom.minimumCampaignDuration(), minimumCampaignDuration);
 

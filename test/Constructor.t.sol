@@ -53,13 +53,18 @@ contract ConstructorTest is BaseTest {
         vm.assertEq(_metrom.maximumCampaignDuration(), _maximumCampaignDuration);
     }
 
-    function testFuzz_success(address _owner, address _updater, uint32 _fee, uint32 _minimumCampaignDuration) public {
+    function testFuzz_success(
+        address _owner,
+        address _updater,
+        uint32 _fee,
+        uint32 _rawMinimumCampaignDuration,
+        uint32 _maximumCampaignDuration
+    ) public {
         vm.assume(_owner != address(0));
         vm.assume(_updater != address(0));
         vm.assume(_fee <= MAX_FEE);
-        vm.assume(_minimumCampaignDuration < type(uint32).max - 10 seconds);
-
-        uint32 _maximumCampaignDuration = _minimumCampaignDuration + 10 seconds;
+        vm.assume(_maximumCampaignDuration > 0);
+        uint32 _minimumCampaignDuration = uint32(bound(_rawMinimumCampaignDuration, 0, _maximumCampaignDuration - 1));
 
         vm.expectEmit();
         emit IMetrom.Initialize(_owner, _updater, _fee, _minimumCampaignDuration, _maximumCampaignDuration);
