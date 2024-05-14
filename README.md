@@ -44,4 +44,5 @@ any) by simply providing a tree inclusion proof to the Metrom smart contract.
 
 ## Contributing
 
-Want to contribute? Check out the `CONTRIBUTING.md` file for more info.
+Want to contribute? Check out the [CONTRIBUTING.md](./CONTRIBUTING.md) file for
+more info.
