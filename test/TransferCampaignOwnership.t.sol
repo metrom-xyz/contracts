@@ -12,6 +12,13 @@ contract TransferCampaignOwnershipTest is BaseTest {
         metrom.transferCampaignOwnership(bytes32("foo"), address(10));
     }
 
+    function test_failZeroAddress() public {
+        bytes32 _campaignId = createFixedCampaign();
+
+        vm.expectRevert(IMetrom.InvalidOwner.selector);
+        metrom.transferCampaignOwnership(_campaignId, address(0));
+    }
+
     function test_failForbidden() public {
         bytes32 _campaignId = createFixedCampaign();
 
@@ -37,6 +44,8 @@ contract TransferCampaignOwnershipTest is BaseTest {
     }
 
     function testFuzz_success(address _newOwner) public {
+        vm.assume(_newOwner != address(0));
+
         bytes32 _campaignId = createFixedCampaign();
 
         vm.assertEq(metrom.campaignOwner(_campaignId), address(this));

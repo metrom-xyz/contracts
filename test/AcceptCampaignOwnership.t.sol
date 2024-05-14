@@ -38,6 +38,8 @@ contract AcceptCampaignOwnershipTest is BaseTest {
     }
 
     function testFuzz_success(address _newOwner) public {
+        vm.assume(_newOwner != address(0));
+
         bytes32 _campaignId = createFixedCampaign();
         vm.assertEq(metrom.campaignOwner(_campaignId), address(this));
 

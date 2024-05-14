@@ -14,12 +14,11 @@ import {
     CreateBundle,
     DistributeRewardsBundle,
     ClaimRewardBundle,
-    ClaimFeeBundle
+    ClaimFeeBundle,
+    UNIT,
+    MAX_FEE,
+    MAX_REWARDS_PER_CAMPAIGN
 } from "./IMetrom.sol";
-
-uint256 constant UNIT = 1_000_000;
-uint256 constant MAX_FEE = 100_000;
-uint256 constant MAX_REWARDS_PER_CAMPAIGN = 5;
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 contract Metrom is IMetrom {
@@ -87,6 +86,7 @@ contract Metrom is IMetrom {
         }
     }
 
+    /// @inheritdoc IMetrom
     function campaignById(bytes32 _id) external view override returns (ReadonlyCampaign memory) {
         Campaign storage campaign = _getExistingCampaign(_id);
 
@@ -111,11 +111,13 @@ contract Metrom is IMetrom {
         });
     }
 
+    /// @inheritdoc IMetrom
     function specificFeeFor(address _account) external view returns (SpecificFee memory) {
         SpecificFee memory _specificFee = specificFee[_account];
         return _specificFee;
     }
 
+    /// @inheritdoc IMetrom
     function createCampaigns(CreateBundle[] calldata _bundles) external {
         uint32 _fee = _resolvedFee();
         uint32 _minimumCampaignDuration = minimumCampaignDuration;
@@ -189,6 +191,7 @@ contract Metrom is IMetrom {
         }
     }
 
+    /// @inheritdoc IMetrom
     function distributeRewards(DistributeRewardsBundle[] calldata _bundles) external override {
         if (msg.sender != updater) revert Forbidden();
 
@@ -207,6 +210,7 @@ contract Metrom is IMetrom {
         internal
         returns (uint256)
     {
+        if (_bundle.receiver == address(0)) revert InvalidReceiver();
         if (_bundle.token == address(0)) revert InvalidToken();
         if (_bundle.amount == 0) revert InvalidAmount();
 
@@ -214,15 +218,18 @@ contract Metrom is IMetrom {
         if (!MerkleProof.verifyCalldata(_bundle.proof, campaign.root, _leaf)) revert InvalidProof();
 
         Reward storage reward = campaign.reward[_bundle.token];
-        uint256 _claimedAmount = _bundle.amount - reward.claimed[msg.sender];
-        reward.claimed[msg.sender] += _claimedAmount;
-        reward.unclaimed -= _claimedAmount;
+        uint256 _claimAmount = _bundle.amount - reward.claimed[_claimOwner];
+        if (_claimAmount == 0) revert ZeroAmount();
 
-        IERC20(_bundle.token).safeTransfer(_bundle.receiver, _claimedAmount);
+        reward.claimed[_claimOwner] += _claimAmount;
+        reward.unclaimed -= _claimAmount;
 
-        return _claimedAmount;
+        IERC20(_bundle.token).safeTransfer(_bundle.receiver, _claimAmount);
+
+        return _claimAmount;
     }
 
+    /// @inheritdoc IMetrom
     function claimRewards(ClaimRewardBundle[] calldata _bundles) external override {
         for (uint256 _i; _i < _bundles.length; _i++) {
             ClaimRewardBundle calldata _bundle = _bundles[_i];
@@ -231,6 +238,7 @@ contract Metrom is IMetrom {
         }
     }
 
+    /// @inheritdoc IMetrom
     function recoverRewards(ClaimRewardBundle[] calldata _bundles) external override {
         for (uint256 _i; _i < _bundles.length; _i++) {
             ClaimRewardBundle calldata _bundle = _bundles[_i];
@@ -243,6 +251,7 @@ contract Metrom is IMetrom {
         }
     }
 
+    /// @inheritdoc IMetrom
     function claimFees(ClaimFeeBundle[] calldata _bundles) external {
         if (msg.sender != owner) revert Forbidden();
 
@@ -261,21 +270,26 @@ contract Metrom is IMetrom {
         }
     }
 
+    /// @inheritdoc IMetrom
     function campaignOwner(bytes32 _id) external view override returns (address) {
         return campaigns[_id].owner;
     }
 
+    /// @inheritdoc IMetrom
     function campaignPendingOwner(bytes32 _id) external view override returns (address) {
         return campaigns[_id].pendingOwner;
     }
 
+    /// @inheritdoc IMetrom
     function transferCampaignOwnership(bytes32 _id, address _owner) external override {
+        if (_owner == address(0)) revert InvalidOwner();
         Campaign storage campaign = _getExistingCampaign(_id);
         if (msg.sender != campaign.owner) revert Forbidden();
         campaign.pendingOwner = _owner;
         emit TransferCampaignOwnership(_id, _owner);
     }
 
+    /// @inheritdoc IMetrom
     function acceptCampaignOwnership(bytes32 _id) external override {
         Campaign storage campaign = _getExistingCampaign(_id);
         if (msg.sender != campaign.pendingOwner) revert Forbidden();
@@ -284,12 +298,15 @@ contract Metrom is IMetrom {
         emit AcceptCampaignOwnership(_id);
     }
 
+    /// @inheritdoc IMetrom
     function transferOwnership(address _owner) external override {
+        if (_owner == address(0)) revert InvalidOwner();
         if (msg.sender != owner) revert Forbidden();
         pendingOwner = _owner;
         emit TransferOwnership(_owner);
     }
 
+    /// @inheritdoc IMetrom
     function acceptOwnership() external override {
         if (msg.sender != pendingOwner) revert Forbidden();
         delete pendingOwner;
@@ -297,6 +314,7 @@ contract Metrom is IMetrom {
         emit AcceptOwnership();
     }
 
+    /// @inheritdoc IMetrom
     function setUpdater(address _updater) external override {
         if (msg.sender != owner) revert Forbidden();
         if (_updater == address(0)) revert InvalidUpdater();
@@ -304,6 +322,7 @@ contract Metrom is IMetrom {
         emit SetUpdater(_updater);
     }
 
+    /// @inheritdoc IMetrom
     function setGlobalFee(uint32 _globalFee) external override {
         if (_globalFee > MAX_FEE) revert InvalidGlobalFee();
         if (msg.sender != owner) revert Forbidden();
@@ -311,6 +330,7 @@ contract Metrom is IMetrom {
         emit SetGlobalFee(_globalFee);
     }
 
+    /// @inheritdoc IMetrom
     function setSpecificFee(address _account, uint32 _specificFee) external override {
         if (_account == address(0)) revert InvalidAccount();
         if (_specificFee > MAX_FEE) revert InvalidSpecificFee();
@@ -319,6 +339,7 @@ contract Metrom is IMetrom {
         emit SetSpecificFee(_account, _specificFee);
     }
 
+    /// @inheritdoc IMetrom
     function setMinimumCampaignDuration(uint32 _minimumCampaignDuration) external override {
         if (_minimumCampaignDuration >= maximumCampaignDuration) revert InvalidMinimumCampaignDuration();
         if (msg.sender != owner) revert Forbidden();
@@ -326,6 +347,7 @@ contract Metrom is IMetrom {
         emit SetMinimumCampaignDuration(_minimumCampaignDuration);
     }
 
+    /// @inheritdoc IMetrom
     function setMaximumCampaignDuration(uint32 _maximumCampaignDuration) external override {
         if (_maximumCampaignDuration <= minimumCampaignDuration) revert InvalidMaximumCampaignDuration();
         if (msg.sender != owner) revert Forbidden();

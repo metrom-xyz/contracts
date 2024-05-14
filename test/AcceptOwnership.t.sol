@@ -31,6 +31,8 @@ contract AcceptOwnershipTest is BaseTest {
     }
 
     function testFuzz_success(address _newOwner) public {
+        vm.assume(_newOwner != address(0));
+
         vm.assertEq(metrom.owner(), owner);
 
         vm.prank(owner);

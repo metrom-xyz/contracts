@@ -245,6 +245,30 @@ contract CreateCampaignTest is BaseTest {
         metrom.createCampaigns(_bundles);
     }
 
+    function test_failZeroAddressRewardToken() public {
+        address[] memory _rewardTokens = new address[](1);
+        _rewardTokens[0] = address(0);
+
+        uint256[] memory _rewardAmounts = new uint256[](1);
+        _rewardAmounts[0] = 10;
+
+        CreateBundle memory _bundle = CreateBundle({
+            chainId: 1,
+            pool: address(1),
+            from: uint32(block.timestamp + 10),
+            to: uint32(block.timestamp + 20),
+            specification: bytes32(0),
+            rewardTokens: _rewardTokens,
+            rewardAmounts: _rewardAmounts
+        });
+
+        CreateBundle[] memory _bundles = new CreateBundle[](1);
+        _bundles[0] = _bundle;
+
+        vm.expectRevert(IMetrom.InvalidRewards.selector);
+        metrom.createCampaigns(_bundles);
+    }
+
     function test_successSingleSingleReward() public {
         MintableERC20 _mintableErc20 = new MintableERC20("Test", "TST");
         _mintableErc20.mint(address(this), 10 ether);

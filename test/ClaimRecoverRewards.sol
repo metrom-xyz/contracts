@@ -13,6 +13,95 @@ contract ClaimRecoverRewards is BaseTest {
         metrom.recoverRewards(_bundles);
     }
 
+    function test_failNotCampaignOwner() public {
+        MintableERC20 _mintableErc20 = new MintableERC20("Test", "TST");
+        _mintableErc20.mint(address(this), 10 ether);
+        _mintableErc20.approve(address(metrom), 10 ether);
+        vm.assertEq(_mintableErc20.balanceOf(address(this)), 10 ether);
+
+        address[] memory _rewardTokens = new address[](1);
+        _rewardTokens[0] = address(_mintableErc20);
+
+        uint256[] memory _rewardAmounts = new uint256[](1);
+        _rewardAmounts[0] = 10 ether;
+
+        CreateBundle memory _createBundle = CreateBundle({
+            chainId: 1,
+            pool: address(1),
+            from: uint32(block.timestamp + 10),
+            to: uint32(block.timestamp + 20),
+            specification: bytes32(0),
+            rewardTokens: _rewardTokens,
+            rewardAmounts: _rewardAmounts
+        });
+
+        CreateBundle[] memory _createBundles = new CreateBundle[](1);
+        _createBundles[0] = _createBundle;
+
+        metrom.createCampaigns(_createBundles);
+
+        bytes32[] memory _proof = new bytes32[](0);
+
+        ClaimRewardBundle memory _bundle = ClaimRewardBundle({
+            campaignId: metrom.campaignId(_createBundle),
+            proof: _proof,
+            token: address(1),
+            amount: 10 ether,
+            receiver: address(1)
+        });
+
+        ClaimRewardBundle[] memory _bundles = new ClaimRewardBundle[](1);
+        _bundles[0] = _bundle;
+
+        vm.expectRevert(IMetrom.Forbidden.selector);
+        vm.prank(address(1000000001));
+        metrom.recoverRewards(_bundles);
+    }
+
+    function test_failInvalidReceiver() public {
+        MintableERC20 _mintableErc20 = new MintableERC20("Test", "TST");
+        _mintableErc20.mint(address(this), 10 ether);
+        _mintableErc20.approve(address(metrom), 10 ether);
+        vm.assertEq(_mintableErc20.balanceOf(address(this)), 10 ether);
+
+        address[] memory _rewardTokens = new address[](1);
+        _rewardTokens[0] = address(_mintableErc20);
+
+        uint256[] memory _rewardAmounts = new uint256[](1);
+        _rewardAmounts[0] = 10 ether;
+
+        CreateBundle memory _createBundle = CreateBundle({
+            chainId: 1,
+            pool: address(1),
+            from: uint32(block.timestamp + 10),
+            to: uint32(block.timestamp + 20),
+            specification: bytes32(0),
+            rewardTokens: _rewardTokens,
+            rewardAmounts: _rewardAmounts
+        });
+
+        CreateBundle[] memory _createBundles = new CreateBundle[](1);
+        _createBundles[0] = _createBundle;
+
+        metrom.createCampaigns(_createBundles);
+
+        bytes32[] memory _proof = new bytes32[](0);
+
+        ClaimRewardBundle memory _bundle = ClaimRewardBundle({
+            campaignId: metrom.campaignId(_createBundle),
+            proof: _proof,
+            token: address(1),
+            amount: 10 ether,
+            receiver: address(0)
+        });
+
+        ClaimRewardBundle[] memory _bundles = new ClaimRewardBundle[](1);
+        _bundles[0] = _bundle;
+
+        vm.expectRevert(IMetrom.InvalidReceiver.selector);
+        metrom.recoverRewards(_bundles);
+    }
+
     function test_failInvalidToken() public {
         MintableERC20 _mintableErc20 = new MintableERC20("Test", "TST");
         _mintableErc20.mint(address(this), 10 ether);
@@ -47,7 +136,7 @@ contract ClaimRecoverRewards is BaseTest {
             proof: _proof,
             token: address(0),
             amount: 10 ether,
-            receiver: address(0)
+            receiver: address(1)
         });
 
         ClaimRewardBundle[] memory _bundles = new ClaimRewardBundle[](1);
@@ -91,7 +180,7 @@ contract ClaimRecoverRewards is BaseTest {
             proof: _proof,
             token: address(1),
             amount: 0 ether,
-            receiver: address(0)
+            receiver: address(1)
         });
 
         ClaimRewardBundle[] memory _bundles = new ClaimRewardBundle[](1);
@@ -109,7 +198,7 @@ contract ClaimRecoverRewards is BaseTest {
             proof: _proof,
             token: address(1),
             amount: 1 ether,
-            receiver: address(0)
+            receiver: address(1)
         });
 
         ClaimRewardBundle[] memory _bundles = new ClaimRewardBundle[](1);
@@ -153,7 +242,7 @@ contract ClaimRecoverRewards is BaseTest {
             proof: _proof,
             token: address(1),
             amount: 1 ether,
-            receiver: address(0)
+            receiver: address(1)
         });
 
         ClaimRewardBundle[] memory _bundles = new ClaimRewardBundle[](1);
@@ -253,10 +342,8 @@ contract ClaimRecoverRewards is BaseTest {
         vm.assertEq(_mintableErc20.balanceOf(address(3)), 90 ether);
         vm.assertEq(_mintableErc20.balanceOf(address(metrom)), 910 ether);
 
+        vm.expectRevert(IMetrom.ZeroAmount.selector);
         metrom.recoverRewards(_bundles);
-        vm.assertEq(_mintableErc20.balanceOf(address(this)), 0 ether);
-        vm.assertEq(_mintableErc20.balanceOf(address(3)), 90 ether);
-        vm.assertEq(_mintableErc20.balanceOf(address(metrom)), 910 ether);
     }
 
     function test_success() public {

@@ -19,4 +19,8 @@ contract MetromHarness is Metrom {
     function campaignId(CreateBundle memory _bundle) external pure returns (bytes32) {
         return _campaignId(_bundle);
     }
+
+    function resolvedFee() external view returns (uint32) {
+        return _resolvedFee();
+    }
 }
