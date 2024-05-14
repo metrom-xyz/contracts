@@ -1,68 +1,47 @@
-## Foundry
+<br />
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum
-application development written in Rust.**
+<p align="center">
+    <img src=".github/static/logo.svg" alt="Metrom logo" width="60%" />
+</p>
 
-Foundry consists of:
+<br />
 
-- **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
-- **Cast**: Swiss army knife for interacting with EVM smart contracts, sending
-  transactions and getting chain data.
-- **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
-- **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+<p align="center">
+  Design your incentives to AMMplify liquidity.
+</p>
 
-## Documentation
+<br />
 
-https://book.getfoundry.sh/
+<p align="center">
+    <img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License: GPL v3">
+    <img src="https://github.com/carrot-kpi/contracts/actions/workflows/ci.yml/badge.svg" alt="CI">
+</p>
 
-## Usage
+# Metrom contracts
 
-### Build
+The smart contract powering Metrom's efficient AMM incentivization. Both the
+contracts and the tests are written in Solidity using Foundry.
 
-```shell
-$ forge build
-```
+## What is Metrom
 
-### Test
+Metrom is a tool that dexes (especially those based on concentrated liquidity
+AMMs) can use to incentivize liquidity providers to provide the maximum amount
+of liquidity possible in the way that is the most efficient through the creation
+of dedicated incentivization campaigns.
 
-```shell
-$ forge test
-```
+Campaign creators can come to Metrom and create an incentivization campaign by
+specifying a targeted pool, a running period, and a list of up to 5 rewards that
+will be distributed to active LPs proportional to their liquidity contribution
+in the pool. The incentivized pool can even live on a chain that is different
+from the campaign's chain, making the product cross-chain.
 
-### Format
+Once a campaign is created and activated, Metrom's backend monitors the targeted
+pool, processing all the meaningful on-chain event that happen on it and
+computing a rewards distribution list off-chain depending on the specific
+contribution of the various LPs. A Merkle tree is constructed from the list and
+its root is then pushed on-chain. Eligible LPs can then claim their rewards (if
+any) by simply providing a tree inclusion proof to the Metrom smart contract.
 
-```shell
-$ forge fmt
-```
+## Contributing
 
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+Want to contribute? Check out the `CONTRIBUTING.md` file for more info.
