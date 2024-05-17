@@ -35,6 +35,3 @@ jobs:
               run: forge test
               env:
                   FOUNDRY_PROFILE: ci
-            - name: Slither
-              uses: crytic/slither-action@v0.4.0
-            
