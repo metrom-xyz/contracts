@@ -238,6 +238,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         Reward storage reward = campaign.reward[_bundle.token];
         uint256 _claimAmount = _bundle.amount - reward.claimed[_claimOwner];
         if (_claimAmount == 0) revert ZeroAmount();
+        if (_claimAmount > reward.unclaimed) revert InvalidAmount();
 
         reward.claimed[_claimOwner] += _claimAmount;
         reward.unclaimed -= _claimAmount;

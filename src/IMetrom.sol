@@ -233,7 +233,8 @@ interface IMetrom {
     /// @notice Thrown when the specified account is invalid while setting a specific fee.
     error InvalidAccount();
 
-    /// @notice Thrown at claim procession time when a 0 amount is specified.
+    /// @notice Thrown at claim procession time when either a 0 amount or an amount surpassing
+    /// the total amount of claimable rewards for the campaign is specified.
     error InvalidAmount();
 
     /// @notice Thrown at rewards distribution time when 0-bytes data is specified.
