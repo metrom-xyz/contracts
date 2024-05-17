@@ -2,6 +2,8 @@ pragma solidity 0.8.25;
 
 import {Script} from "forge-std/Script.sol";
 import {console2} from "forge-std/console2.sol";
+import {ERC1967Proxy} from "oz/proxy/ERC1967/ERC1967Proxy.sol";
+
 import {Metrom} from "../src/Metrom.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
@@ -15,7 +17,17 @@ contract Deploy is Script {
     ) public {
         vm.startBroadcast(vm.envUint("PRIVATE_KEY"));
 
-        Metrom _metrom = new Metrom(_owner, _updater, _globalFee, _minimumCampaignDuration, _maximumCampaignDuration);
+        ERC1967Proxy _metrom = new ERC1967Proxy(
+            address(new Metrom()),
+            abi.encodeWithSelector(
+                Metrom.initialize.selector,
+                _owner,
+                _updater,
+                _globalFee,
+                _minimumCampaignDuration,
+                _maximumCampaignDuration
+            )
+        );
         console2.log("Metrom address: ", address(_metrom));
 
         vm.stopBroadcast();

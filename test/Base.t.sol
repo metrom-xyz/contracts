@@ -1,6 +1,7 @@
 pragma solidity 0.8.25;
 
 import {Test} from "forge-std/Test.sol";
+import {ERC1967Proxy} from "oz/proxy/ERC1967/ERC1967Proxy.sol";
 
 import {MintableERC20} from "./dependencies/MintableERC20.sol";
 import {MetromHarness} from "./harnesses/MetromHarness.sol";
@@ -22,7 +23,21 @@ contract BaseTest is Test {
         globalFee = 10_000;
         minimumCampaignDuration = 1 seconds;
         maximumCampaignDuration = 10 minutes;
-        metrom = new MetromHarness(owner, updater, globalFee, minimumCampaignDuration, maximumCampaignDuration);
+        metrom = MetromHarness(
+            address(
+                new ERC1967Proxy(
+                    address(new MetromHarness()),
+                    abi.encodeWithSelector(
+                        IMetrom.initialize.selector,
+                        owner,
+                        updater,
+                        globalFee,
+                        minimumCampaignDuration,
+                        maximumCampaignDuration
+                    )
+                )
+            )
+        );
     }
 
     function createFixedCampaign() internal returns (bytes32) {

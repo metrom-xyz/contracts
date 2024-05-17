@@ -3,6 +3,7 @@ pragma solidity 0.8.25;
 import {IERC20} from "oz/token/ERC20/IERC20.sol";
 import {SafeERC20} from "oz/token/ERC20/utils/SafeERC20.sol";
 import {MerkleProof} from "oz/utils/cryptography/MerkleProof.sol";
+import {UUPSUpgradeable} from "oz-up/proxy/utils/UUPSUpgradeable.sol";
 
 import {
     IMetrom,
@@ -21,9 +22,10 @@ import {
 } from "./IMetrom.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
-contract Metrom is IMetrom {
+contract Metrom is IMetrom, UUPSUpgradeable {
     using SafeERC20 for IERC20;
 
+    bool public override ossified;
     address public override owner;
     address public override pendingOwner;
     address public override updater;
@@ -34,13 +36,17 @@ contract Metrom is IMetrom {
     mapping(address account => SpecificFee) internal specificFee;
     mapping(address token => uint256 amount) public override claimableFees;
 
-    constructor(
+    constructor() {
+        _disableInitializers();
+    }
+
+    function initialize(
         address _owner,
         address _updater,
         uint32 _globalFee,
         uint32 _minimumCampaignDuration,
         uint32 _maximumCampaignDuration
-    ) {
+    ) external override initializer {
         if (_owner == address(0)) revert InvalidOwner();
         if (_updater == address(0)) revert InvalidUpdater();
         if (_globalFee > MAX_FEE) revert InvalidGlobalFee();
@@ -53,6 +59,18 @@ contract Metrom is IMetrom {
         globalFee = _globalFee;
 
         emit Initialize(_owner, _updater, _globalFee, _minimumCampaignDuration, _maximumCampaignDuration);
+    }
+
+    /// @inheritdoc IMetrom
+    function ossify() external {
+        if (msg.sender != owner) revert Forbidden();
+        ossified = true;
+        emit Ossify();
+    }
+
+    function _authorizeUpgrade(address) internal view override {
+        if (msg.sender != owner) revert Forbidden();
+        if (ossified) revert Ossified();
     }
 
     function _campaignId(CreateBundle memory _bundle) internal pure returns (bytes32) {

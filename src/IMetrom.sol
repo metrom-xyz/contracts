@@ -132,6 +132,9 @@ interface IMetrom {
         uint32 maximumCampaignDuration
     );
 
+    /// @notice Emitted when the contract is ossified.
+    event Ossify();
+
     /// @notice Emitted when a campaign is created.
     /// @param id The id of the campaign.
     /// @param owner The initial owner of the campaign.
@@ -288,8 +291,33 @@ interface IMetrom {
     /// @notice Thrown when a campaign that was required to exists does not exist.
     error NonExistentCampaign();
 
+    /// @notice Thrown when trying to upgrade the contract while ossified.
+    error Ossified();
+
     /// @notice Thrown at claim procession time when the requested claim amount is 0.
     error ZeroAmount();
+
+    /// @notice Initializes the contract.
+    /// @param owner The initial owner.
+    /// @param updater The initial updater.
+    /// @param updater The initial global fee.
+    /// @param updater The initial minimum campaign duration.
+    /// @param updater The initial maximum campaign duration.
+    function initialize(
+        address owner,
+        address updater,
+        uint32 globalFee,
+        uint32 minimumCampaignDuration,
+        uint32 maximumCampaignDuration
+    ) external;
+
+    /// @notice Returns whether the contract is upgradeable or not.
+    /// @return ossified The upgradeability state of the contract.
+    function ossified() external returns (bool ossified);
+
+    /// @notice Makes the contract immutable, de-facto disallowing
+    /// any future upgrade. Can only be called by Metrom's owner.
+    function ossify() external;
 
     /// @notice Returns the current owner.
     /// @return owner The current owner.
