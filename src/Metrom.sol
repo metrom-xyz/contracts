@@ -22,24 +22,45 @@ import {
 } from "./IMetrom.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
+/// @title Metrom
+/// @notice The contract handling all Metrom entities and interactions. It supports
+/// creation and update of campaigns as well as claims and recoveries of unassigned
+/// rewards for each one of them.
+/// @author Federico Luzzi - <federico.luzzi@metrom.xyz>
 contract Metrom is IMetrom, UUPSUpgradeable {
     using SafeERC20 for IERC20;
 
+    /// @inheritdoc IMetrom
     bool public override ossified;
+
+    /// @inheritdoc IMetrom
     address public override owner;
+
+    /// @inheritdoc IMetrom
     address public override pendingOwner;
+
+    /// @inheritdoc IMetrom
     address public override updater;
+
+    /// @inheritdoc IMetrom
     uint32 public override globalFee;
+
+    /// @inheritdoc IMetrom
     uint32 public override minimumCampaignDuration;
+
+    /// @inheritdoc IMetrom
     uint32 public override maximumCampaignDuration;
     mapping(bytes32 id => Campaign) internal campaigns;
     mapping(address account => SpecificFee) internal specificFee;
+
+    /// @inheritdoc IMetrom
     mapping(address token => uint256 amount) public override claimableFees;
 
     constructor() {
         _disableInitializers();
     }
 
+    /// @inheritdoc IMetrom
     function initialize(
         address _owner,
         address _updater,

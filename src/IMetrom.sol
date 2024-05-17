@@ -113,8 +113,8 @@ struct ClaimFeeBundle {
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 /// @title Metrom
-/// @notice The contract handling all Metrom entities an interactions. It supports
-/// creation and update of campaigns as well as claims and recoveries of unassigned
+/// @notice The interface for the contract handling all Metrom entities and interactions.
+/// It supports creation and update of campaigns as well as claims and recoveries of unassigned
 /// rewards for each one of them.
 /// @author Federico Luzzi - <federico.luzzi@metrom.xyz>
 interface IMetrom {
