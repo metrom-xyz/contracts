@@ -96,7 +96,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
 
     function _campaignId(CreateBundle memory _bundle) internal pure returns (bytes32) {
         return keccak256(
-            abi.encodePacked(
+            abi.encode(
                 _bundle.chainId,
                 _bundle.pool,
                 _bundle.from,

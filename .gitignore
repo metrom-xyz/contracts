@@ -148,3 +148,5 @@ dist
 
 .env*
 broadcast
+
+.gas-snapshot
