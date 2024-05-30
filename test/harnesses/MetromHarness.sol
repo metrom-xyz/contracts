@@ -8,7 +8,7 @@ contract MetromHarness is Metrom {
         _getExistingCampaign(_id);
     }
 
-    function campaignId(CreateBundle memory _bundle) external pure returns (bytes32) {
+    function campaignId(CreateBundle memory _bundle) external view returns (bytes32) {
         return _campaignId(_bundle);
     }
 

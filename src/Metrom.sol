@@ -94,9 +94,10 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         if (ossified) revert Ossified();
     }
 
-    function _campaignId(CreateBundle memory _bundle) internal pure returns (bytes32) {
+    function _campaignId(CreateBundle memory _bundle) internal view returns (bytes32) {
         return keccak256(
             abi.encode(
+                msg.sender,
                 _bundle.chainId,
                 _bundle.pool,
                 _bundle.from,
