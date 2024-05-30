@@ -22,7 +22,7 @@ contract AcceptOwnershipTest is BaseTest {
         vm.assertEq(metrom.owner(), owner);
 
         vm.expectEmit();
-        emit IMetrom.AcceptOwnership();
+        emit IMetrom.AcceptOwnership(_newOwner);
 
         vm.prank(_newOwner);
         metrom.acceptOwnership();
@@ -41,7 +41,7 @@ contract AcceptOwnershipTest is BaseTest {
         vm.assertEq(metrom.owner(), owner);
 
         vm.expectEmit();
-        emit IMetrom.AcceptOwnership();
+        emit IMetrom.AcceptOwnership(_newOwner);
 
         vm.prank(_newOwner);
         metrom.acceptOwnership();

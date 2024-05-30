@@ -201,7 +201,8 @@ interface IMetrom {
     event TransferOwnership(address indexed owner);
 
     /// @notice Emitted when Metrom's current pending owner accepts its ownership.
-    event AcceptOwnership();
+    /// @param owner The new owner.
+    event AcceptOwnership(address indexed owner);
 
     /// @notice Emitted when Metrom's owner sets a new allowed updater address.
     /// @param updater The new updater.

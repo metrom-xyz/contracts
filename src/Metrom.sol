@@ -351,7 +351,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         if (msg.sender != pendingOwner) revert Forbidden();
         delete pendingOwner;
         owner = msg.sender;
-        emit AcceptOwnership();
+        emit AcceptOwnership(msg.sender);
     }
 
     /// @inheritdoc IMetrom
