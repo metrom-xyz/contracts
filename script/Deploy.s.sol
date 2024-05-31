@@ -11,7 +11,7 @@ contract Deploy is Script {
     function run(
         address _owner,
         address _updater,
-        uint32 _globalFee,
+        uint32 _fee,
         uint32 _minimumCampaignDuration,
         uint32 _maximumCampaignDuration
     ) public {
@@ -20,12 +20,7 @@ contract Deploy is Script {
         ERC1967Proxy _metrom = new ERC1967Proxy(
             address(new Metrom()),
             abi.encodeWithSelector(
-                Metrom.initialize.selector,
-                _owner,
-                _updater,
-                _globalFee,
-                _minimumCampaignDuration,
-                _maximumCampaignDuration
+                Metrom.initialize.selector, _owner, _updater, _fee, _minimumCampaignDuration, _maximumCampaignDuration
             )
         );
         console2.log("Metrom address: ", address(_metrom));

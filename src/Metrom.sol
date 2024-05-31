@@ -7,7 +7,6 @@ import {UUPSUpgradeable} from "oz-up/proxy/utils/UUPSUpgradeable.sol";
 
 import {
     IMetrom,
-    SpecificFee,
     Campaign,
     Reward,
     ReadonlyCampaign,
@@ -43,7 +42,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     address public override updater;
 
     /// @inheritdoc IMetrom
-    uint32 public override globalFee;
+    uint32 public override fee;
 
     /// @inheritdoc IMetrom
     uint32 public override minimumCampaignDuration;
@@ -51,7 +50,9 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     /// @inheritdoc IMetrom
     uint32 public override maximumCampaignDuration;
     mapping(bytes32 id => Campaign) internal campaigns;
-    mapping(address account => SpecificFee) internal specificFee;
+
+    /// @inheritdoc IMetrom
+    mapping(address account => uint32 rebate) public override feeRebate;
 
     /// @inheritdoc IMetrom
     mapping(address token => uint256 amount) public override claimableFees;
@@ -64,22 +65,22 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     function initialize(
         address _owner,
         address _updater,
-        uint32 _globalFee,
+        uint32 _fee,
         uint32 _minimumCampaignDuration,
         uint32 _maximumCampaignDuration
     ) external override initializer {
         if (_owner == address(0)) revert InvalidOwner();
         if (_updater == address(0)) revert InvalidUpdater();
-        if (_globalFee > MAX_FEE) revert InvalidGlobalFee();
+        if (_fee > MAX_FEE) revert InvalidFee();
         if (_minimumCampaignDuration >= _maximumCampaignDuration) revert InvalidMinimumCampaignDuration();
 
         owner = _owner;
         updater = _updater;
         minimumCampaignDuration = _minimumCampaignDuration;
         maximumCampaignDuration = _maximumCampaignDuration;
-        globalFee = _globalFee;
+        fee = _fee;
 
-        emit Initialize(_owner, _updater, _globalFee, _minimumCampaignDuration, _maximumCampaignDuration);
+        emit Initialize(_owner, _updater, _fee, _minimumCampaignDuration, _maximumCampaignDuration);
     }
 
     /// @inheritdoc IMetrom
@@ -116,14 +117,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     }
 
     function _resolvedFee() internal view returns (uint32) {
-        SpecificFee memory _specificFee = specificFee[msg.sender];
-        if (_specificFee.none) {
-            return 0;
-        } else if (_specificFee.fee > 0) {
-            return _specificFee.fee;
-        } else {
-            return globalFee;
-        }
+        return uint32(uint64(fee) * (UNIT - feeRebate[msg.sender]) / UNIT);
     }
 
     /// @inheritdoc IMetrom
@@ -149,12 +143,6 @@ contract Metrom is IMetrom, UUPSUpgradeable {
             root: campaign.root,
             rewards: _rewards
         });
-    }
-
-    /// @inheritdoc IMetrom
-    function specificFeeFor(address _account) external view returns (SpecificFee memory) {
-        SpecificFee memory _specificFee = specificFee[_account];
-        return _specificFee;
     }
 
     /// @inheritdoc IMetrom
@@ -364,20 +352,20 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     }
 
     /// @inheritdoc IMetrom
-    function setGlobalFee(uint32 _globalFee) external override {
-        if (_globalFee > MAX_FEE) revert InvalidGlobalFee();
+    function setFee(uint32 _fee) external override {
+        if (_fee > MAX_FEE) revert InvalidFee();
         if (msg.sender != owner) revert Forbidden();
-        globalFee = _globalFee;
-        emit SetGlobalFee(_globalFee);
+        fee = _fee;
+        emit SetFee(_fee);
     }
 
     /// @inheritdoc IMetrom
-    function setSpecificFee(address _account, uint32 _specificFee) external override {
+    function setFeeRebate(address _account, uint32 _rebate) external override {
         if (_account == address(0)) revert InvalidAccount();
-        if (_specificFee > MAX_FEE) revert InvalidSpecificFee();
+        if (_rebate > UNIT) revert InvalidRebate();
         if (msg.sender != owner) revert Forbidden();
-        specificFee[_account] = SpecificFee({fee: _specificFee, none: _specificFee == 0});
-        emit SetSpecificFee(_account, _specificFee);
+        feeRebate[_account] = _rebate;
+        emit SetFeeRebate(_account, _rebate);
     }
 
     /// @inheritdoc IMetrom

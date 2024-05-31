@@ -1,10 +1,10 @@
 pragma solidity >=0.8.0;
 
 /// @dev Represents the maximum value for fee percentages (100%).
-uint256 constant UNIT = 1_000_000;
+uint32 constant UNIT = 1_000_000;
 
 /// @dev Represents the maximum allowed fee value (10%).
-uint256 constant MAX_FEE = 100_000;
+uint32 constant MAX_FEE = 100_000;
 
 /// @dev Represents the maximum number of different rewards allowed for a
 /// single campaign.
@@ -18,16 +18,6 @@ struct Reward {
     uint256 amount;
     uint256 unclaimed;
     mapping(address user => uint256 amount) claimed;
-}
-
-/// @notice Represents an address-specific fee in the contract's state.
-/// In particular, if `none` is set to `true` the linked address will have zero
-/// fees charged, while if `none` is `false` the contract will take the `fee` value.
-/// The double attribute approach lets us understand when a specific fee is actually
-/// initialized or not, and if it's not we can fall back to the global fee value.
-struct SpecificFee {
-    uint32 fee;
-    bool none;
 }
 
 /// @notice Represents a campaign in the contract's state, with its owner,
@@ -121,13 +111,13 @@ interface IMetrom {
     /// @notice Emitted at initialization time.
     /// @param owner The initial contract's owner.
     /// @param updater The initial contract's campaigns updater.
-    /// @param globalFee The initial contract's global fee.
+    /// @param fee The initial contract's fee.
     /// @param minimumCampaignDuration The initial contract's minimum campaign duration.
     /// @param maximumCampaignDuration The initial contract's maximum campaign duration.
     event Initialize(
         address indexed owner,
         address updater,
-        uint32 globalFee,
+        uint32 fee,
         uint32 minimumCampaignDuration,
         uint32 maximumCampaignDuration
     );
@@ -209,14 +199,15 @@ interface IMetrom {
     /// @param updater The new updater.
     event SetUpdater(address indexed updater);
 
-    /// @notice Emitted when Metrom's owner sets a new global fee.
-    /// @param globalFee The new global fee.
-    event SetGlobalFee(uint32 globalFee);
+    /// @notice Emitted when Metrom's owner sets a new fee.
+    /// @param fee The new fee.
+    event SetFee(uint32 fee);
 
-    /// @notice Emitted when Metrom's owner sets a new address-specific fee.
-    /// @param account The account for which the specific fee was set.
-    /// @param specificFee The new fee.
-    event SetSpecificFee(address account, uint32 specificFee);
+    /// @notice Emitted when Metrom's owner sets a new address-specific
+    /// rebate for protocol fees.
+    /// @param account The account for which the rebate was set.
+    /// @param rebate The rebate.
+    event SetFeeRebate(address account, uint32 rebate);
 
     /// @notice Emitted when Metrom's owner sets a new minimum campaign duration.
     /// @param minimumCampaignDuration The new minimum campaign duration.
@@ -242,11 +233,11 @@ interface IMetrom {
     /// @notice Thrown at rewards distribution time when 0-bytes data is specified.
     error InvalidData();
 
+    /// @notice Thrown when the specified fee goes over the maximum allowed amount.
+    error InvalidFee();
+
     /// @notice Thrown at campaign creation time when the specified from is in the past.
     error InvalidFrom();
-
-    /// @notice Thrown when the specified global fee goes over the maximum allowed amount.
-    error InvalidGlobalFee();
 
     /// @notice Thrown when the specified maximum campaign duration is less or equal to
     /// the current minimum campaign duration.
@@ -266,6 +257,9 @@ interface IMetrom {
     /// @notice Thrown at claim procession time when the provided Merkle proof is invalid.
     error InvalidProof();
 
+    /// @notice Thrown when the specified rebate goes over the maximum allowed amount.
+    error InvalidRebate();
+
     /// @notice Thrown at claim procession time when the provided received is the zero address.
     error InvalidReceiver();
 
@@ -273,9 +267,6 @@ interface IMetrom {
     /// because there are none, or too many, or because the reward token and reward amount arrays
     /// have inconsistent lengths).
     error InvalidRewards();
-
-    /// @notice Thrown when the specified specific fee goes over the maximum allowed amount.
-    error InvalidSpecificFee();
 
     /// @notice Thrown at rewards distribution time when the specified root is 0-bytes.
     error InvalidRoot();
@@ -303,13 +294,13 @@ interface IMetrom {
     /// @notice Initializes the contract.
     /// @param owner The initial owner.
     /// @param updater The initial updater.
-    /// @param updater The initial global fee.
-    /// @param updater The initial minimum campaign duration.
-    /// @param updater The initial maximum campaign duration.
+    /// @param fee The initial fee.
+    /// @param minimumCampaignDuration The initial minimum campaign duration.
+    /// @param maximumCampaignDuration The initial maximum campaign duration.
     function initialize(
         address owner,
         address updater,
-        uint32 globalFee,
+        uint32 fee,
         uint32 minimumCampaignDuration,
         uint32 maximumCampaignDuration
     ) external;
@@ -334,14 +325,14 @@ interface IMetrom {
     /// @return updater The currently allowed updater.
     function updater() external view returns (address updater);
 
-    /// @notice Returns the current global fee.
-    /// @return globalFee The current global fee.
-    function globalFee() external view returns (uint32 globalFee);
+    /// @notice Returns the current fee.
+    /// @return fee The current fee.
+    function fee() external view returns (uint32 fee);
 
-    /// @notice Returns the current specific fee value for a provided account.
-    /// @param account The account for which to fetch the fee value.
-    /// @return specificFee The specific fee for the provided account.
-    function specificFeeFor(address account) external view returns (SpecificFee memory specificFee);
+    /// @notice Returns the current fee rebate for a provided account.
+    /// @param account The account for which to fetch the fee rebate.
+    /// @return rebate The fee rebate for the provided account.
+    function feeRebate(address account) external view returns (uint32 rebate);
 
     /// @notice Returns the currently enforced minimum campaign duration.
     /// @return minimumCampaignDuration The currently enforced minimum campaign duration.
@@ -419,14 +410,14 @@ interface IMetrom {
     /// @notice Can be called by Metrom's owner to set a new allowed updater address.
     function setUpdater(address updater) external;
 
-    /// @notice Can be called by Metrom's owner to set a new global fee value.
-    function setGlobalFee(uint32 fee) external;
+    /// @notice Can be called by Metrom's owner to set a new fee value.
+    function setFee(uint32 fee) external;
 
-    /// @notice Can be called by Metrom's owner to set a new specific fee value for an
-    /// account.
-    /// @param account The account for which to set the specific fee value.
-    /// @param fee The specific fee value.
-    function setSpecificFee(address account, uint32 fee) external;
+    /// @notice Can be called by Metrom's owner to set a new specific protocol fee
+    /// rebate for an account.
+    /// @param account The account for which to set the rebate value.
+    /// @param rebate The rebate.
+    function setFeeRebate(address account, uint32 rebate) external;
 
     /// @notice Can be called by Metrom's owner to set a new minimum allowed campaign duration.
     /// @param minimumCampaignDuration The new minimum allowed campaign duration.

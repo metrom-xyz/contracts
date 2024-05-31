@@ -2,8 +2,14 @@ pragma solidity 0.8.25;
 
 import {MetromHarness} from "./harnesses/MetromHarness.sol";
 import {BaseTest} from "./Base.t.sol";
-import {MAX_FEE} from "../src/Metrom.sol";
-import {IMetrom, CreateBundle, ClaimRewardBundle, ReadonlyCampaign, DistributeRewardsBundle} from "../src/IMetrom.sol";
+import {
+    MAX_FEE,
+    IMetrom,
+    CreateBundle,
+    ClaimRewardBundle,
+    ReadonlyCampaign,
+    DistributeRewardsBundle
+} from "../src/IMetrom.sol";
 import {MintableERC20} from "./dependencies/MintableERC20.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later

@@ -2,8 +2,7 @@ pragma solidity 0.8.25;
 
 import {MetromHarness} from "./harnesses/MetromHarness.sol";
 import {BaseTest} from "./Base.t.sol";
-import {MAX_FEE} from "../src/Metrom.sol";
-import {IMetrom, CreateBundle, ReadonlyCampaign} from "../src/IMetrom.sol";
+import {MAX_FEE, UNIT, IMetrom, CreateBundle, ReadonlyCampaign} from "../src/IMetrom.sol";
 import {MintableERC20} from "./dependencies/MintableERC20.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
@@ -314,7 +313,7 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(_createdCampaign.rewards[0].unclaimed, 9.9 ether);
     }
 
-    function test_successSingleSingleRewardSpecificFee() public {
+    function test_successSingleSingleRewardFeeRebate() public {
         MintableERC20 _mintableErc20 = new MintableERC20("Test", "TST");
         _mintableErc20.mint(address(this), 10 ether);
         _mintableErc20.approve(address(metrom), 10 ether);
@@ -340,7 +339,7 @@ contract CreateCampaignTest is BaseTest {
         _bundles[0] = _bundle;
 
         vm.prank(owner);
-        metrom.setSpecificFee(address(this), 0);
+        metrom.setFeeRebate(address(this), UNIT);
 
         metrom.createCampaigns(_bundles);
 

@@ -5,8 +5,7 @@ import {Initializable} from "oz-up/proxy/utils/Initializable.sol";
 
 import {MetromHarness} from "./harnesses/MetromHarness.sol";
 import {BaseTest} from "./Base.t.sol";
-import {MAX_FEE} from "../src/Metrom.sol";
-import {IMetrom} from "../src/IMetrom.sol";
+import {MAX_FEE, IMetrom} from "../src/IMetrom.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 contract InitializeTest is BaseTest {
@@ -30,7 +29,7 @@ contract InitializeTest is BaseTest {
 
     function test_failInvalidFee() public {
         MetromHarness _metrom = MetromHarness(address(new ERC1967Proxy(address(new MetromHarness()), bytes(""))));
-        vm.expectRevert(IMetrom.InvalidGlobalFee.selector);
+        vm.expectRevert(IMetrom.InvalidFee.selector);
         _metrom.initialize(address(1), address(1), uint32(MAX_FEE + 1), 10, 10);
     }
 
@@ -64,7 +63,7 @@ contract InitializeTest is BaseTest {
         vm.assertEq(_metrom.owner(), _owner);
         vm.assertEq(_metrom.pendingOwner(), address(0));
         vm.assertEq(_metrom.updater(), _updater);
-        vm.assertEq(_metrom.globalFee(), _fee);
+        vm.assertEq(_metrom.fee(), _fee);
         vm.assertEq(_metrom.minimumCampaignDuration(), _minimumCampaignDuration);
         vm.assertEq(_metrom.maximumCampaignDuration(), _maximumCampaignDuration);
     }
@@ -92,7 +91,7 @@ contract InitializeTest is BaseTest {
         vm.assertEq(_metrom.owner(), _owner);
         vm.assertEq(_metrom.pendingOwner(), address(0));
         vm.assertEq(_metrom.updater(), _updater);
-        vm.assertEq(_metrom.globalFee(), _fee);
+        vm.assertEq(_metrom.fee(), _fee);
         vm.assertEq(_metrom.minimumCampaignDuration(), _minimumCampaignDuration);
         vm.assertEq(_metrom.maximumCampaignDuration(), _maximumCampaignDuration);
     }

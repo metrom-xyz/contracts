@@ -5,14 +5,13 @@ import {ERC1967Proxy} from "oz/proxy/ERC1967/ERC1967Proxy.sol";
 
 import {MintableERC20} from "./dependencies/MintableERC20.sol";
 import {MetromHarness} from "./harnesses/MetromHarness.sol";
-import {MAX_FEE} from "../src/Metrom.sol";
-import {IMetrom, CreateBundle} from "../src/IMetrom.sol";
+import {MAX_FEE, IMetrom, CreateBundle} from "../src/IMetrom.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 contract BaseTest is Test {
     address internal owner;
     address internal updater;
-    uint32 internal globalFee;
+    uint32 internal fee;
     uint32 internal minimumCampaignDuration;
     uint32 internal maximumCampaignDuration;
     MetromHarness internal metrom;
@@ -20,7 +19,7 @@ contract BaseTest is Test {
     function setUp() external {
         owner = address(1);
         updater = address(2);
-        globalFee = 10_000;
+        fee = 10_000;
         minimumCampaignDuration = 1 seconds;
         maximumCampaignDuration = 10 minutes;
         metrom = MetromHarness(
@@ -31,7 +30,7 @@ contract BaseTest is Test {
                         IMetrom.initialize.selector,
                         owner,
                         updater,
-                        globalFee,
+                        fee,
                         minimumCampaignDuration,
                         maximumCampaignDuration
                     )

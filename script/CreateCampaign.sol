@@ -1,7 +1,7 @@
 pragma solidity 0.8.25;
 
 import {Script} from "forge-std/Script.sol";
-import {IMetrom, CreateBundle} from "../src/IMetrom.sol";
+import {UNIT, IMetrom, CreateBundle} from "../src/IMetrom.sol";
 import {IERC20} from "oz/token/ERC20/IERC20.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
@@ -37,8 +37,8 @@ contract CreateCampaign is Script {
         CreateBundle[] memory _bundles = new CreateBundle[](1);
         _bundles[0] = _bundle;
 
-        uint32 _fee = IMetrom(_metrom).globalFee();
-        IERC20(_rewardToken).approve(_metrom, _rewardAmount + ((_rewardAmount * _fee) / 1_000_000));
+        uint32 _fee = IMetrom(_metrom).fee();
+        IERC20(_rewardToken).approve(_metrom, _rewardAmount + ((_rewardAmount * _fee) / UNIT));
 
         IMetrom(_metrom).createCampaigns(_bundles);
 

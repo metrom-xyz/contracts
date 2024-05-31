@@ -4,8 +4,7 @@ import {Initializable} from "oz-up/proxy/utils/Initializable.sol";
 
 import {MetromHarness, MetromHarnessUpgraded, MetromHarnessUpgradedReinitializer} from "./harnesses/MetromHarness.sol";
 import {BaseTest} from "./Base.t.sol";
-import {MAX_FEE} from "../src/Metrom.sol";
-import {IMetrom} from "../src/IMetrom.sol";
+import {MAX_FEE, IMetrom} from "../src/IMetrom.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 contract UpgradeTest is BaseTest {
