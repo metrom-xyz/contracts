@@ -208,6 +208,10 @@ interface IMetrom {
     /// @notice Thrown when trying to create a campaign that already exists.
     error CampaignAlreadyExists();
 
+    /// @notice Thrown when trying to distribute rewards multiple times on the same
+    /// campaign in the same transaction.
+    error DuplicatedDistribution();
+
     /// @notice Thrown when the desired operation's execution is forbidden to the caller.
     error Forbidden();
 

@@ -57,6 +57,21 @@ contract DistributeRewardsTest is BaseTest {
         metrom.distributeRewards(_bundles);
     }
 
+    function test_failDuplicate() public {
+        DistributeRewardsBundle memory _bundle1 =
+            DistributeRewardsBundle({campaignId: bytes32(0), root: bytes32("test1"), data: bytes32("test1")});
+        DistributeRewardsBundle memory _bundle2 =
+            DistributeRewardsBundle({campaignId: bytes32(0), root: bytes32("test2"), data: bytes32("test2")});
+
+        DistributeRewardsBundle[] memory _bundles = new DistributeRewardsBundle[](2);
+        _bundles[0] = _bundle1;
+        _bundles[1] = _bundle2;
+
+        vm.prank(updater);
+        vm.expectRevert(IMetrom.DuplicatedDistribution.selector);
+        metrom.distributeRewards(_bundles);
+    }
+
     function test_successSingleCampaign() public {
         MintableERC20 _mintableErc20 = new MintableERC20("Test", "TST");
         _mintableErc20.mint(address(this), 10.1 ether);

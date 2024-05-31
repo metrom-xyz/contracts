@@ -233,6 +233,10 @@ contract Metrom is IMetrom, UUPSUpgradeable {
             DistributeRewardsBundle calldata _bundle = _bundles[_i];
             if (_bundle.root == bytes32(0)) revert InvalidRoot();
             if (_bundle.data == bytes32(0)) revert InvalidData();
+            for (uint256 _j = _i + 1; _j < _bundles.length; _j++) {
+                if (_bundles[_i].campaignId == _bundles[_j].campaignId) revert DuplicatedDistribution();
+            }
+
             Campaign storage campaign = _getExistingCampaign(_bundle.campaignId);
             campaign.root = _bundle.root;
             campaign.data = _bundle.data;

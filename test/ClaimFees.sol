@@ -80,9 +80,7 @@ contract CollectFeesTest is BaseTest {
 
         metrom.createCampaigns(_createBundles);
 
-        bytes32 _campaignId = metrom.campaignId(_createBundle);
-        ReadonlyCampaign memory _onChainCampaign = metrom.campaignById(_campaignId);
-        vm.assertEq(metrom.campaignReward(_campaignId, address(_mintableErc20)), 9.9 ether);
+        vm.assertEq(metrom.campaignReward(metrom.campaignId(_createBundle), address(_mintableErc20)), 9.9 ether);
 
         vm.assertEq(metrom.claimableFees(address(_mintableErc20)), 0.1 ether);
         vm.assertEq(_mintableErc20.balanceOf(address(this)), 0);
