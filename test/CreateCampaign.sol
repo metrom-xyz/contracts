@@ -4,6 +4,7 @@ import {MetromHarness} from "./harnesses/MetromHarness.sol";
 import {BaseTest} from "./Base.t.sol";
 import {MAX_FEE, UNIT, IMetrom, CreateBundle, ReadonlyCampaign} from "../src/IMetrom.sol";
 import {MintableERC20} from "./dependencies/MintableERC20.sol";
+import {MintableFeeOnTransferERC20} from "./dependencies/MintableFeeOnTransferERC20.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 contract CreateCampaignTest is BaseTest {
@@ -240,6 +241,51 @@ contract CreateCampaignTest is BaseTest {
 
         vm.expectRevert(IMetrom.InvalidRewards.selector);
         metrom.createCampaigns(_bundles);
+    }
+
+    function test_successSingleRewardFeeOnTransfer() public {
+        address _feeOnTransferReceiver = address(55555);
+        MintableFeeOnTransferERC20 _mintableFeeOnTransferErc20 =
+            new MintableFeeOnTransferERC20("Test", "TST", 100_000, _feeOnTransferReceiver);
+        _mintableFeeOnTransferErc20.mint(address(this), 10 ether);
+        _mintableFeeOnTransferErc20.approve(address(metrom), 10 ether);
+        vm.assertEq(_mintableFeeOnTransferErc20.balanceOf(address(this)), 10 ether);
+
+        address[] memory _rewardTokens = new address[](1);
+        _rewardTokens[0] = address(_mintableFeeOnTransferErc20);
+
+        uint256[] memory _rewardAmounts = new uint256[](1);
+        _rewardAmounts[0] = 10 ether;
+
+        CreateBundle memory _bundle = CreateBundle({
+            chainId: 1,
+            pool: address(1),
+            from: uint32(block.timestamp + 10),
+            to: uint32(block.timestamp + 20),
+            specification: bytes32(0),
+            rewardTokens: _rewardTokens,
+            rewardAmounts: _rewardAmounts
+        });
+
+        CreateBundle[] memory _bundles = new CreateBundle[](1);
+        _bundles[0] = _bundle;
+
+        metrom.createCampaigns(_bundles);
+
+        vm.assertEq(_mintableFeeOnTransferErc20.balanceOf(address(this)), 0);
+        vm.assertEq(_mintableFeeOnTransferErc20.balanceOf(_feeOnTransferReceiver), 1 ether);
+        vm.assertEq(metrom.claimableFees(address(_mintableFeeOnTransferErc20)), 0.09 ether);
+
+        bytes32 _createdCampaignId = metrom.campaignId(_bundle);
+        ReadonlyCampaign memory _createdCampaign = metrom.campaignById(_createdCampaignId);
+
+        vm.assertEq(_createdCampaign.chainId, _bundle.chainId);
+        vm.assertEq(_createdCampaign.pool, _bundle.pool);
+        vm.assertEq(_createdCampaign.from, _bundle.from);
+        vm.assertEq(_createdCampaign.to, _bundle.to);
+        vm.assertEq(_createdCampaign.specification, _bundle.specification);
+        vm.assertEq(_createdCampaign.root, bytes32(0));
+        vm.assertEq(metrom.campaignReward(_createdCampaignId, address(_mintableFeeOnTransferErc20)), 8.91 ether);
     }
 
     function test_successSingleDuplicatedReward() public {
