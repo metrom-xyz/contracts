@@ -218,32 +218,6 @@ contract CreateCampaignTest is BaseTest {
         metrom.createCampaigns(_bundles);
     }
 
-    function test_failDuplicatedRewardToken() public {
-        address[] memory _rewardTokens = new address[](2);
-        _rewardTokens[0] = address(1);
-        _rewardTokens[1] = address(1);
-
-        uint256[] memory _rewardAmounts = new uint256[](2);
-        _rewardAmounts[0] = 10;
-        _rewardAmounts[1] = 20;
-
-        CreateBundle memory _bundle = CreateBundle({
-            chainId: 1,
-            pool: address(1),
-            from: uint32(block.timestamp + 10),
-            to: uint32(block.timestamp + 20),
-            specification: bytes32(0),
-            rewardTokens: _rewardTokens,
-            rewardAmounts: _rewardAmounts
-        });
-
-        CreateBundle[] memory _bundles = new CreateBundle[](1);
-        _bundles[0] = _bundle;
-
-        vm.expectRevert(IMetrom.InvalidRewards.selector);
-        metrom.createCampaigns(_bundles);
-    }
-
     function test_failZeroAddressRewardToken() public {
         address[] memory _rewardTokens = new address[](1);
         _rewardTokens[0] = address(0);
@@ -266,6 +240,50 @@ contract CreateCampaignTest is BaseTest {
 
         vm.expectRevert(IMetrom.InvalidRewards.selector);
         metrom.createCampaigns(_bundles);
+    }
+
+    function test_successSingleDuplicatedReward() public {
+        MintableERC20 _mintableErc20 = new MintableERC20("Test", "TST");
+        _mintableErc20.mint(address(this), 25 ether);
+        _mintableErc20.approve(address(metrom), 25 ether);
+        vm.assertEq(_mintableErc20.balanceOf(address(this)), 25 ether);
+
+        address[] memory _rewardTokens = new address[](2);
+        _rewardTokens[0] = address(_mintableErc20);
+        _rewardTokens[1] = address(_mintableErc20);
+
+        uint256[] memory _rewardAmounts = new uint256[](2);
+        _rewardAmounts[0] = 10 ether;
+        _rewardAmounts[1] = 15 ether;
+
+        CreateBundle memory _bundle = CreateBundle({
+            chainId: 1,
+            pool: address(1),
+            from: uint32(block.timestamp + 10),
+            to: uint32(block.timestamp + 20),
+            specification: bytes32(0),
+            rewardTokens: _rewardTokens,
+            rewardAmounts: _rewardAmounts
+        });
+
+        CreateBundle[] memory _bundles = new CreateBundle[](1);
+        _bundles[0] = _bundle;
+
+        metrom.createCampaigns(_bundles);
+
+        vm.assertEq(_mintableErc20.balanceOf(address(this)), 0);
+        vm.assertEq(metrom.claimableFees(address(_mintableErc20)), 0.25 ether);
+
+        bytes32 _createdCampaignId = metrom.campaignId(_bundle);
+        ReadonlyCampaign memory _createdCampaign = metrom.campaignById(_createdCampaignId);
+
+        vm.assertEq(_createdCampaign.chainId, _bundle.chainId);
+        vm.assertEq(_createdCampaign.pool, _bundle.pool);
+        vm.assertEq(_createdCampaign.from, _bundle.from);
+        vm.assertEq(_createdCampaign.to, _bundle.to);
+        vm.assertEq(_createdCampaign.specification, _bundle.specification);
+        vm.assertEq(_createdCampaign.root, bytes32(0));
+        vm.assertEq(metrom.campaignReward(_createdCampaignId, address(_mintableErc20)), 24.75 ether);
     }
 
     function test_successSingleSingleReward() public {
@@ -307,10 +325,7 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(_createdCampaign.to, _bundle.to);
         vm.assertEq(_createdCampaign.specification, _bundle.specification);
         vm.assertEq(_createdCampaign.root, bytes32(0));
-        vm.assertEq(_createdCampaign.rewards.length, 1);
-        vm.assertEq(_createdCampaign.rewards[0].token, address(_mintableErc20));
-        vm.assertEq(_createdCampaign.rewards[0].amount, 9.9 ether);
-        vm.assertEq(_createdCampaign.rewards[0].unclaimed, 9.9 ether);
+        vm.assertEq(metrom.campaignReward(_createdCampaignId, address(_mintableErc20)), 9.9 ether);
     }
 
     function test_successSingleSingleRewardFeeRebate() public {
@@ -355,10 +370,7 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(_createdCampaign.to, _bundle.to);
         vm.assertEq(_createdCampaign.specification, _bundle.specification);
         vm.assertEq(_createdCampaign.root, bytes32(0));
-        vm.assertEq(_createdCampaign.rewards.length, 1);
-        vm.assertEq(_createdCampaign.rewards[0].token, address(_mintableErc20));
-        vm.assertEq(_createdCampaign.rewards[0].amount, 10 ether);
-        vm.assertEq(_createdCampaign.rewards[0].unclaimed, 10 ether);
+        vm.assertEq(metrom.campaignReward(_createdCampaignId, address(_mintableErc20)), 10 ether);
     }
 
     function test_successMultipleSingleReward() public {
@@ -408,33 +420,31 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(_mintableErc20.balanceOf(address(this)), 0);
         vm.assertEq(metrom.claimableFees(address(_mintableErc20)), 0.15 ether);
 
-        bytes32 _createdCampaignId1 = metrom.campaignId(_bundle1);
-        ReadonlyCampaign memory _createdCampaign1 = metrom.campaignById(_createdCampaignId1);
+        {
+            bytes32 _createdCampaignId1 = metrom.campaignId(_bundle1);
+            ReadonlyCampaign memory _createdCampaign1 = metrom.campaignById(_createdCampaignId1);
 
-        vm.assertEq(_createdCampaign1.chainId, _bundle1.chainId);
-        vm.assertEq(_createdCampaign1.pool, _bundle1.pool);
-        vm.assertEq(_createdCampaign1.from, _bundle1.from);
-        vm.assertEq(_createdCampaign1.to, _bundle1.to);
-        vm.assertEq(_createdCampaign1.specification, _bundle1.specification);
-        vm.assertEq(_createdCampaign1.root, bytes32(0));
-        vm.assertEq(_createdCampaign1.rewards.length, 1);
-        vm.assertEq(_createdCampaign1.rewards[0].token, address(_mintableErc20));
-        vm.assertEq(_createdCampaign1.rewards[0].amount, 9.9 ether);
-        vm.assertEq(_createdCampaign1.rewards[0].unclaimed, 9.9 ether);
+            vm.assertEq(_createdCampaign1.chainId, _bundle1.chainId);
+            vm.assertEq(_createdCampaign1.pool, _bundle1.pool);
+            vm.assertEq(_createdCampaign1.from, _bundle1.from);
+            vm.assertEq(_createdCampaign1.to, _bundle1.to);
+            vm.assertEq(_createdCampaign1.specification, _bundle1.specification);
+            vm.assertEq(_createdCampaign1.root, bytes32(0));
+            vm.assertEq(metrom.campaignReward(_createdCampaignId1, address(_mintableErc20)), 9.9 ether);
+        }
 
-        bytes32 _createdCampaignId2 = metrom.campaignId(_bundle2);
-        ReadonlyCampaign memory _createdCampaign2 = metrom.campaignById(_createdCampaignId2);
+        {
+            bytes32 _createdCampaignId2 = metrom.campaignId(_bundle2);
+            ReadonlyCampaign memory _createdCampaign2 = metrom.campaignById(_createdCampaignId2);
 
-        vm.assertEq(_createdCampaign2.chainId, _bundle2.chainId);
-        vm.assertEq(_createdCampaign2.pool, _bundle2.pool);
-        vm.assertEq(_createdCampaign2.from, _bundle2.from);
-        vm.assertEq(_createdCampaign2.to, _bundle2.to);
-        vm.assertEq(_createdCampaign2.specification, _bundle2.specification);
-        vm.assertEq(_createdCampaign2.root, bytes32(0));
-        vm.assertEq(_createdCampaign2.rewards.length, 1);
-        vm.assertEq(_createdCampaign2.rewards[0].token, address(_mintableErc20));
-        vm.assertEq(_createdCampaign2.rewards[0].amount, 4.95 ether);
-        vm.assertEq(_createdCampaign2.rewards[0].unclaimed, 4.95 ether);
+            vm.assertEq(_createdCampaign2.chainId, _bundle2.chainId);
+            vm.assertEq(_createdCampaign2.pool, _bundle2.pool);
+            vm.assertEq(_createdCampaign2.from, _bundle2.from);
+            vm.assertEq(_createdCampaign2.to, _bundle2.to);
+            vm.assertEq(_createdCampaign2.specification, _bundle2.specification);
+            vm.assertEq(_createdCampaign2.root, bytes32(0));
+            vm.assertEq(metrom.campaignReward(_createdCampaignId2, address(_mintableErc20)), 4.95 ether);
+        }
     }
 
     function test_successSingleMultipleReward() public {
@@ -486,13 +496,8 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(_createdCampaign.to, _bundle.to);
         vm.assertEq(_createdCampaign.specification, _bundle.specification);
         vm.assertEq(_createdCampaign.root, bytes32(0));
-        vm.assertEq(_createdCampaign.rewards.length, 2);
-        vm.assertEq(_createdCampaign.rewards[0].token, address(_mintableErc201));
-        vm.assertEq(_createdCampaign.rewards[0].amount, 9.9 ether);
-        vm.assertEq(_createdCampaign.rewards[0].unclaimed, 9.9 ether);
-        vm.assertEq(_createdCampaign.rewards[1].token, address(_mintableErc202));
-        vm.assertEq(_createdCampaign.rewards[1].amount, 4.95 ether);
-        vm.assertEq(_createdCampaign.rewards[1].unclaimed, 4.95 ether);
+        vm.assertEq(metrom.campaignReward(_createdCampaignId, address(_mintableErc201)), 9.9 ether);
+        vm.assertEq(metrom.campaignReward(_createdCampaignId, address(_mintableErc202)), 4.95 ether);
     }
 
     function test_successMultipleMultipleReward() public {
@@ -554,38 +559,32 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(_mintableErc202.balanceOf(address(this)), 0);
         vm.assertEq(metrom.claimableFees(address(_mintableErc202)), 0.1 ether);
 
-        bytes32 _createdCampaignId1 = metrom.campaignId(_bundle1);
-        ReadonlyCampaign memory _createdCampaign1 = metrom.campaignById(_createdCampaignId1);
+        {
+            bytes32 _createdCampaignId1 = metrom.campaignId(_bundle1);
+            ReadonlyCampaign memory _createdCampaign1 = metrom.campaignById(_createdCampaignId1);
 
-        vm.assertEq(_createdCampaign1.chainId, _bundle1.chainId);
-        vm.assertEq(_createdCampaign1.pool, _bundle1.pool);
-        vm.assertEq(_createdCampaign1.from, _bundle1.from);
-        vm.assertEq(_createdCampaign1.to, _bundle1.to);
-        vm.assertEq(_createdCampaign1.specification, _bundle1.specification);
-        vm.assertEq(_createdCampaign1.root, bytes32(0));
-        vm.assertEq(_createdCampaign1.rewards.length, 2);
-        vm.assertEq(_createdCampaign1.rewards[0].token, address(_mintableErc201));
-        vm.assertEq(_createdCampaign1.rewards[0].amount, 9.9 ether);
-        vm.assertEq(_createdCampaign1.rewards[0].unclaimed, 9.9 ether);
-        vm.assertEq(_createdCampaign1.rewards[1].token, address(_mintableErc202));
-        vm.assertEq(_createdCampaign1.rewards[1].amount, 4.95 ether);
-        vm.assertEq(_createdCampaign1.rewards[1].unclaimed, 4.95 ether);
+            vm.assertEq(_createdCampaign1.chainId, _bundle1.chainId);
+            vm.assertEq(_createdCampaign1.pool, _bundle1.pool);
+            vm.assertEq(_createdCampaign1.from, _bundle1.from);
+            vm.assertEq(_createdCampaign1.to, _bundle1.to);
+            vm.assertEq(_createdCampaign1.specification, _bundle1.specification);
+            vm.assertEq(_createdCampaign1.root, bytes32(0));
+            vm.assertEq(metrom.campaignReward(_createdCampaignId1, address(_mintableErc201)), 9.9 ether);
+            vm.assertEq(metrom.campaignReward(_createdCampaignId1, address(_mintableErc202)), 4.95 ether);
+        }
 
-        bytes32 _createdCampaignId2 = metrom.campaignId(_bundle2);
-        ReadonlyCampaign memory _createdCampaign2 = metrom.campaignById(_createdCampaignId2);
+        {
+            bytes32 _createdCampaignId2 = metrom.campaignId(_bundle2);
+            ReadonlyCampaign memory _createdCampaign2 = metrom.campaignById(_createdCampaignId2);
 
-        vm.assertEq(_createdCampaign2.chainId, _bundle2.chainId);
-        vm.assertEq(_createdCampaign2.pool, _bundle2.pool);
-        vm.assertEq(_createdCampaign2.from, _bundle2.from);
-        vm.assertEq(_createdCampaign2.to, _bundle2.to);
-        vm.assertEq(_createdCampaign2.specification, _bundle2.specification);
-        vm.assertEq(_createdCampaign2.root, bytes32(0));
-        vm.assertEq(_createdCampaign2.rewards.length, 2);
-        vm.assertEq(_createdCampaign2.rewards[0].token, address(_mintableErc201));
-        vm.assertEq(_createdCampaign2.rewards[0].amount, 4.95 ether);
-        vm.assertEq(_createdCampaign2.rewards[0].unclaimed, 4.95 ether);
-        vm.assertEq(_createdCampaign2.rewards[1].token, address(_mintableErc202));
-        vm.assertEq(_createdCampaign2.rewards[1].amount, 4.95 ether);
-        vm.assertEq(_createdCampaign2.rewards[1].unclaimed, 4.95 ether);
+            vm.assertEq(_createdCampaign2.chainId, _bundle2.chainId);
+            vm.assertEq(_createdCampaign2.pool, _bundle2.pool);
+            vm.assertEq(_createdCampaign2.from, _bundle2.from);
+            vm.assertEq(_createdCampaign2.to, _bundle2.to);
+            vm.assertEq(_createdCampaign2.specification, _bundle2.specification);
+            vm.assertEq(_createdCampaign2.root, bytes32(0));
+            vm.assertEq(metrom.campaignReward(_createdCampaignId2, address(_mintableErc201)), 4.95 ether);
+            vm.assertEq(metrom.campaignReward(_createdCampaignId2, address(_mintableErc202)), 4.95 ether);
+        }
     }
 }

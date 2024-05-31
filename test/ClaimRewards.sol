@@ -189,10 +189,7 @@ contract ClaimRewardsTest is BaseTest {
         vm.assertEq(_createdCampaign.to, _createBundle.to);
         vm.assertEq(_createdCampaign.specification, _createBundle.specification);
         vm.assertEq(_createdCampaign.root, bytes32(0));
-        vm.assertEq(_createdCampaign.rewards.length, 1);
-        vm.assertEq(_createdCampaign.rewards[0].token, address(_mintableErc20));
-        vm.assertEq(_createdCampaign.rewards[0].amount, 990 ether);
-        vm.assertEq(_createdCampaign.rewards[0].unclaimed, 990 ether);
+        vm.assertEq(metrom.campaignReward(_createdCampaignId, address(_mintableErc20)), 990 ether);
         vm.assertEq(_mintableErc20.balanceOf(address(metrom)), 1000 ether);
 
         // the following root is taken by constructing a tree
@@ -341,10 +338,7 @@ contract ClaimRewardsTest is BaseTest {
         vm.assertEq(_createdCampaign.to, _createBundle.to);
         vm.assertEq(_createdCampaign.specification, _createBundle.specification);
         vm.assertEq(_createdCampaign.root, bytes32(0));
-        vm.assertEq(_createdCampaign.rewards.length, 1);
-        vm.assertEq(_createdCampaign.rewards[0].token, address(_mintableErc20));
-        vm.assertEq(_createdCampaign.rewards[0].amount, 990 ether);
-        vm.assertEq(_createdCampaign.rewards[0].unclaimed, 990 ether);
+        vm.assertEq(metrom.campaignReward(_createdCampaignId, address(_mintableErc20)), 990 ether);
         vm.assertEq(_mintableErc20.balanceOf(address(metrom)), 1000 ether);
 
         // the following root is taken by constructing a tree
@@ -437,10 +431,7 @@ contract ClaimRewardsTest is BaseTest {
         vm.assertEq(_createdCampaign.to, _createBundle.to);
         vm.assertEq(_createdCampaign.specification, _createBundle.specification);
         vm.assertEq(_createdCampaign.root, bytes32(0));
-        vm.assertEq(_createdCampaign.rewards.length, 1);
-        vm.assertEq(_createdCampaign.rewards[0].token, address(_mintableErc20));
-        vm.assertEq(_createdCampaign.rewards[0].amount, 990 ether);
-        vm.assertEq(_createdCampaign.rewards[0].unclaimed, 990 ether);
+        vm.assertEq(metrom.campaignReward(_createdCampaignId, address(_mintableErc20)), 990 ether);
         vm.assertEq(_mintableErc20.balanceOf(address(metrom)), 1000 ether);
 
         // the following root is taken by constructing a tree

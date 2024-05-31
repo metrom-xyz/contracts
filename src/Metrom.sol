@@ -10,7 +10,6 @@ import {
     Campaign,
     Reward,
     ReadonlyCampaign,
-    ReadonlyReward,
     CreateBundle,
     DistributeRewardsBundle,
     ClaimRewardBundle,
@@ -116,6 +115,12 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         return campaign;
     }
 
+    function _getExistingCampaignReward(bytes32 _id, address _token) internal view returns (Reward storage) {
+        Reward storage reward = _getExistingCampaign(_id).reward[_token];
+        if (reward.amount == 0) revert NonExistentReward();
+        return reward;
+    }
+
     function _resolvedFee() internal view returns (uint32) {
         return uint32(uint64(fee) * (UNIT - feeRebate[msg.sender]) / UNIT);
     }
@@ -123,15 +128,6 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     /// @inheritdoc IMetrom
     function campaignById(bytes32 _id) external view override returns (ReadonlyCampaign memory) {
         Campaign storage campaign = _getExistingCampaign(_id);
-
-        uint256 _rewardsLength = campaign.rewards.length;
-        ReadonlyReward[] memory _rewards = new ReadonlyReward[](_rewardsLength);
-        for (uint256 _i = 0; _i < _rewardsLength; _i++) {
-            address _token = campaign.rewards[_i];
-            Reward storage reward = campaign.reward[_token];
-            _rewards[_i] = ReadonlyReward({token: _token, amount: reward.amount, unclaimed: reward.unclaimed});
-        }
-
         return ReadonlyCampaign({
             owner: campaign.owner,
             pendingOwner: campaign.pendingOwner,
@@ -140,9 +136,23 @@ contract Metrom is IMetrom, UUPSUpgradeable {
             from: campaign.from,
             to: campaign.to,
             specification: campaign.specification,
-            root: campaign.root,
-            rewards: _rewards
+            root: campaign.root
         });
+    }
+
+    /// @inheritdoc IMetrom
+    function campaignReward(bytes32 _id, address _token) external view override returns (uint256) {
+        return _getExistingCampaignReward(_id, _token).amount;
+    }
+
+    /// @inheritdoc IMetrom
+    function claimedCampaignReward(bytes32 _id, address _token, address _account)
+        external
+        view
+        override
+        returns (uint256)
+    {
+        return _getExistingCampaignReward(_id, _token).claimed[_account];
     }
 
     /// @inheritdoc IMetrom
@@ -175,7 +185,6 @@ contract Metrom is IMetrom, UUPSUpgradeable {
             campaign.from = _bundle.from;
             campaign.to = _bundle.to;
             campaign.specification = _bundle.specification;
-            campaign.rewards = _bundle.rewardTokens;
 
             uint256[] memory _feeAmounts = new uint256[](_bundle.rewardTokens.length);
             uint256[] memory _rewardAmountsMinusFees = new uint256[](_bundle.rewardTokens.length);
@@ -186,9 +195,9 @@ contract Metrom is IMetrom, UUPSUpgradeable {
                 uint256 _amount = _bundle.rewardAmounts[_j];
                 if (_amount == 0) revert InvalidRewards();
 
-                for (uint256 _k = _j + 1; _k < _bundle.rewardTokens.length; _k++) {
-                    if (_token == _bundle.rewardTokens[_k]) revert InvalidRewards();
-                }
+                uint256 _balanceBefore = IERC20(_token).balanceOf(address(this));
+                IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
+                _amount = IERC20(_token).balanceOf(address(this)) - _balanceBefore;
 
                 uint256 _feeAmount = _amount * _fee / UNIT;
                 uint256 _rewardAmountMinusFees = _amount - _feeAmount;
@@ -198,10 +207,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
                 _rewardAmountsMinusFees[_j] = _rewardAmountMinusFees;
 
                 Reward storage reward = campaign.reward[_token];
-                reward.amount = _rewardAmountMinusFees;
-                reward.unclaimed = _rewardAmountMinusFees;
-
-                IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
+                reward.amount += _rewardAmountMinusFees;
             }
 
             emit CreateCampaign(
@@ -248,10 +254,10 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         Reward storage reward = campaign.reward[_bundle.token];
         uint256 _claimAmount = _bundle.amount - reward.claimed[_claimOwner];
         if (_claimAmount == 0) revert ZeroAmount();
-        if (_claimAmount > reward.unclaimed) revert InvalidAmount();
+        if (_claimAmount > reward.amount) revert InvalidAmount();
 
         reward.claimed[_claimOwner] += _claimAmount;
-        reward.unclaimed -= _claimAmount;
+        reward.amount -= _claimAmount;
 
         IERC20(_bundle.token).safeTransfer(_bundle.receiver, _claimAmount);
 

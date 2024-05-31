@@ -11,12 +11,10 @@ uint32 constant MAX_FEE = 100_000;
 uint256 constant MAX_REWARDS_PER_CAMPAIGN = 5;
 
 /// @notice Represents a reward in the contract's state.
-/// It keeps track of the original reward amount after fees
-/// as well as the unclaimed (remaining) amount and a mapping
-/// of claimed amounts for each user.
+/// It keeps track of the remaining amount after fees
+/// as well as a mapping of claimed amounts for each user.
 struct Reward {
     uint256 amount;
-    uint256 unclaimed;
     mapping(address user => uint256 amount) claimed;
 }
 
@@ -39,16 +37,7 @@ struct Campaign {
     bytes32 specification;
     bytes32 root;
     bytes32 data;
-    address[] rewards;
     mapping(address token => Reward) reward;
-}
-
-/// @notice Represents a version of the reward entity that can be used in readonly, getter
-/// like functions.
-struct ReadonlyReward {
-    address token;
-    uint256 amount;
-    uint256 unclaimed;
 }
 
 /// @notice Represents a version of the campaign entity that can be used in readonly, getter
@@ -62,7 +51,6 @@ struct ReadonlyCampaign {
     uint32 to;
     bytes32 specification;
     bytes32 root;
-    ReadonlyReward[] rewards;
 }
 
 /// @notice Contains data that can be used by anyone to create a campaign.
@@ -285,6 +273,9 @@ interface IMetrom {
     /// @notice Thrown when a campaign that was required to exists does not exist.
     error NonExistentCampaign();
 
+    /// @notice Thrown when a campaign reward that was required to exists does not exist.
+    error NonExistentReward();
+
     /// @notice Thrown when trying to upgrade the contract while ossified.
     error Ossified();
 
@@ -351,6 +342,22 @@ interface IMetrom {
     /// @param id The wanted campaign id.
     /// @return campaign The campaign in readonly format.
     function campaignById(bytes32 id) external view returns (ReadonlyCampaign memory campaign);
+
+    /// @notice Returns the reward amount for a campaign and a reward token.
+    /// @param id The id of the campaign to query.
+    /// @param token The reward token to query.
+    /// @return reward The reward amount.
+    function campaignReward(bytes32 id, address token) external view returns (uint256 reward);
+
+    /// @notice Returns the amount of claimed reward token for a campaign and a user.
+    /// @param id The id of the campaign to query.
+    /// @param token The reward token to query.
+    /// @param account The claimer account.
+    /// @return claimed The claimed amount.
+    function claimedCampaignReward(bytes32 id, address token, address account)
+        external
+        view
+        returns (uint256 claimed);
 
     /// @notice Creates one or more campaigns. The transaction will revert even if one
     /// of the specified bundles results in a creation failure (all or none).
