@@ -29,7 +29,7 @@ contract AcceptCampaignOwnershipTest is BaseTest {
         vm.assertEq(metrom.campaignOwner(_campaignId), address(this));
 
         vm.expectEmit();
-        emit IMetrom.AcceptCampaignOwnership(_campaignId);
+        emit IMetrom.AcceptCampaignOwnership(_campaignId, _newOwner);
 
         vm.prank(_newOwner);
         metrom.acceptCampaignOwnership(_campaignId);
@@ -48,7 +48,7 @@ contract AcceptCampaignOwnershipTest is BaseTest {
         vm.assertEq(metrom.campaignOwner(_campaignId), address(this));
 
         vm.expectEmit();
-        emit IMetrom.AcceptCampaignOwnership(_campaignId);
+        emit IMetrom.AcceptCampaignOwnership(_campaignId, _newOwner);
 
         vm.prank(_newOwner);
         metrom.acceptCampaignOwnership(_campaignId);

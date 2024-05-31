@@ -194,7 +194,8 @@ interface IMetrom {
 
     /// @notice Emitted when a campaign's current pending owner accepts its ownership.
     /// @param id The targete campaign's id.
-    event AcceptCampaignOwnership(bytes32 indexed id);
+    /// @param owner The targete campaign's new owner.
+    event AcceptCampaignOwnership(bytes32 indexed id, address indexed owner);
 
     /// @notice Emitted when Metrom's ownership transfer is initiated.
     /// @param owner The new desired owner.
