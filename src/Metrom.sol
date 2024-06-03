@@ -11,6 +11,8 @@ import {
     Reward,
     ReadonlyCampaign,
     CreateBundle,
+    RewardAmount,
+    CreatedCampaignReward,
     DistributeRewardsBundle,
     SetMinimumRewardTokenRateBundle,
     ClaimRewardBundle,
@@ -107,8 +109,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
                 _bundle.from,
                 _bundle.to,
                 _bundle.specification,
-                _bundle.rewardTokens,
-                _bundle.rewardAmounts
+                _bundle.rewards
             )
         );
     }
@@ -173,10 +174,9 @@ contract Metrom is IMetrom, UUPSUpgradeable {
             if (_bundle.to < _bundle.from + _minimumCampaignDuration) revert InvalidTo();
             uint32 _duration = _bundle.to - _bundle.from;
             if (_duration > _maximumCampaignDuration) revert InvalidTo();
-            if (
-                _bundle.rewardTokens.length == 0 || _bundle.rewardTokens.length > MAX_REWARDS_PER_CAMPAIGN
-                    || _bundle.rewardTokens.length != _bundle.rewardAmounts.length
-            ) revert InvalidRewards();
+            if (_bundle.rewards.length == 0 || _bundle.rewards.length > MAX_REWARDS_PER_CAMPAIGN) {
+                revert InvalidRewards();
+            }
 
             bytes32 _id = _campaignId(_bundle);
             Campaign storage campaign = campaigns[_id];
@@ -189,13 +189,14 @@ contract Metrom is IMetrom, UUPSUpgradeable {
             campaign.to = _bundle.to;
             campaign.specification = _bundle.specification;
 
-            uint256[] memory _feeAmounts = new uint256[](_bundle.rewardTokens.length);
-            uint256[] memory _rewardAmountsMinusFees = new uint256[](_bundle.rewardTokens.length);
-            for (uint256 _j = 0; _j < _bundle.rewardTokens.length; _j++) {
-                address _token = _bundle.rewardTokens[_j];
+            CreatedCampaignReward[] memory _createdCampaignRewards = new CreatedCampaignReward[](_bundle.rewards.length);
+            for (uint256 _j = 0; _j < _bundle.rewards.length; _j++) {
+                RewardAmount memory _reward = _bundle.rewards[_j];
+
+                address _token = _reward.token;
                 if (_token == address(0)) revert InvalidRewards();
 
-                uint256 _amount = _bundle.rewardAmounts[_j];
+                uint256 _amount = _reward.amount;
                 if (_amount == 0) revert InvalidRewards();
 
                 {
@@ -214,8 +215,8 @@ contract Metrom is IMetrom, UUPSUpgradeable {
                 uint256 _rewardAmountMinusFees = _amount - _feeAmount;
                 claimableFees[_token] += _feeAmount;
 
-                _feeAmounts[_j] = _feeAmount;
-                _rewardAmountsMinusFees[_j] = _rewardAmountMinusFees;
+                _createdCampaignRewards[_j] =
+                    CreatedCampaignReward({token: _token, amount: _rewardAmountMinusFees, fee: _feeAmount});
 
                 Reward storage reward = campaign.reward[_token];
                 reward.amount += _rewardAmountMinusFees;
@@ -229,9 +230,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
                 _bundle.from,
                 _bundle.to,
                 _bundle.specification,
-                _bundle.rewardTokens,
-                _rewardAmountsMinusFees,
-                _feeAmounts
+                _createdCampaignRewards
             );
         }
     }

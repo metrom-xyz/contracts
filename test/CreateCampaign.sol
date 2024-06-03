@@ -3,7 +3,13 @@ pragma solidity 0.8.25;
 import {MetromHarness} from "./harnesses/MetromHarness.sol";
 import {BaseTest} from "./Base.t.sol";
 import {
-    MAX_FEE, UNIT, IMetrom, CreateBundle, SetMinimumRewardTokenRateBundle, ReadonlyCampaign
+    MAX_FEE,
+    UNIT,
+    IMetrom,
+    CreateBundle,
+    SetMinimumRewardTokenRateBundle,
+    ReadonlyCampaign,
+    RewardAmount
 } from "../src/IMetrom.sol";
 import {MintableERC20} from "./dependencies/MintableERC20.sol";
 import {MintableFeeOnTransferERC20} from "./dependencies/MintableFeeOnTransferERC20.sol";
@@ -16,17 +22,13 @@ contract CreateCampaignTest is BaseTest {
     }
 
     function test_failInvalidPool() public {
-        address[] memory _rewardTokens = new address[](0);
-        uint256[] memory _rewardAmounts = new uint256[](0);
-
         CreateBundle memory _bundle = CreateBundle({
             chainId: 1,
             pool: address(0),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens,
-            rewardAmounts: _rewardAmounts
+            rewards: new RewardAmount[](0)
         });
 
         CreateBundle[] memory _bundles = new CreateBundle[](1);
@@ -37,17 +39,13 @@ contract CreateCampaignTest is BaseTest {
     }
 
     function test_failInvalidFrom() public {
-        address[] memory _rewardTokens = new address[](0);
-        uint256[] memory _rewardAmounts = new uint256[](0);
-
         CreateBundle memory _bundle = CreateBundle({
             chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp),
             to: uint32(block.timestamp + 20),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens,
-            rewardAmounts: _rewardAmounts
+            rewards: new RewardAmount[](0)
         });
 
         CreateBundle[] memory _bundles = new CreateBundle[](1);
@@ -58,17 +56,13 @@ contract CreateCampaignTest is BaseTest {
     }
 
     function test_failInvalidToBeforeFrom() public {
-        address[] memory _rewardTokens = new address[](0);
-        uint256[] memory _rewardAmounts = new uint256[](0);
-
         CreateBundle memory _bundle = CreateBundle({
             chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 9),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens,
-            rewardAmounts: _rewardAmounts
+            rewards: new RewardAmount[](0)
         });
 
         CreateBundle[] memory _bundles = new CreateBundle[](1);
@@ -84,17 +78,13 @@ contract CreateCampaignTest is BaseTest {
         metrom.setMinimumCampaignDuration(_minimumCampaignDuration);
         vm.assertEq(metrom.minimumCampaignDuration(), _minimumCampaignDuration);
 
-        address[] memory _rewardTokens = new address[](0);
-        uint256[] memory _rewardAmounts = new uint256[](0);
-
         CreateBundle memory _bundle = CreateBundle({
             chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 10 + _minimumCampaignDuration - 1),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens,
-            rewardAmounts: _rewardAmounts
+            rewards: new RewardAmount[](0)
         });
 
         CreateBundle[] memory _bundles = new CreateBundle[](1);
@@ -110,17 +100,13 @@ contract CreateCampaignTest is BaseTest {
         metrom.setMaximumCampaignDuration(_maximumCampaignDuration);
         vm.assertEq(metrom.maximumCampaignDuration(), _maximumCampaignDuration);
 
-        address[] memory _rewardTokens = new address[](0);
-        uint256[] memory _rewardAmounts = new uint256[](0);
-
         CreateBundle memory _bundle = CreateBundle({
             chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 10 + _maximumCampaignDuration + 1),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens,
-            rewardAmounts: _rewardAmounts
+            rewards: new RewardAmount[](0)
         });
 
         CreateBundle[] memory _bundles = new CreateBundle[](1);
@@ -131,17 +117,13 @@ contract CreateCampaignTest is BaseTest {
     }
 
     function test_failNoRewards() public {
-        address[] memory _rewardTokens = new address[](0);
-        uint256[] memory _rewardAmounts = new uint256[](0);
-
         CreateBundle memory _bundle = CreateBundle({
             chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens,
-            rewardAmounts: _rewardAmounts
+            rewards: new RewardAmount[](0)
         });
 
         CreateBundle[] memory _bundles = new CreateBundle[](1);
@@ -152,38 +134,13 @@ contract CreateCampaignTest is BaseTest {
     }
 
     function test_failTooManyRewards() public {
-        address[] memory _rewardTokens = new address[](6);
-        uint256[] memory _rewardAmounts = new uint256[](0);
-
         CreateBundle memory _bundle = CreateBundle({
             chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens,
-            rewardAmounts: _rewardAmounts
-        });
-
-        CreateBundle[] memory _bundles = new CreateBundle[](1);
-        _bundles[0] = _bundle;
-
-        vm.expectRevert(IMetrom.InvalidRewards.selector);
-        metrom.createCampaigns(_bundles);
-    }
-
-    function test_failInconsistentTokensAndAmounts() public {
-        address[] memory _rewardTokens = new address[](3);
-        uint256[] memory _rewardAmounts = new uint256[](1);
-
-        CreateBundle memory _bundle = CreateBundle({
-            chainId: 1,
-            pool: address(1),
-            from: uint32(block.timestamp + 10),
-            to: uint32(block.timestamp + 20),
-            specification: bytes32(0),
-            rewardTokens: _rewardTokens,
-            rewardAmounts: _rewardAmounts
+            rewards: new RewardAmount[](6)
         });
 
         CreateBundle[] memory _bundles = new CreateBundle[](1);
@@ -199,11 +156,8 @@ contract CreateCampaignTest is BaseTest {
         _mintableErc20.approve(address(metrom), 10.1 ether);
         setMinimumRewardRate(address(_mintableErc20), 1);
 
-        address[] memory _rewardTokens = new address[](1);
-        _rewardTokens[0] = address(_mintableErc20);
-
-        uint256[] memory _rewardAmounts = new uint256[](1);
-        _rewardAmounts[0] = 10 ether;
+        RewardAmount[] memory _rewards = new RewardAmount[](1);
+        _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
 
         CreateBundle memory _bundle = CreateBundle({
             chainId: 1,
@@ -211,8 +165,7 @@ contract CreateCampaignTest is BaseTest {
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens,
-            rewardAmounts: _rewardAmounts
+            rewards: _rewards
         });
 
         CreateBundle[] memory _bundles = new CreateBundle[](1);
@@ -225,11 +178,8 @@ contract CreateCampaignTest is BaseTest {
     }
 
     function test_failZeroRewardAmount() public {
-        address[] memory _rewardTokens = new address[](1);
-        _rewardTokens[0] = address(1);
-
-        uint256[] memory _rewardAmounts = new uint256[](1);
-        _rewardAmounts[0] = 0;
+        RewardAmount[] memory _rewards = new RewardAmount[](1);
+        _rewards[0] = RewardAmount({token: address(1), amount: 0});
 
         CreateBundle memory _bundle = CreateBundle({
             chainId: 1,
@@ -237,8 +187,7 @@ contract CreateCampaignTest is BaseTest {
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens,
-            rewardAmounts: _rewardAmounts
+            rewards: _rewards
         });
 
         CreateBundle[] memory _bundles = new CreateBundle[](1);
@@ -249,11 +198,8 @@ contract CreateCampaignTest is BaseTest {
     }
 
     function test_failZeroAddressRewardToken() public {
-        address[] memory _rewardTokens = new address[](1);
-        _rewardTokens[0] = address(0);
-
-        uint256[] memory _rewardAmounts = new uint256[](1);
-        _rewardAmounts[0] = 10;
+        RewardAmount[] memory _rewards = new RewardAmount[](1);
+        _rewards[0] = RewardAmount({token: address(0), amount: 10});
 
         CreateBundle memory _bundle = CreateBundle({
             chainId: 1,
@@ -261,8 +207,7 @@ contract CreateCampaignTest is BaseTest {
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens,
-            rewardAmounts: _rewardAmounts
+            rewards: _rewards
         });
 
         CreateBundle[] memory _bundles = new CreateBundle[](1);
@@ -278,11 +223,8 @@ contract CreateCampaignTest is BaseTest {
         _mintableErc20.approve(address(metrom), 25 ether);
         vm.assertEq(_mintableErc20.balanceOf(address(this)), 25 ether);
 
-        address[] memory _rewardTokens = new address[](1);
-        _rewardTokens[0] = address(_mintableErc20);
-
-        uint256[] memory _rewardAmounts = new uint256[](1);
-        _rewardAmounts[0] = 25 ether;
+        RewardAmount[] memory _rewards = new RewardAmount[](1);
+        _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 25 ether});
 
         CreateBundle memory _bundle = CreateBundle({
             chainId: 1,
@@ -290,8 +232,7 @@ contract CreateCampaignTest is BaseTest {
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens,
-            rewardAmounts: _rewardAmounts
+            rewards: _rewards
         });
 
         CreateBundle[] memory _bundles = new CreateBundle[](1);
@@ -314,11 +255,8 @@ contract CreateCampaignTest is BaseTest {
 
         setMinimumRewardRate(address(_mintableErc20), 10 ether); // 10e18 / hour
 
-        address[] memory _rewardTokens = new address[](1);
-        _rewardTokens[0] = address(_mintableErc20);
-
-        uint256[] memory _rewardAmounts = new uint256[](1);
-        _rewardAmounts[0] = 5 ether;
+        RewardAmount[] memory _rewards = new RewardAmount[](1);
+        _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 5 ether});
 
         // creating a campaign lasting 1 hour with 5e18 reward tokens, which
         // is less than the minimum rate
@@ -328,8 +266,7 @@ contract CreateCampaignTest is BaseTest {
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 10 + 1 hours),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens,
-            rewardAmounts: _rewardAmounts
+            rewards: _rewards
         });
 
         CreateBundle[] memory _bundles = new CreateBundle[](1);
@@ -357,13 +294,9 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(_mintableErc202.balanceOf(address(this)), 18 ether);
         setMinimumRewardRate(address(_mintableErc202), 20 ether); // 20e18 / hour
 
-        address[] memory _rewardTokens = new address[](2);
-        _rewardTokens[0] = address(_mintableErc201);
-        _rewardTokens[1] = address(_mintableErc202);
-
-        uint256[] memory _rewardAmounts = new uint256[](2);
-        _rewardAmounts[0] = 10 ether;
-        _rewardAmounts[1] = 18 ether;
+        RewardAmount[] memory _rewards = new RewardAmount[](2);
+        _rewards[0] = RewardAmount({token: address(_mintableErc201), amount: 10 ether});
+        _rewards[1] = RewardAmount({token: address(_mintableErc202), amount: 18 ether});
 
         // creating a campaign lasting 1 hour with 10 reward tokens 1 (respecting the
         // minimum rate) and 18 reward tokens 2 (less than the minimum rate of 20/hr)
@@ -373,8 +306,7 @@ contract CreateCampaignTest is BaseTest {
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 10 + 1 hours),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens,
-            rewardAmounts: _rewardAmounts
+            rewards: _rewards
         });
 
         CreateBundle[] memory _bundles = new CreateBundle[](1);
@@ -396,11 +328,8 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(_mintableErc20.balanceOf(address(this)), 10 ether);
         setMinimumRewardRate(address(_mintableErc20), 1 ether); // 1e18 / hour
 
-        address[] memory _rewardTokens = new address[](1);
-        _rewardTokens[0] = address(_mintableErc20);
-
-        uint256[] memory _rewardAmounts = new uint256[](1);
-        _rewardAmounts[0] = 0.24 ether;
+        RewardAmount[] memory _rewards = new RewardAmount[](1);
+        _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 0.245 ether});
 
         // creating a campaign lasting 1 hour with 0.24 reward tokens 1
         // (less than the minimum rate of 1/hr)
@@ -410,8 +339,7 @@ contract CreateCampaignTest is BaseTest {
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 10 + 1 hours),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens,
-            rewardAmounts: _rewardAmounts
+            rewards: _rewards
         });
 
         CreateBundle[] memory _bundles = new CreateBundle[](1);
@@ -433,11 +361,8 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(_mintableErc20.balanceOf(address(this)), 0.25 ether);
         setMinimumRewardRate(address(_mintableErc20), 1 ether); // 1e18 / hour
 
-        address[] memory _rewardTokens = new address[](1);
-        _rewardTokens[0] = address(_mintableErc20);
-
-        uint256[] memory _rewardAmounts = new uint256[](1);
-        _rewardAmounts[0] = 0.25 ether;
+        RewardAmount[] memory _rewards = new RewardAmount[](1);
+        _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 0.25 ether});
 
         // creating a campaign lasting 15 minutes with 0.25 reward tokens 1
         // (enough to respect the minimum rate of 1/hr)
@@ -447,8 +372,7 @@ contract CreateCampaignTest is BaseTest {
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 10 + 15 minutes),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens,
-            rewardAmounts: _rewardAmounts
+            rewards: _rewards
         });
 
         CreateBundle[] memory _bundles = new CreateBundle[](1);
@@ -480,11 +404,8 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(_mintableFeeOnTransferErc20.balanceOf(address(this)), 10 ether);
         setMinimumRewardRate(address(_mintableFeeOnTransferErc20), 1);
 
-        address[] memory _rewardTokens = new address[](1);
-        _rewardTokens[0] = address(_mintableFeeOnTransferErc20);
-
-        uint256[] memory _rewardAmounts = new uint256[](1);
-        _rewardAmounts[0] = 10 ether;
+        RewardAmount[] memory _rewards = new RewardAmount[](1);
+        _rewards[0] = RewardAmount({token: address(_mintableFeeOnTransferErc20), amount: 10 ether});
 
         CreateBundle memory _bundle = CreateBundle({
             chainId: 1,
@@ -492,8 +413,7 @@ contract CreateCampaignTest is BaseTest {
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens,
-            rewardAmounts: _rewardAmounts
+            rewards: _rewards
         });
 
         CreateBundle[] memory _bundles = new CreateBundle[](1);
@@ -525,13 +445,9 @@ contract CreateCampaignTest is BaseTest {
 
         setMinimumRewardRate(address(_mintableErc20), 1);
 
-        address[] memory _rewardTokens = new address[](2);
-        _rewardTokens[0] = address(_mintableErc20);
-        _rewardTokens[1] = address(_mintableErc20);
-
-        uint256[] memory _rewardAmounts = new uint256[](2);
-        _rewardAmounts[0] = 10 ether;
-        _rewardAmounts[1] = 15 ether;
+        RewardAmount[] memory _rewards = new RewardAmount[](2);
+        _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
+        _rewards[1] = RewardAmount({token: address(_mintableErc20), amount: 15 ether});
 
         CreateBundle memory _bundle = CreateBundle({
             chainId: 1,
@@ -539,8 +455,7 @@ contract CreateCampaignTest is BaseTest {
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens,
-            rewardAmounts: _rewardAmounts
+            rewards: _rewards
         });
 
         CreateBundle[] memory _bundles = new CreateBundle[](1);
@@ -571,11 +486,8 @@ contract CreateCampaignTest is BaseTest {
 
         setMinimumRewardRate(address(_mintableErc20), 1);
 
-        address[] memory _rewardTokens = new address[](1);
-        _rewardTokens[0] = address(_mintableErc20);
-
-        uint256[] memory _rewardAmounts = new uint256[](1);
-        _rewardAmounts[0] = 10 ether;
+        RewardAmount[] memory _rewards = new RewardAmount[](1);
+        _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
 
         CreateBundle memory _bundle = CreateBundle({
             chainId: 1,
@@ -583,8 +495,7 @@ contract CreateCampaignTest is BaseTest {
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens,
-            rewardAmounts: _rewardAmounts
+            rewards: _rewards
         });
 
         CreateBundle[] memory _bundles = new CreateBundle[](1);
@@ -615,11 +526,8 @@ contract CreateCampaignTest is BaseTest {
 
         setMinimumRewardRate(address(_mintableErc20), 1);
 
-        address[] memory _rewardTokens = new address[](1);
-        _rewardTokens[0] = address(_mintableErc20);
-
-        uint256[] memory _rewardAmounts = new uint256[](1);
-        _rewardAmounts[0] = 10 ether;
+        RewardAmount[] memory _rewards = new RewardAmount[](1);
+        _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
 
         CreateBundle memory _bundle = CreateBundle({
             chainId: 1,
@@ -627,8 +535,7 @@ contract CreateCampaignTest is BaseTest {
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens,
-            rewardAmounts: _rewardAmounts
+            rewards: _rewards
         });
 
         CreateBundle[] memory _bundles = new CreateBundle[](1);
@@ -662,11 +569,8 @@ contract CreateCampaignTest is BaseTest {
 
         setMinimumRewardRate(address(_mintableErc20), 1);
 
-        address[] memory _rewardTokens1 = new address[](1);
-        _rewardTokens1[0] = address(_mintableErc20);
-
-        uint256[] memory _rewardAmounts1 = new uint256[](1);
-        _rewardAmounts1[0] = 10 ether;
+        RewardAmount[] memory _rewards1 = new RewardAmount[](1);
+        _rewards1[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
 
         CreateBundle memory _bundle1 = CreateBundle({
             chainId: 1,
@@ -674,15 +578,11 @@ contract CreateCampaignTest is BaseTest {
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens1,
-            rewardAmounts: _rewardAmounts1
+            rewards: _rewards1
         });
 
-        address[] memory _rewardTokens2 = new address[](1);
-        _rewardTokens2[0] = address(_mintableErc20);
-
-        uint256[] memory _rewardAmounts2 = new uint256[](1);
-        _rewardAmounts2[0] = 5 ether;
+        RewardAmount[] memory _rewards2 = new RewardAmount[](1);
+        _rewards2[0] = RewardAmount({token: address(_mintableErc20), amount: 5 ether});
 
         CreateBundle memory _bundle2 = CreateBundle({
             chainId: 2,
@@ -690,8 +590,7 @@ contract CreateCampaignTest is BaseTest {
             from: uint32(block.timestamp + 100),
             to: uint32(block.timestamp + 120),
             specification: bytes32("test-spec"),
-            rewardTokens: _rewardTokens2,
-            rewardAmounts: _rewardAmounts2
+            rewards: _rewards2
         });
 
         CreateBundle[] memory _bundles = new CreateBundle[](2);
@@ -743,13 +642,9 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(_mintableErc202.balanceOf(address(this)), 5 ether);
         setMinimumRewardRate(address(_mintableErc202), 1);
 
-        address[] memory _rewardTokens = new address[](2);
-        _rewardTokens[0] = address(_mintableErc201);
-        _rewardTokens[1] = address(_mintableErc202);
-
-        uint256[] memory _rewardAmounts = new uint256[](2);
-        _rewardAmounts[0] = 10 ether;
-        _rewardAmounts[1] = 5 ether;
+        RewardAmount[] memory _rewards = new RewardAmount[](2);
+        _rewards[0] = RewardAmount({token: address(_mintableErc201), amount: 10 ether});
+        _rewards[1] = RewardAmount({token: address(_mintableErc202), amount: 5 ether});
 
         CreateBundle memory _bundle = CreateBundle({
             chainId: 1,
@@ -757,8 +652,7 @@ contract CreateCampaignTest is BaseTest {
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens,
-            rewardAmounts: _rewardAmounts
+            rewards: _rewards
         });
 
         CreateBundle[] memory _bundles = new CreateBundle[](1);
@@ -798,13 +692,9 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(_mintableErc202.balanceOf(address(this)), 10 ether);
         setMinimumRewardRate(address(_mintableErc202), 1);
 
-        address[] memory _rewardTokens1 = new address[](2);
-        _rewardTokens1[0] = address(_mintableErc201);
-        _rewardTokens1[1] = address(_mintableErc202);
-
-        uint256[] memory _rewardAmounts1 = new uint256[](2);
-        _rewardAmounts1[0] = 10 ether;
-        _rewardAmounts1[1] = 5 ether;
+        RewardAmount[] memory _rewards = new RewardAmount[](2);
+        _rewards[0] = RewardAmount({token: address(_mintableErc201), amount: 10 ether});
+        _rewards[1] = RewardAmount({token: address(_mintableErc202), amount: 5 ether});
 
         CreateBundle memory _bundle1 = CreateBundle({
             chainId: 1,
@@ -812,17 +702,12 @@ contract CreateCampaignTest is BaseTest {
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens1,
-            rewardAmounts: _rewardAmounts1
+            rewards: _rewards
         });
 
-        address[] memory _rewardTokens2 = new address[](2);
-        _rewardTokens2[0] = address(_mintableErc201);
-        _rewardTokens2[1] = address(_mintableErc202);
-
-        uint256[] memory _rewardAmounts2 = new uint256[](2);
-        _rewardAmounts2[0] = 5 ether;
-        _rewardAmounts2[1] = 5 ether;
+        _rewards = new RewardAmount[](2);
+        _rewards[0] = RewardAmount({token: address(_mintableErc201), amount: 5 ether});
+        _rewards[1] = RewardAmount({token: address(_mintableErc202), amount: 5 ether});
 
         CreateBundle memory _bundle2 = CreateBundle({
             chainId: 1,
@@ -830,8 +715,7 @@ contract CreateCampaignTest is BaseTest {
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens2,
-            rewardAmounts: _rewardAmounts2
+            rewards: _rewards
         });
 
         CreateBundle[] memory _bundles = new CreateBundle[](2);

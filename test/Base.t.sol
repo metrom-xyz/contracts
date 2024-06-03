@@ -5,7 +5,7 @@ import {ERC1967Proxy} from "oz/proxy/ERC1967/ERC1967Proxy.sol";
 
 import {MintableERC20} from "./dependencies/MintableERC20.sol";
 import {MetromHarness} from "./harnesses/MetromHarness.sol";
-import {MAX_FEE, IMetrom, SetMinimumRewardTokenRateBundle, CreateBundle} from "../src/IMetrom.sol";
+import {MAX_FEE, IMetrom, SetMinimumRewardTokenRateBundle, CreateBundle, RewardAmount} from "../src/IMetrom.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 contract BaseTest is Test {
@@ -46,11 +46,8 @@ contract BaseTest is Test {
         vm.assertEq(_mintableErc20.balanceOf(address(this)), 10 ether);
         setMinimumRewardRate(address(_mintableErc20), 1);
 
-        address[] memory _rewardTokens = new address[](1);
-        _rewardTokens[0] = address(_mintableErc20);
-
-        uint256[] memory _rewardAmounts = new uint256[](1);
-        _rewardAmounts[0] = 10 ether;
+        RewardAmount[] memory _rewards = new RewardAmount[](1);
+        _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
 
         CreateBundle memory _createBundle = CreateBundle({
             chainId: 1,
@@ -58,8 +55,7 @@ contract BaseTest is Test {
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
             specification: bytes32(0),
-            rewardTokens: _rewardTokens,
-            rewardAmounts: _rewardAmounts
+            rewards: _rewards
         });
 
         CreateBundle[] memory _createBundles = new CreateBundle[](1);

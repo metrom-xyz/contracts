@@ -53,6 +53,17 @@ struct ReadonlyCampaign {
     bytes32 root;
 }
 
+struct RewardAmount {
+    address token;
+    uint256 amount;
+}
+
+struct CreatedCampaignReward {
+    address token;
+    uint256 amount;
+    uint256 fee;
+}
+
 /// @notice Contains data that can be used by anyone to create a campaign.
 struct CreateBundle {
     uint256 chainId;
@@ -60,8 +71,7 @@ struct CreateBundle {
     uint32 from;
     uint32 to;
     bytes32 specification;
-    address[] rewardTokens;
-    uint256[] rewardAmounts;
+    RewardAmount[] rewards;
 }
 
 /// @notice Contains data that can be used by the current `updater` to distribute rewards
@@ -128,9 +138,9 @@ interface IMetrom {
     /// @param from From when the campaign will run.
     /// @param to To when the campaign will run.
     /// @param specification The campaign's specification data hash.
-    /// @param rewardTokens A list of the reward token addresses deposited in the campaign.
-    /// @param rewardAmounts A list of the after-fees reward token amounts deposited in the campaign.
-    /// @param feeAmounts A list of the collected fee amounts amounts collected.
+    /// @param rewards A list of the reward tokens deposited in the campaign. Each list
+    /// item contains the used reward token address along with the after-fee amount and
+    /// the fee amount paid.
     event CreateCampaign(
         bytes32 indexed id,
         address indexed owner,
@@ -139,9 +149,7 @@ interface IMetrom {
         uint32 from,
         uint32 to,
         bytes32 specification,
-        address[] rewardTokens,
-        uint256[] rewardAmounts,
-        uint256[] feeAmounts
+        CreatedCampaignReward[] rewards
     );
 
     /// @notice Emitted when the updater distributes rewards on a campaign.
