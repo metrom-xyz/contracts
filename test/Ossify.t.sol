@@ -1,4 +1,4 @@
-pragma solidity 0.8.25;
+pragma solidity 0.8.26;
 
 import {ERC1967Proxy} from "oz/proxy/ERC1967/ERC1967Proxy.sol";
 import {Initializable} from "oz-up/proxy/utils/Initializable.sol";

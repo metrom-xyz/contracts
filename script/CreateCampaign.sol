@@ -1,4 +1,4 @@
-pragma solidity 0.8.25;
+pragma solidity 0.8.26;
 
 import {Script} from "forge-std/Script.sol";
 import {UNIT, IMetrom, CreateBundle, RewardAmount} from "../src/IMetrom.sol";

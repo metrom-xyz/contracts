@@ -1,4 +1,4 @@
-pragma solidity 0.8.25;
+pragma solidity 0.8.26;
 
 import {Metrom} from "../../src/Metrom.sol";
 import {Campaign, CreateBundle} from "../../src/IMetrom.sol";
