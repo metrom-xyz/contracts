@@ -5,7 +5,7 @@ import {ERC1967Proxy} from "oz/proxy/ERC1967/ERC1967Proxy.sol";
 
 import {MintableERC20} from "./dependencies/MintableERC20.sol";
 import {MetromHarness} from "./harnesses/MetromHarness.sol";
-import {MAX_FEE, IMetrom, CreateBundle} from "../src/IMetrom.sol";
+import {MAX_FEE, IMetrom, SetMinimumRewardTokenRateBundle, CreateBundle} from "../src/IMetrom.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 contract BaseTest is Test {
@@ -44,6 +44,7 @@ contract BaseTest is Test {
         _mintableErc20.mint(address(this), 10 ether);
         _mintableErc20.approve(address(metrom), 10 ether);
         vm.assertEq(_mintableErc20.balanceOf(address(this)), 10 ether);
+        setMinimumRewardRate(address(_mintableErc20), 1);
 
         address[] memory _rewardTokens = new address[](1);
         _rewardTokens[0] = address(_mintableErc20);
@@ -67,5 +68,21 @@ contract BaseTest is Test {
         metrom.createCampaigns(_createBundles);
 
         return metrom.campaignId(_createBundle);
+    }
+
+    // internal utility function to set a given minimum reward rate for a given token,
+    // optionally whitelisting it in the process
+    function setMinimumRewardRate(address _token, uint256 _newRate) internal {
+        SetMinimumRewardTokenRateBundle memory _minimumEmissionBundle =
+            SetMinimumRewardTokenRateBundle({token: _token, minimumRate: _newRate});
+        SetMinimumRewardTokenRateBundle[] memory _minimumEmissionBundles = new SetMinimumRewardTokenRateBundle[](1);
+        _minimumEmissionBundles[0] = _minimumEmissionBundle;
+
+        vm.assertEq(metrom.minimumRewardTokenRate(_token), 0);
+
+        vm.prank(updater);
+        metrom.setMinimumRewardTokenRates(_minimumEmissionBundles);
+
+        vm.assertEq(metrom.minimumRewardTokenRate(_token), _newRate);
     }
 }

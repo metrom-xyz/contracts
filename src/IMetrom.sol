@@ -72,6 +72,13 @@ struct DistributeRewardsBundle {
     bytes32 data;
 }
 
+/// @notice Contains data that can be used by the current `updater` or the `owner` to update
+/// the minimum required rate to be emitted in a campaign for a certain reward token.
+struct SetMinimumRewardTokenRateBundle {
+    address token;
+    uint256 minimumRate;
+}
+
 /// @notice Contains data that can be used by eligible LPs to claim rewards assigned to them
 /// on a campaign by specifying data necessary to build a valid Merkle leaf and an inclusion
 /// proof.
@@ -145,6 +152,13 @@ interface IMetrom {
     /// data used to contruct the campaign's Merkle tree and verify the Merkle root.
     event DistributeReward(bytes32 indexed campaignId, bytes32 root, bytes32 data);
 
+    /// @notice Emitted when the updater or the owner updates the minimum emission rate of a
+    /// certain whitelisted reward token required in order to create a campaign.
+    /// @param token The address of the whitelisted reward token to update.
+    /// @param minimumRate The new minimum rate required in order to create a
+    /// campaign.
+    event SetMinimumRewardTokenRate(address indexed token, uint256 minimumRate);
+
     /// @notice Emitted when an eligible LP claims a reward.
     /// @param campaignId The id of the campaign on which the claim is performed.
     /// @param token The claimed token.
@@ -211,6 +225,10 @@ interface IMetrom {
     /// @notice Thrown when trying to distribute rewards multiple times on the same
     /// campaign in the same transaction.
     error DuplicatedDistribution();
+
+    /// @notice Thrown when trying to set a minimum whitelisted reward rate multiple times
+    /// on the same reward token in the same transaction.
+    error DuplicatedMinimumRewardTokenRate();
 
     /// @notice Thrown when the desired operation's execution is forbidden to the caller.
     error Forbidden();
@@ -342,6 +360,13 @@ interface IMetrom {
     /// @return claimable The amount of the specified token that is currently claimable.
     function claimableFees(address token) external returns (uint256 claimable);
 
+    /// @notice Returns the minimum emission rate required in order to create a
+    /// campaign with the passed token. Returns 0 if the token is not whitelisted and it
+    /// cannot be used to create a campaign.
+    /// @param token The reward token's address.
+    /// @return minimumRate The reward token's minimum required emission rate.
+    function minimumRewardTokenRate(address token) external view returns (uint256 minimumRate);
+
     /// @notice Returns a campaign in readonly format.
     /// @param id The wanted campaign id.
     /// @return campaign The campaign in readonly format.
@@ -372,6 +397,12 @@ interface IMetrom {
     /// even if only one of the specified bundles results in a distribution failure (all or none).
     /// @param bundles The bundles containing the data used to distribute the rewards.
     function distributeRewards(DistributeRewardsBundle[] calldata bundles) external;
+
+    /// @notice Sets the minimum emission rate allowed for the given whitelisted reward
+    /// tokens to be used in a campaign.
+    /// @param bundles The bundles containing the data used to update the minimum whitelisted
+    /// reward token rates.
+    function setMinimumRewardTokenRates(SetMinimumRewardTokenRateBundle[] calldata bundles) external;
 
     /// @notice Claims outstanding rewards on one or more campaigns. The transaction will revert
     /// even if only one of the specified bundles results in a claim failure (all or none).

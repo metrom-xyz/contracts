@@ -12,6 +12,7 @@ import {
     ReadonlyCampaign,
     CreateBundle,
     DistributeRewardsBundle,
+    SetMinimumRewardTokenRateBundle,
     ClaimRewardBundle,
     ClaimFeeBundle,
     UNIT,
@@ -55,6 +56,9 @@ contract Metrom is IMetrom, UUPSUpgradeable {
 
     /// @inheritdoc IMetrom
     mapping(address token => uint256 amount) public override claimableFees;
+
+    /// @inheritdoc IMetrom
+    mapping(address token => uint256 minimumRate) public override minimumRewardTokenRate;
 
     constructor() {
         _disableInitializers();
@@ -166,10 +170,9 @@ contract Metrom is IMetrom, UUPSUpgradeable {
 
             if (_bundle.pool == address(0)) revert InvalidPool();
             if (_bundle.from <= block.timestamp) revert InvalidFrom();
-            if (
-                _bundle.to < _bundle.from + _minimumCampaignDuration
-                    || _bundle.to - _bundle.from > _maximumCampaignDuration
-            ) revert InvalidTo();
+            if (_bundle.to < _bundle.from + _minimumCampaignDuration) revert InvalidTo();
+            uint32 _duration = _bundle.to - _bundle.from;
+            if (_duration > _maximumCampaignDuration) revert InvalidTo();
             if (
                 _bundle.rewardTokens.length == 0 || _bundle.rewardTokens.length > MAX_REWARDS_PER_CAMPAIGN
                     || _bundle.rewardTokens.length != _bundle.rewardAmounts.length
@@ -194,6 +197,14 @@ contract Metrom is IMetrom, UUPSUpgradeable {
 
                 uint256 _amount = _bundle.rewardAmounts[_j];
                 if (_amount == 0) revert InvalidRewards();
+
+                {
+                    // avoids stack too deep
+                    uint256 _minimumRewardTokenRate = minimumRewardTokenRate[_token];
+                    if (_minimumRewardTokenRate == 0 || _amount * 1 hours / _duration < _minimumRewardTokenRate) {
+                        revert InvalidRewards();
+                    }
+                }
 
                 uint256 _balanceBefore = IERC20(_token).balanceOf(address(this));
                 IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
@@ -241,6 +252,22 @@ contract Metrom is IMetrom, UUPSUpgradeable {
             campaign.root = _bundle.root;
             campaign.data = _bundle.data;
             emit DistributeReward(_bundle.campaignId, _bundle.root, _bundle.data);
+        }
+    }
+
+    /// @inheritdoc IMetrom
+    function setMinimumRewardTokenRates(SetMinimumRewardTokenRateBundle[] calldata _bundles) external override {
+        if (msg.sender != updater) revert Forbidden();
+
+        for (uint256 _i; _i < _bundles.length; _i++) {
+            SetMinimumRewardTokenRateBundle calldata _bundle = _bundles[_i];
+            if (_bundle.token == address(0)) revert InvalidToken();
+            for (uint256 _j = _i + 1; _j < _bundles.length; _j++) {
+                if (_bundles[_i].token == _bundles[_j].token) revert DuplicatedMinimumRewardTokenRate();
+            }
+
+            minimumRewardTokenRate[_bundle.token] = _bundle.minimumRate;
+            emit SetMinimumRewardTokenRate(_bundle.token, _bundle.minimumRate);
         }
     }
 

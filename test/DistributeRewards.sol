@@ -77,6 +77,7 @@ contract DistributeRewardsTest is BaseTest {
         _mintableErc20.mint(address(this), 10.1 ether);
         _mintableErc20.approve(address(metrom), 10.1 ether);
         vm.assertEq(_mintableErc20.balanceOf(address(this)), 10.1 ether);
+        setMinimumRewardRate(address(_mintableErc20), 1);
 
         address[] memory _rewardTokens = new address[](1);
         _rewardTokens[0] = address(_mintableErc20);
