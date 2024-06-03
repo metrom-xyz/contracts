@@ -1,6 +1,7 @@
 import { execSync } from "node:child_process";
 import {
     appendFileSync,
+    existsSync,
     mkdirSync,
     readFileSync,
     rmSync,
@@ -29,8 +30,10 @@ const CURRENT_DIR = dirname(fileURLToPath(import.meta.url));
 console.log("Building contracts...");
 execSync("forge build", { stdio: "inherit" });
 
-console.log("Removing previous dist folder...");
-rmSync(join(CURRENT_DIR, "./dist"), { recursive: true });
+if (existsSync(join(CURRENT_DIR, "./dist"))) {
+    console.log("Removing previous dist folder...");
+    rmSync(join(CURRENT_DIR, "./dist"), { recursive: true });
+}
 
 console.log("Building library...");
 execSync("pnpm tsc", { stdio: "inherit" });
