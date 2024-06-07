@@ -211,7 +211,7 @@ contract CreateCampaignTest is BaseTest {
         setMinimumRewardRate(address(18266661), 1);
 
         RewardAmount[] memory _rewards = new RewardAmount[](1);
-        _rewards[0] = RewardAmount({token: address(18266661), amount: 10});
+        _rewards[0] = RewardAmount({token: address(0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE), amount: 10});
 
         CreateBundle memory _bundle = CreateBundle({
             pool: address(1),
