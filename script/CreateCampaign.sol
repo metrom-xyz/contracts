@@ -21,14 +21,8 @@ contract CreateCampaign is Script {
         RewardAmount[] memory _rewards = new RewardAmount[](1);
         _rewards[0] = RewardAmount({token: _rewardToken, amount: _rewardAmount});
 
-        CreateBundle memory _bundle = CreateBundle({
-            chainId: _chainId,
-            pool: _pool,
-            from: _from,
-            to: _to,
-            specification: _specification,
-            rewards: _rewards
-        });
+        CreateBundle memory _bundle =
+            CreateBundle({pool: _pool, from: _from, to: _to, specification: _specification, rewards: _rewards});
 
         CreateBundle[] memory _bundles = new CreateBundle[](1);
         _bundles[0] = _bundle;

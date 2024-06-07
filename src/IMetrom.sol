@@ -18,9 +18,8 @@ struct Reward {
     mapping(address user => uint256 amount) claimed;
 }
 
-/// @notice Represents a campaign in the contract's state, with its owner,
-/// target chain id, target pool, running period, specification, root and data links,
-/// as well as rewards information.
+/// @notice Represents a campaign in the contract's state, with its owner, target pool,
+/// running period, specification, root and data links, as well as rewards information.
 /// A particular note must be made for the `specification` and `data` fields. These can
 /// optionally contain a SHA256 hash of some JSON content stored on IPFS such that a CID
 /// can be constructed from them. `specification` can point to an IPFS JSON file with
@@ -30,7 +29,6 @@ struct Reward {
 struct Campaign {
     address owner;
     address pendingOwner;
-    uint256 chainId;
     address pool;
     uint32 from;
     uint32 to;
@@ -45,7 +43,6 @@ struct Campaign {
 struct ReadonlyCampaign {
     address owner;
     address pendingOwner;
-    uint256 chainId;
     address pool;
     uint32 from;
     uint32 to;
@@ -66,7 +63,6 @@ struct CreatedCampaignReward {
 
 /// @notice Contains data that can be used by anyone to create a campaign.
 struct CreateBundle {
-    uint256 chainId;
     address pool;
     uint32 from;
     uint32 to;
@@ -133,7 +129,6 @@ interface IMetrom {
     /// @notice Emitted when a campaign is created.
     /// @param id The id of the campaign.
     /// @param owner The initial owner of the campaign.
-    /// @param chainId The targeted chain id of the campaign.
     /// @param pool The targeted pool address of the campaign.
     /// @param from From when the campaign will run.
     /// @param to To when the campaign will run.
@@ -144,7 +139,6 @@ interface IMetrom {
     event CreateCampaign(
         bytes32 indexed id,
         address indexed owner,
-        uint256 chainId,
         address pool,
         uint32 from,
         uint32 to,

@@ -23,7 +23,6 @@ contract CreateCampaignTest is BaseTest {
 
     function test_failInvalidPool() public {
         CreateBundle memory _bundle = CreateBundle({
-            chainId: 1,
             pool: address(0),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -40,7 +39,6 @@ contract CreateCampaignTest is BaseTest {
 
     function test_failInvalidFrom() public {
         CreateBundle memory _bundle = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp),
             to: uint32(block.timestamp + 20),
@@ -57,7 +55,6 @@ contract CreateCampaignTest is BaseTest {
 
     function test_failInvalidToBeforeFrom() public {
         CreateBundle memory _bundle = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 9),
@@ -79,7 +76,6 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(metrom.minimumCampaignDuration(), _minimumCampaignDuration);
 
         CreateBundle memory _bundle = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 10 + _minimumCampaignDuration - 1),
@@ -101,7 +97,6 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(metrom.maximumCampaignDuration(), _maximumCampaignDuration);
 
         CreateBundle memory _bundle = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 10 + _maximumCampaignDuration + 1),
@@ -118,7 +113,6 @@ contract CreateCampaignTest is BaseTest {
 
     function test_failNoRewards() public {
         CreateBundle memory _bundle = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -135,7 +129,6 @@ contract CreateCampaignTest is BaseTest {
 
     function test_failTooManyRewards() public {
         CreateBundle memory _bundle = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -160,7 +153,6 @@ contract CreateCampaignTest is BaseTest {
         _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
 
         CreateBundle memory _bundle = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -182,7 +174,6 @@ contract CreateCampaignTest is BaseTest {
         _rewards[0] = RewardAmount({token: address(1), amount: 0});
 
         CreateBundle memory _bundle = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -202,7 +193,6 @@ contract CreateCampaignTest is BaseTest {
         _rewards[0] = RewardAmount({token: address(0), amount: 10});
 
         CreateBundle memory _bundle = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -224,7 +214,6 @@ contract CreateCampaignTest is BaseTest {
         _rewards[0] = RewardAmount({token: address(18266661), amount: 10});
 
         CreateBundle memory _bundle = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -249,7 +238,6 @@ contract CreateCampaignTest is BaseTest {
         _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 25 ether});
 
         CreateBundle memory _bundle = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -283,7 +271,6 @@ contract CreateCampaignTest is BaseTest {
         // creating a campaign lasting 1 hour with 5e18 reward tokens, which
         // is less than the minimum rate
         CreateBundle memory _bundle = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 10 + 1 hours),
@@ -323,7 +310,6 @@ contract CreateCampaignTest is BaseTest {
         // creating a campaign lasting 1 hour with 10 reward tokens 1 (respecting the
         // minimum rate) and 18 reward tokens 2 (less than the minimum rate of 20/hr)
         CreateBundle memory _bundle = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 10 + 1 hours),
@@ -356,7 +342,6 @@ contract CreateCampaignTest is BaseTest {
         // creating a campaign lasting 1 hour with 0.24 reward tokens 1
         // (less than the minimum rate of 1/hr)
         CreateBundle memory _bundle = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 10 + 1 hours),
@@ -389,7 +374,6 @@ contract CreateCampaignTest is BaseTest {
         // creating a campaign lasting 15 minutes with 0.25 reward tokens 1
         // (enough to respect the minimum rate of 1/hr)
         CreateBundle memory _bundle = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 10 + 15 minutes),
@@ -408,7 +392,6 @@ contract CreateCampaignTest is BaseTest {
         bytes32 _createdCampaignId = metrom.campaignId(_bundle);
         ReadonlyCampaign memory _createdCampaign = metrom.campaignById(_createdCampaignId);
 
-        vm.assertEq(_createdCampaign.chainId, _bundle.chainId);
         vm.assertEq(_createdCampaign.pool, _bundle.pool);
         vm.assertEq(_createdCampaign.from, _bundle.from);
         vm.assertEq(_createdCampaign.to, _bundle.to);
@@ -430,7 +413,6 @@ contract CreateCampaignTest is BaseTest {
         _rewards[0] = RewardAmount({token: address(_mintableFeeOnTransferErc20), amount: 10 ether});
 
         CreateBundle memory _bundle = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -450,7 +432,6 @@ contract CreateCampaignTest is BaseTest {
         bytes32 _createdCampaignId = metrom.campaignId(_bundle);
         ReadonlyCampaign memory _createdCampaign = metrom.campaignById(_createdCampaignId);
 
-        vm.assertEq(_createdCampaign.chainId, _bundle.chainId);
         vm.assertEq(_createdCampaign.pool, _bundle.pool);
         vm.assertEq(_createdCampaign.from, _bundle.from);
         vm.assertEq(_createdCampaign.to, _bundle.to);
@@ -472,7 +453,6 @@ contract CreateCampaignTest is BaseTest {
         _rewards[1] = RewardAmount({token: address(_mintableErc20), amount: 15 ether});
 
         CreateBundle memory _bundle = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -491,7 +471,6 @@ contract CreateCampaignTest is BaseTest {
         bytes32 _createdCampaignId = metrom.campaignId(_bundle);
         ReadonlyCampaign memory _createdCampaign = metrom.campaignById(_createdCampaignId);
 
-        vm.assertEq(_createdCampaign.chainId, _bundle.chainId);
         vm.assertEq(_createdCampaign.pool, _bundle.pool);
         vm.assertEq(_createdCampaign.from, _bundle.from);
         vm.assertEq(_createdCampaign.to, _bundle.to);
@@ -512,7 +491,6 @@ contract CreateCampaignTest is BaseTest {
         _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
 
         CreateBundle memory _bundle = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -531,7 +509,6 @@ contract CreateCampaignTest is BaseTest {
         bytes32 _createdCampaignId = metrom.campaignId(_bundle);
         ReadonlyCampaign memory _createdCampaign = metrom.campaignById(_createdCampaignId);
 
-        vm.assertEq(_createdCampaign.chainId, _bundle.chainId);
         vm.assertEq(_createdCampaign.pool, _bundle.pool);
         vm.assertEq(_createdCampaign.from, _bundle.from);
         vm.assertEq(_createdCampaign.to, _bundle.to);
@@ -552,7 +529,6 @@ contract CreateCampaignTest is BaseTest {
         _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
 
         CreateBundle memory _bundle = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -574,7 +550,6 @@ contract CreateCampaignTest is BaseTest {
         bytes32 _createdCampaignId = metrom.campaignId(_bundle);
         ReadonlyCampaign memory _createdCampaign = metrom.campaignById(_createdCampaignId);
 
-        vm.assertEq(_createdCampaign.chainId, _bundle.chainId);
         vm.assertEq(_createdCampaign.pool, _bundle.pool);
         vm.assertEq(_createdCampaign.from, _bundle.from);
         vm.assertEq(_createdCampaign.to, _bundle.to);
@@ -595,7 +570,6 @@ contract CreateCampaignTest is BaseTest {
         _rewards1[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
 
         CreateBundle memory _bundle1 = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -607,7 +581,6 @@ contract CreateCampaignTest is BaseTest {
         _rewards2[0] = RewardAmount({token: address(_mintableErc20), amount: 5 ether});
 
         CreateBundle memory _bundle2 = CreateBundle({
-            chainId: 2,
             pool: address(2),
             from: uint32(block.timestamp + 100),
             to: uint32(block.timestamp + 120),
@@ -628,7 +601,6 @@ contract CreateCampaignTest is BaseTest {
             bytes32 _createdCampaignId1 = metrom.campaignId(_bundle1);
             ReadonlyCampaign memory _createdCampaign1 = metrom.campaignById(_createdCampaignId1);
 
-            vm.assertEq(_createdCampaign1.chainId, _bundle1.chainId);
             vm.assertEq(_createdCampaign1.pool, _bundle1.pool);
             vm.assertEq(_createdCampaign1.from, _bundle1.from);
             vm.assertEq(_createdCampaign1.to, _bundle1.to);
@@ -641,7 +613,6 @@ contract CreateCampaignTest is BaseTest {
             bytes32 _createdCampaignId2 = metrom.campaignId(_bundle2);
             ReadonlyCampaign memory _createdCampaign2 = metrom.campaignById(_createdCampaignId2);
 
-            vm.assertEq(_createdCampaign2.chainId, _bundle2.chainId);
             vm.assertEq(_createdCampaign2.pool, _bundle2.pool);
             vm.assertEq(_createdCampaign2.from, _bundle2.from);
             vm.assertEq(_createdCampaign2.to, _bundle2.to);
@@ -669,7 +640,6 @@ contract CreateCampaignTest is BaseTest {
         _rewards[1] = RewardAmount({token: address(_mintableErc202), amount: 5 ether});
 
         CreateBundle memory _bundle = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -691,7 +661,6 @@ contract CreateCampaignTest is BaseTest {
         bytes32 _createdCampaignId = metrom.campaignId(_bundle);
         ReadonlyCampaign memory _createdCampaign = metrom.campaignById(_createdCampaignId);
 
-        vm.assertEq(_createdCampaign.chainId, _bundle.chainId);
         vm.assertEq(_createdCampaign.pool, _bundle.pool);
         vm.assertEq(_createdCampaign.from, _bundle.from);
         vm.assertEq(_createdCampaign.to, _bundle.to);
@@ -719,7 +688,6 @@ contract CreateCampaignTest is BaseTest {
         _rewards[1] = RewardAmount({token: address(_mintableErc202), amount: 5 ether});
 
         CreateBundle memory _bundle1 = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -732,7 +700,6 @@ contract CreateCampaignTest is BaseTest {
         _rewards[1] = RewardAmount({token: address(_mintableErc202), amount: 5 ether});
 
         CreateBundle memory _bundle2 = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -756,7 +723,6 @@ contract CreateCampaignTest is BaseTest {
             bytes32 _createdCampaignId1 = metrom.campaignId(_bundle1);
             ReadonlyCampaign memory _createdCampaign1 = metrom.campaignById(_createdCampaignId1);
 
-            vm.assertEq(_createdCampaign1.chainId, _bundle1.chainId);
             vm.assertEq(_createdCampaign1.pool, _bundle1.pool);
             vm.assertEq(_createdCampaign1.from, _bundle1.from);
             vm.assertEq(_createdCampaign1.to, _bundle1.to);
@@ -770,7 +736,6 @@ contract CreateCampaignTest is BaseTest {
             bytes32 _createdCampaignId2 = metrom.campaignId(_bundle2);
             ReadonlyCampaign memory _createdCampaign2 = metrom.campaignById(_createdCampaignId2);
 
-            vm.assertEq(_createdCampaign2.chainId, _bundle2.chainId);
             vm.assertEq(_createdCampaign2.pool, _bundle2.pool);
             vm.assertEq(_createdCampaign2.from, _bundle2.from);
             vm.assertEq(_createdCampaign2.to, _bundle2.to);

@@ -50,7 +50,6 @@ contract BaseTest is Test {
         _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
 
         CreateBundle memory _createBundle = CreateBundle({
-            chainId: 1,
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),

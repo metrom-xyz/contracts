@@ -102,15 +102,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
 
     function _campaignId(CreateBundle memory _bundle) internal view returns (bytes32) {
         return keccak256(
-            abi.encode(
-                msg.sender,
-                _bundle.chainId,
-                _bundle.pool,
-                _bundle.from,
-                _bundle.to,
-                _bundle.specification,
-                _bundle.rewards
-            )
+            abi.encode(msg.sender, _bundle.pool, _bundle.from, _bundle.to, _bundle.specification, _bundle.rewards)
         );
     }
 
@@ -136,7 +128,6 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         return ReadonlyCampaign({
             owner: campaign.owner,
             pendingOwner: campaign.pendingOwner,
-            chainId: campaign.chainId,
             pool: campaign.pool,
             from: campaign.from,
             to: campaign.to,
@@ -183,7 +174,6 @@ contract Metrom is IMetrom, UUPSUpgradeable {
             if (campaign.from != 0) revert CampaignAlreadyExists();
 
             campaign.owner = msg.sender;
-            campaign.chainId = _bundle.chainId;
             campaign.pool = _bundle.pool;
             campaign.from = _bundle.from;
             campaign.to = _bundle.to;
@@ -223,14 +213,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
             }
 
             emit CreateCampaign(
-                _id,
-                msg.sender,
-                _bundle.chainId,
-                _bundle.pool,
-                _bundle.from,
-                _bundle.to,
-                _bundle.specification,
-                _createdCampaignRewards
+                _id, msg.sender, _bundle.pool, _bundle.from, _bundle.to, _bundle.specification, _createdCampaignRewards
             );
         }
     }
