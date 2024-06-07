@@ -7,11 +7,9 @@ contract MintableFeeOnTransferERC20 is ERC20 {
     uint32 public fee;
     address public recipient;
 
-    error InvalidFee();
     error InvalidRecipient();
 
     constructor(string memory _name, string memory _symbol, uint32 _fee, address _recipient) ERC20(_name, _symbol) {
-        if (_fee > MAX_FEE) revert InvalidFee();
         if (_recipient == address(0)) revert InvalidRecipient();
         fee = _fee;
         recipient = _recipient;

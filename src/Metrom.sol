@@ -200,6 +200,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
                 uint256 _balanceBefore = IERC20(_token).balanceOf(address(this));
                 IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
                 _amount = IERC20(_token).balanceOf(address(this)) - _balanceBefore;
+                if (_amount == 0) revert InvalidRewards();
 
                 uint256 _feeAmount = _amount * _fee / UNIT;
                 uint256 _rewardAmountMinusFees = _amount - _feeAmount;

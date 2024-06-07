@@ -400,6 +400,33 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(metrom.campaignReward(_createdCampaignId, address(_mintableErc20)), 0.2475 ether);
     }
 
+    function test_failFeeOnTransferZeroAmountAfterFees() public {
+        address _feeOnTransferReceiver = address(55555);
+        MintableFeeOnTransferERC20 _mintableFeeOnTransferErc20 =
+            new MintableFeeOnTransferERC20("Test", "TST", UNIT, _feeOnTransferReceiver);
+        _mintableFeeOnTransferErc20.mint(address(this), 10 ether);
+        _mintableFeeOnTransferErc20.approve(address(metrom), 10 ether);
+        vm.assertEq(_mintableFeeOnTransferErc20.balanceOf(address(this)), 10 ether);
+        setMinimumRewardRate(address(_mintableFeeOnTransferErc20), 1);
+
+        RewardAmount[] memory _rewards = new RewardAmount[](1);
+        _rewards[0] = RewardAmount({token: address(_mintableFeeOnTransferErc20), amount: 10 ether});
+
+        CreateBundle memory _bundle = CreateBundle({
+            pool: address(1),
+            from: uint32(block.timestamp + 10),
+            to: uint32(block.timestamp + 20),
+            specification: bytes32(0),
+            rewards: _rewards
+        });
+
+        CreateBundle[] memory _bundles = new CreateBundle[](1);
+        _bundles[0] = _bundle;
+
+        vm.expectRevert(IMetrom.InvalidRewards.selector);
+        metrom.createCampaigns(_bundles);
+    }
+
     function test_successSingleRewardFeeOnTransfer() public {
         address _feeOnTransferReceiver = address(55555);
         MintableFeeOnTransferERC20 _mintableFeeOnTransferErc20 =

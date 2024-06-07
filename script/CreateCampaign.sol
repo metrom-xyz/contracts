@@ -8,7 +8,6 @@ import {IERC20} from "oz/token/ERC20/IERC20.sol";
 contract CreateCampaign is Script {
     function run(
         address _metrom,
-        uint256 _chainId,
         address _pool,
         uint32 _from,
         uint32 _to,
