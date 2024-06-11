@@ -8,11 +8,11 @@ export enum SupportedChain {
 
 export const ADDRESS: Record<SupportedChain, ChainContract> = {
     [SupportedChain.Holesky]: {
-        address: "0x10E1A22034C5AF1E793c2Ac189b90ca47b252fF9",
-        blockCreated: 1663871,
+        address: "0xd1c1153fd809Aae3bb431b586C032C4856abaeD4",
+        blockCreated: 1715203,
     },
     [SupportedChain.CeloAlfajores]: {
-        address: "0x6DE23781114530cfE5606b1B8Ad5698696EdFf23",
-        blockCreated: 24427676,
+        address: "0xDDD3e99f11488290Ff07BAe128Bd6D23362f2455",
+        blockCreated: 24543646,
     },
 };
