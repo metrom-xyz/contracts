@@ -2,7 +2,7 @@ pragma solidity 0.8.26;
 
 import {MetromHarness} from "./harnesses/MetromHarness.sol";
 import {BaseTest} from "./Base.t.sol";
-import {MAX_FEE, IMetrom} from "../src/IMetrom.sol";
+import {IMetrom} from "../src/IMetrom.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 contract SetCampaignsUpdaterTest is BaseTest {
@@ -11,8 +11,8 @@ contract SetCampaignsUpdaterTest is BaseTest {
         metrom.setCampaignsUpdater(address(20));
     }
 
-    function test_failInvalidUpdater() public {
-        vm.expectRevert(IMetrom.InvalidCampaignsUpdater.selector);
+    function test_failZeroAddressCampaignsUpdater() public {
+        vm.expectRevert(IMetrom.ZeroAddressCampaignsUpdater.selector);
         vm.prank(owner);
         metrom.setCampaignsUpdater(address(0));
     }

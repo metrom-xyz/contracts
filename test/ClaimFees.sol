@@ -2,7 +2,6 @@ pragma solidity 0.8.26;
 
 import {MetromHarness} from "./harnesses/MetromHarness.sol";
 import {BaseTest} from "./Base.t.sol";
-import {MAX_FEE} from "../src/Metrom.sol";
 import {IMetrom, CreateBundle, ClaimFeeBundle, ReadonlyCampaign, RewardAmount} from "../src/IMetrom.sol";
 import {MintableERC20} from "./dependencies/MintableERC20.sol";
 
@@ -20,24 +19,24 @@ contract CollectFeesTest is BaseTest {
         metrom.claimFees(_bundles);
     }
 
-    function test_failInvalidToken() public {
+    function test_failZeroAddressRewardToken() public {
         ClaimFeeBundle memory _bundle = ClaimFeeBundle({token: address(0), receiver: address(0)});
 
         ClaimFeeBundle[] memory _bundles = new ClaimFeeBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.expectRevert(IMetrom.InvalidToken.selector);
+        vm.expectRevert(IMetrom.ZeroAddressRewardToken.selector);
         vm.prank(owner);
         metrom.claimFees(_bundles);
     }
 
-    function test_failInvalidReceiver() public {
+    function test_failZeroAddressReceiver() public {
         ClaimFeeBundle memory _bundle = ClaimFeeBundle({token: address(1), receiver: address(0)});
 
         ClaimFeeBundle[] memory _bundles = new ClaimFeeBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.expectRevert(IMetrom.InvalidReceiver.selector);
+        vm.expectRevert(IMetrom.ZeroAddressReceiver.selector);
         vm.prank(owner);
         metrom.claimFees(_bundles);
     }

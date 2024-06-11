@@ -18,7 +18,6 @@ import {
     ClaimRewardBundle,
     ClaimFeeBundle,
     UNIT,
-    MAX_FEE,
     MAX_REWARDS_PER_CAMPAIGN
 } from "./IMetrom.sol";
 
@@ -78,10 +77,10 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         uint32 _minimumCampaignDuration,
         uint32 _maximumCampaignDuration
     ) external override initializer {
-        if (_owner == address(0)) revert InvalidOwner();
-        if (_campaignsUpdater == address(0)) revert InvalidCampaignsUpdater();
-        if (_ratesUpdater == address(0)) revert InvalidRatesUpdater();
-        if (_fee > MAX_FEE) revert InvalidFee();
+        if (_owner == address(0)) revert ZeroAddressOwner();
+        if (_campaignsUpdater == address(0)) revert ZeroAddressCampaignsUpdater();
+        if (_ratesUpdater == address(0)) revert ZeroAddressRatesUpdater();
+        if (_fee >= UNIT) revert InvalidFee();
         if (_minimumCampaignDuration >= _maximumCampaignDuration) revert InvalidMinimumCampaignDuration();
 
         owner = _owner;
@@ -168,18 +167,17 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         for (uint256 _i = 0; _i < _bundles.length; _i++) {
             CreateBundle memory _bundle = _bundles[_i];
 
-            if (_bundle.pool == address(0)) revert InvalidPool();
-            if (_bundle.from <= block.timestamp) revert InvalidFrom();
-            if (_bundle.to < _bundle.from + _minimumCampaignDuration) revert InvalidTo();
+            if (_bundle.pool == address(0)) revert ZeroAddressPool();
+            if (_bundle.from <= block.timestamp) revert StartTimeInThePast();
+            if (_bundle.to < _bundle.from + _minimumCampaignDuration) revert DurationTooShort();
             uint32 _duration = _bundle.to - _bundle.from;
-            if (_duration > _maximumCampaignDuration) revert InvalidTo();
-            if (_bundle.rewards.length == 0 || _bundle.rewards.length > MAX_REWARDS_PER_CAMPAIGN) {
-                revert InvalidRewards();
-            }
+            if (_duration > _maximumCampaignDuration) revert DurationTooLong();
+            if (_bundle.rewards.length == 0) revert NoRewards();
+            if (_bundle.rewards.length > MAX_REWARDS_PER_CAMPAIGN) revert TooManyRewards();
 
             bytes32 _id = _campaignId(_bundle);
             Campaign storage campaign = campaigns[_id];
-            if (campaign.from != 0) revert CampaignAlreadyExists();
+            if (campaign.from != 0) revert AlreadyExists();
 
             campaign.owner = msg.sender;
             campaign.pool = _bundle.pool;
@@ -192,23 +190,22 @@ contract Metrom is IMetrom, UUPSUpgradeable {
                 RewardAmount memory _reward = _bundle.rewards[_j];
 
                 address _token = _reward.token;
-                if (_token == address(0)) revert InvalidRewards();
+                if (_token == address(0)) revert ZeroAddressRewardToken();
 
                 uint256 _amount = _reward.amount;
-                if (_amount == 0) revert InvalidRewards();
+                if (_amount == 0) revert ZeroRewardAmount();
 
                 {
                     // avoids stack too deep
                     uint256 _minimumRewardTokenRate = minimumRewardTokenRate[_token];
-                    if (_minimumRewardTokenRate == 0 || _amount * 1 hours / _duration < _minimumRewardTokenRate) {
-                        revert InvalidRewards();
-                    }
+                    if (_minimumRewardTokenRate == 0) revert DisallowedRewardToken();
+                    if (_amount * 1 hours / _duration < _minimumRewardTokenRate) revert RewardAmountTooLow();
                 }
 
                 uint256 _balanceBefore = IERC20(_token).balanceOf(address(this));
                 IERC20(_token).safeTransferFrom(msg.sender, address(this), _amount);
                 _amount = IERC20(_token).balanceOf(address(this)) - _balanceBefore;
-                if (_amount == 0) revert InvalidRewards();
+                if (_amount == 0) revert ZeroRewardAmount();
 
                 uint256 _feeAmount = _amount * _fee / UNIT;
                 uint256 _rewardAmountMinusFees = _amount - _feeAmount;
@@ -233,8 +230,8 @@ contract Metrom is IMetrom, UUPSUpgradeable {
 
         for (uint256 _i; _i < _bundles.length; _i++) {
             DistributeRewardsBundle calldata _bundle = _bundles[_i];
-            if (_bundle.root == bytes32(0)) revert InvalidRoot();
-            if (_bundle.data == bytes32(0)) revert InvalidData();
+            if (_bundle.root == bytes32(0)) revert ZeroRoot();
+            if (_bundle.data == bytes32(0)) revert ZeroData();
             for (uint256 _j = _i + 1; _j < _bundles.length; _j++) {
                 if (_bundles[_i].campaignId == _bundles[_j].campaignId) revert DuplicatedDistribution();
             }
@@ -252,7 +249,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
 
         for (uint256 _i; _i < _bundles.length; _i++) {
             SetMinimumRewardTokenRateBundle calldata _bundle = _bundles[_i];
-            if (_bundle.token == address(0)) revert InvalidToken();
+            if (_bundle.token == address(0)) revert ZeroAddressRewardToken();
             for (uint256 _j = _i + 1; _j < _bundles.length; _j++) {
                 if (_bundles[_i].token == _bundles[_j].token) revert DuplicatedMinimumRewardTokenRate();
             }
@@ -266,9 +263,9 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         internal
         returns (uint256)
     {
-        if (_bundle.receiver == address(0)) revert InvalidReceiver();
-        if (_bundle.token == address(0)) revert InvalidToken();
-        if (_bundle.amount == 0) revert InvalidAmount();
+        if (_bundle.receiver == address(0)) revert ZeroAddressReceiver();
+        if (_bundle.token == address(0)) revert ZeroAddressRewardToken();
+        if (_bundle.amount == 0) revert ZeroAmount();
 
         bytes32 _leaf = keccak256(bytes.concat(keccak256(abi.encode(_claimOwner, _bundle.token, _bundle.amount))));
         if (!MerkleProof.verifyCalldata(_bundle.proof, campaign.root, _leaf)) revert InvalidProof();
@@ -276,7 +273,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         Reward storage reward = campaign.reward[_bundle.token];
         uint256 _claimAmount = _bundle.amount - reward.claimed[_claimOwner];
         if (_claimAmount == 0) revert ZeroAmount();
-        if (_claimAmount > reward.amount) revert InvalidAmount();
+        if (_claimAmount > reward.amount) revert TooMuchClaimedAmount();
 
         reward.claimed[_claimOwner] += _claimAmount;
         reward.amount -= _claimAmount;
@@ -315,8 +312,8 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         for (uint256 _i = 0; _i < _bundles.length; _i++) {
             ClaimFeeBundle calldata _bundle = _bundles[_i];
 
-            if (_bundle.token == address(0)) revert InvalidToken();
-            if (_bundle.receiver == address(0)) revert InvalidReceiver();
+            if (_bundle.token == address(0)) revert ZeroAddressRewardToken();
+            if (_bundle.receiver == address(0)) revert ZeroAddressReceiver();
 
             uint256 _claimAmount = claimableFees[_bundle.token];
             if (_claimAmount == 0) revert ZeroAmount();
@@ -339,7 +336,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
 
     /// @inheritdoc IMetrom
     function transferCampaignOwnership(bytes32 _id, address _owner) external override {
-        if (_owner == address(0)) revert InvalidOwner();
+        if (_owner == address(0)) revert ZeroAddressOwner();
         Campaign storage campaign = _getExistingCampaign(_id);
         if (msg.sender != campaign.owner) revert Forbidden();
         campaign.pendingOwner = _owner;
@@ -357,7 +354,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
 
     /// @inheritdoc IMetrom
     function transferOwnership(address _owner) external override {
-        if (_owner == address(0)) revert InvalidOwner();
+        if (_owner == address(0)) revert ZeroAddressOwner();
         if (msg.sender != owner) revert Forbidden();
         pendingOwner = _owner;
         emit TransferOwnership(_owner);
@@ -374,7 +371,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     /// @inheritdoc IMetrom
     function setCampaignsUpdater(address _campaignsUpdater) external override {
         if (msg.sender != owner) revert Forbidden();
-        if (_campaignsUpdater == address(0)) revert InvalidCampaignsUpdater();
+        if (_campaignsUpdater == address(0)) revert ZeroAddressCampaignsUpdater();
         campaignsUpdater = _campaignsUpdater;
         emit SetCampaignsUpdater(_campaignsUpdater);
     }
@@ -382,14 +379,14 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     /// @inheritdoc IMetrom
     function setRatesUpdater(address _ratesUpdater) external override {
         if (msg.sender != owner) revert Forbidden();
-        if (_ratesUpdater == address(0)) revert InvalidRatesUpdater();
+        if (_ratesUpdater == address(0)) revert ZeroAddressRatesUpdater();
         ratesUpdater = _ratesUpdater;
         emit SetRatesUpdater(_ratesUpdater);
     }
 
     /// @inheritdoc IMetrom
     function setFee(uint32 _fee) external override {
-        if (_fee > MAX_FEE) revert InvalidFee();
+        if (_fee >= UNIT) revert InvalidFee();
         if (msg.sender != owner) revert Forbidden();
         fee = _fee;
         emit SetFee(_fee);
@@ -397,8 +394,8 @@ contract Metrom is IMetrom, UUPSUpgradeable {
 
     /// @inheritdoc IMetrom
     function setFeeRebate(address _account, uint32 _rebate) external override {
-        if (_account == address(0)) revert InvalidAccount();
-        if (_rebate > UNIT) revert InvalidRebate();
+        if (_account == address(0)) revert ZeroAddressAccount();
+        if (_rebate > UNIT) revert RebateTooHigh();
         if (msg.sender != owner) revert Forbidden();
         feeRebate[_account] = _rebate;
         emit SetFeeRebate(_account, _rebate);

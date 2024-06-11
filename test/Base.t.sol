@@ -5,7 +5,7 @@ import {ERC1967Proxy} from "oz/proxy/ERC1967/ERC1967Proxy.sol";
 
 import {MintableERC20} from "./dependencies/MintableERC20.sol";
 import {MetromHarness} from "./harnesses/MetromHarness.sol";
-import {MAX_FEE, IMetrom, SetMinimumRewardTokenRateBundle, CreateBundle, RewardAmount} from "../src/IMetrom.sol";
+import {IMetrom, SetMinimumRewardTokenRateBundle, CreateBundle, RewardAmount} from "../src/IMetrom.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 contract BaseTest is Test {

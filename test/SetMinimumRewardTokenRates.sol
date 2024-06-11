@@ -2,7 +2,7 @@ pragma solidity 0.8.26;
 
 import {MetromHarness} from "./harnesses/MetromHarness.sol";
 import {BaseTest} from "./Base.t.sol";
-import {MAX_FEE, IMetrom, CreateBundle, SetMinimumRewardTokenRateBundle, ReadonlyCampaign} from "../src/IMetrom.sol";
+import {IMetrom, CreateBundle, SetMinimumRewardTokenRateBundle, ReadonlyCampaign} from "../src/IMetrom.sol";
 import {MintableERC20} from "./dependencies/MintableERC20.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
@@ -21,7 +21,7 @@ contract SetMinimumRewardTokenRatesTest is BaseTest {
         metrom.setMinimumRewardTokenRates(_bundles);
     }
 
-    function test_failZeroAddressToken() public {
+    function test_failZeroAddressRewardToken() public {
         SetMinimumRewardTokenRateBundle memory _bundle =
             SetMinimumRewardTokenRateBundle({token: address(0), minimumRate: 0});
 
@@ -29,7 +29,7 @@ contract SetMinimumRewardTokenRatesTest is BaseTest {
         _bundles[0] = _bundle;
 
         vm.prank(ratesUpdater);
-        vm.expectRevert(IMetrom.InvalidToken.selector);
+        vm.expectRevert(IMetrom.ZeroAddressRewardToken.selector);
         metrom.setMinimumRewardTokenRates(_bundles);
     }
 

@@ -1,7 +1,7 @@
 pragma solidity 0.8.26;
 
 import {ERC20} from "oz/token/ERC20/ERC20.sol";
-import {UNIT, MAX_FEE} from "../../src/IMetrom.sol";
+import {UNIT} from "../../src/IMetrom.sol";
 
 contract MintableFeeOnTransferERC20 is ERC20 {
     uint32 public fee;

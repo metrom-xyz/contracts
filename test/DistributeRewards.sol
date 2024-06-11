@@ -2,9 +2,7 @@ pragma solidity 0.8.26;
 
 import {MetromHarness} from "./harnesses/MetromHarness.sol";
 import {BaseTest} from "./Base.t.sol";
-import {
-    MAX_FEE, IMetrom, CreateBundle, DistributeRewardsBundle, ReadonlyCampaign, RewardAmount
-} from "../src/IMetrom.sol";
+import {IMetrom, CreateBundle, DistributeRewardsBundle, ReadonlyCampaign, RewardAmount} from "../src/IMetrom.sol";
 import {MintableERC20} from "./dependencies/MintableERC20.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
@@ -23,7 +21,7 @@ contract DistributeRewardsTest is BaseTest {
         metrom.distributeRewards(_bundles);
     }
 
-    function test_failInvalidRoot() public {
+    function test_failZeroRoot() public {
         DistributeRewardsBundle memory _bundle =
             DistributeRewardsBundle({campaignId: bytes32(0), root: bytes32(0), data: bytes32(0)});
 
@@ -31,11 +29,11 @@ contract DistributeRewardsTest is BaseTest {
         _bundles[0] = _bundle;
 
         vm.prank(campaignsUpdater);
-        vm.expectRevert(IMetrom.InvalidRoot.selector);
+        vm.expectRevert(IMetrom.ZeroRoot.selector);
         metrom.distributeRewards(_bundles);
     }
 
-    function test_failInvalidData() public {
+    function test_failZeroData() public {
         DistributeRewardsBundle memory _bundle =
             DistributeRewardsBundle({campaignId: bytes32(0), root: bytes32("test"), data: bytes32(0)});
 
@@ -43,7 +41,7 @@ contract DistributeRewardsTest is BaseTest {
         _bundles[0] = _bundle;
 
         vm.prank(campaignsUpdater);
-        vm.expectRevert(IMetrom.InvalidData.selector);
+        vm.expectRevert(IMetrom.ZeroData.selector);
         metrom.distributeRewards(_bundles);
     }
 

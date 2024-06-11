@@ -3,7 +3,6 @@ pragma solidity 0.8.26;
 import {MetromHarness} from "./harnesses/MetromHarness.sol";
 import {BaseTest} from "./Base.t.sol";
 import {
-    MAX_FEE,
     IMetrom,
     CreateBundle,
     ClaimRewardBundle,
@@ -20,7 +19,7 @@ contract ClaimRewardsTest is BaseTest {
         metrom.claimRewards(_bundles);
     }
 
-    function test_failInvalidReceiver() public {
+    function test_failZeroAddressReceiver() public {
         MintableERC20 _mintableErc20 = new MintableERC20("Test", "TST");
         _mintableErc20.mint(address(this), 10 ether);
         _mintableErc20.approve(address(metrom), 10 ether);
@@ -56,11 +55,11 @@ contract ClaimRewardsTest is BaseTest {
         ClaimRewardBundle[] memory _bundles = new ClaimRewardBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.expectRevert(IMetrom.InvalidReceiver.selector);
+        vm.expectRevert(IMetrom.ZeroAddressReceiver.selector);
         metrom.claimRewards(_bundles);
     }
 
-    function test_failInvalidToken() public {
+    function test_failZeroAddressRewardToken() public {
         MintableERC20 _mintableErc20 = new MintableERC20("Test", "TST");
         _mintableErc20.mint(address(this), 10 ether);
         _mintableErc20.approve(address(metrom), 10 ether);
@@ -96,7 +95,7 @@ contract ClaimRewardsTest is BaseTest {
         ClaimRewardBundle[] memory _bundles = new ClaimRewardBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.expectRevert(IMetrom.InvalidToken.selector);
+        vm.expectRevert(IMetrom.ZeroAddressRewardToken.selector);
         metrom.claimRewards(_bundles);
     }
 
@@ -136,11 +135,11 @@ contract ClaimRewardsTest is BaseTest {
         ClaimRewardBundle[] memory _bundles = new ClaimRewardBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.expectRevert(IMetrom.InvalidAmount.selector);
+        vm.expectRevert(IMetrom.ZeroAmount.selector);
         metrom.claimRewards(_bundles);
     }
 
-    function test_failInvalidAmountSurpassingCampaignRewardsAmount() public {
+    function test_failTooMuchAmount() public {
         vm.etch(address(1234), address(new MintableERC20("Test", "TST")).code);
         MintableERC20 _mintableErc20 = MintableERC20(address(1234));
         _mintableErc20.mint(address(this), 1000 ether);
@@ -217,7 +216,7 @@ contract ClaimRewardsTest is BaseTest {
         ClaimRewardBundle[] memory _bundles = new ClaimRewardBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.expectRevert(IMetrom.InvalidAmount.selector);
+        vm.expectRevert(IMetrom.TooMuchClaimedAmount.selector);
         vm.prank(address(9));
         metrom.claimRewards(_bundles);
     }

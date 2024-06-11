@@ -3,7 +3,6 @@ pragma solidity 0.8.26;
 import {MetromHarness} from "./harnesses/MetromHarness.sol";
 import {BaseTest} from "./Base.t.sol";
 import {
-    MAX_FEE,
     UNIT,
     IMetrom,
     CreateBundle,
@@ -21,7 +20,7 @@ contract CreateCampaignTest is BaseTest {
         metrom.createCampaigns(_bundles);
     }
 
-    function test_failInvalidPool() public {
+    function test_failZeroAddressPool() public {
         CreateBundle memory _bundle = CreateBundle({
             pool: address(0),
             from: uint32(block.timestamp + 10),
@@ -33,11 +32,11 @@ contract CreateCampaignTest is BaseTest {
         CreateBundle[] memory _bundles = new CreateBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.expectRevert(IMetrom.InvalidPool.selector);
+        vm.expectRevert(IMetrom.ZeroAddressPool.selector);
         metrom.createCampaigns(_bundles);
     }
 
-    function test_failInvalidFrom() public {
+    function test_failStartTimeInThePast() public {
         CreateBundle memory _bundle = CreateBundle({
             pool: address(1),
             from: uint32(block.timestamp),
@@ -49,7 +48,7 @@ contract CreateCampaignTest is BaseTest {
         CreateBundle[] memory _bundles = new CreateBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.expectRevert(IMetrom.InvalidFrom.selector);
+        vm.expectRevert(IMetrom.StartTimeInThePast.selector);
         metrom.createCampaigns(_bundles);
     }
 
@@ -65,11 +64,11 @@ contract CreateCampaignTest is BaseTest {
         CreateBundle[] memory _bundles = new CreateBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.expectRevert(IMetrom.InvalidTo.selector);
+        vm.expectRevert(IMetrom.DurationTooShort.selector);
         metrom.createCampaigns(_bundles);
     }
 
-    function test_failInvalidToBeforeMinimumCampaignDuration() public {
+    function test_failDurationTooShort() public {
         uint32 _minimumCampaignDuration = 120;
         vm.prank(owner);
         metrom.setMinimumCampaignDuration(_minimumCampaignDuration);
@@ -86,7 +85,7 @@ contract CreateCampaignTest is BaseTest {
         CreateBundle[] memory _bundles = new CreateBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.expectRevert(IMetrom.InvalidTo.selector);
+        vm.expectRevert(IMetrom.DurationTooShort.selector);
         metrom.createCampaigns(_bundles);
     }
 
@@ -107,7 +106,7 @@ contract CreateCampaignTest is BaseTest {
         CreateBundle[] memory _bundles = new CreateBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.expectRevert(IMetrom.InvalidTo.selector);
+        vm.expectRevert(IMetrom.DurationTooLong.selector);
         metrom.createCampaigns(_bundles);
     }
 
@@ -123,7 +122,7 @@ contract CreateCampaignTest is BaseTest {
         CreateBundle[] memory _bundles = new CreateBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.expectRevert(IMetrom.InvalidRewards.selector);
+        vm.expectRevert(IMetrom.NoRewards.selector);
         metrom.createCampaigns(_bundles);
     }
 
@@ -139,7 +138,7 @@ contract CreateCampaignTest is BaseTest {
         CreateBundle[] memory _bundles = new CreateBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.expectRevert(IMetrom.InvalidRewards.selector);
+        vm.expectRevert(IMetrom.TooManyRewards.selector);
         metrom.createCampaigns(_bundles);
     }
 
@@ -165,7 +164,7 @@ contract CreateCampaignTest is BaseTest {
 
         metrom.createCampaigns(_bundles);
 
-        vm.expectRevert(IMetrom.CampaignAlreadyExists.selector);
+        vm.expectRevert(IMetrom.AlreadyExists.selector);
         metrom.createCampaigns(_bundles);
     }
 
@@ -184,7 +183,7 @@ contract CreateCampaignTest is BaseTest {
         CreateBundle[] memory _bundles = new CreateBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.expectRevert(IMetrom.InvalidRewards.selector);
+        vm.expectRevert(IMetrom.ZeroRewardAmount.selector);
         metrom.createCampaigns(_bundles);
     }
 
@@ -203,7 +202,7 @@ contract CreateCampaignTest is BaseTest {
         CreateBundle[] memory _bundles = new CreateBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.expectRevert(IMetrom.InvalidRewards.selector);
+        vm.expectRevert(IMetrom.ZeroAddressRewardToken.selector);
         metrom.createCampaigns(_bundles);
     }
 
@@ -248,7 +247,7 @@ contract CreateCampaignTest is BaseTest {
         CreateBundle[] memory _bundles = new CreateBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.expectRevert(IMetrom.InvalidRewards.selector);
+        vm.expectRevert(IMetrom.DisallowedRewardToken.selector);
         metrom.createCampaigns(_bundles);
     }
 
@@ -281,7 +280,7 @@ contract CreateCampaignTest is BaseTest {
         CreateBundle[] memory _bundles = new CreateBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.expectRevert(IMetrom.InvalidRewards.selector);
+        vm.expectRevert(IMetrom.RewardAmountTooLow.selector);
         metrom.createCampaigns(_bundles);
     }
 
@@ -320,7 +319,7 @@ contract CreateCampaignTest is BaseTest {
         CreateBundle[] memory _bundles = new CreateBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.expectRevert(IMetrom.InvalidRewards.selector);
+        vm.expectRevert(IMetrom.RewardAmountTooLow.selector);
         metrom.createCampaigns(_bundles);
     }
 
@@ -352,7 +351,7 @@ contract CreateCampaignTest is BaseTest {
         CreateBundle[] memory _bundles = new CreateBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.expectRevert(IMetrom.InvalidRewards.selector);
+        vm.expectRevert(IMetrom.RewardAmountTooLow.selector);
         metrom.createCampaigns(_bundles);
     }
 
@@ -423,7 +422,7 @@ contract CreateCampaignTest is BaseTest {
         CreateBundle[] memory _bundles = new CreateBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.expectRevert(IMetrom.InvalidRewards.selector);
+        vm.expectRevert(IMetrom.ZeroRewardAmount.selector);
         metrom.createCampaigns(_bundles);
     }
 

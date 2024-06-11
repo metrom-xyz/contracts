@@ -6,13 +6,13 @@ import {UNIT, IMetrom} from "../src/IMetrom.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 contract SetFeeRebate is BaseTest {
-    function test_failInvalidAccount() public {
-        vm.expectRevert(IMetrom.InvalidAccount.selector);
+    function test_failZeroAddressAccount() public {
+        vm.expectRevert(IMetrom.ZeroAddressAccount.selector);
         metrom.setFeeRebate(address(0), uint32(UNIT - 1));
     }
 
-    function test_failInvalidRebate() public {
-        vm.expectRevert(IMetrom.InvalidRebate.selector);
+    function test_failRebateTooHigh() public {
+        vm.expectRevert(IMetrom.RebateTooHigh.selector);
         metrom.setFeeRebate(address(1), uint32(UNIT + 1));
     }
 

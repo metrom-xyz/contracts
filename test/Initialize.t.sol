@@ -5,7 +5,7 @@ import {Initializable} from "oz-up/proxy/utils/Initializable.sol";
 
 import {MetromHarness} from "./harnesses/MetromHarness.sol";
 import {BaseTest} from "./Base.t.sol";
-import {MAX_FEE, IMetrom} from "../src/IMetrom.sol";
+import {UNIT, IMetrom} from "../src/IMetrom.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
 contract InitializeTest is BaseTest {
@@ -15,28 +15,28 @@ contract InitializeTest is BaseTest {
         _metrom.initialize(address(1), address(1), address(1), 10, 10, 11);
     }
 
-    function test_failInvalidOwner() public {
+    function test_failZeroAddressOwner() public {
         MetromHarness _metrom = MetromHarness(address(new ERC1967Proxy(address(new MetromHarness()), bytes(""))));
-        vm.expectRevert(IMetrom.InvalidOwner.selector);
+        vm.expectRevert(IMetrom.ZeroAddressOwner.selector);
         _metrom.initialize(address(0), address(0), address(0), 10, 10, 10);
     }
 
-    function test_failInvalidCampaignsUpdater() public {
+    function test_failZeroAddressCampaignsUpdater() public {
         MetromHarness _metrom = MetromHarness(address(new ERC1967Proxy(address(new MetromHarness()), bytes(""))));
-        vm.expectRevert(IMetrom.InvalidCampaignsUpdater.selector);
+        vm.expectRevert(IMetrom.ZeroAddressCampaignsUpdater.selector);
         _metrom.initialize(address(1), address(0), address(0), 10, 10, 10);
     }
 
-    function test_failInvalidRatesUpdater() public {
+    function test_failZeroAddressRatesUpdater() public {
         MetromHarness _metrom = MetromHarness(address(new ERC1967Proxy(address(new MetromHarness()), bytes(""))));
-        vm.expectRevert(IMetrom.InvalidRatesUpdater.selector);
+        vm.expectRevert(IMetrom.ZeroAddressRatesUpdater.selector);
         _metrom.initialize(address(1), address(1), address(0), 10, 10, 10);
     }
 
     function test_failInvalidFee() public {
         MetromHarness _metrom = MetromHarness(address(new ERC1967Proxy(address(new MetromHarness()), bytes(""))));
         vm.expectRevert(IMetrom.InvalidFee.selector);
-        _metrom.initialize(address(1), address(1), address(1), uint32(MAX_FEE + 1), 10, 10);
+        _metrom.initialize(address(1), address(1), address(1), uint32(UNIT), 10, 10);
     }
 
     function test_failInvalidMinimumCampaignDuration() public {
@@ -91,7 +91,7 @@ contract InitializeTest is BaseTest {
         vm.assume(_owner != address(0));
         vm.assume(_campaignsUpdater != address(0));
         vm.assume(_ratesUpdater != address(0));
-        vm.assume(_fee <= MAX_FEE);
+        vm.assume(_fee < UNIT);
         vm.assume(_maximumCampaignDuration > 0);
         uint32 _minimumCampaignDuration = uint32(bound(_rawMinimumCampaignDuration, 0, _maximumCampaignDuration - 1));
 

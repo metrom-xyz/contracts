@@ -3,9 +3,6 @@ pragma solidity >=0.8.0;
 /// @dev Represents the maximum value for fee percentages (100%).
 uint32 constant UNIT = 1_000_000;
 
-/// @dev Represents the maximum allowed fee value (10%).
-uint32 constant MAX_FEE = 100_000;
-
 /// @dev Represents the maximum number of different rewards allowed for a
 /// single campaign.
 uint256 constant MAX_REWARDS_PER_CAMPAIGN = 5;
@@ -229,7 +226,10 @@ interface IMetrom {
     event SetMaximumCampaignDuration(uint32 maximumCampaignDuration);
 
     /// @notice Thrown when trying to create a campaign that already exists.
-    error CampaignAlreadyExists();
+    error AlreadyExists();
+
+    /// @notice Thrown when trying to create a campaign with a non-whitelisted reward token.
+    error DisallowedRewardToken();
 
     /// @notice Thrown when trying to distribute rewards multiple times on the same
     /// campaign in the same transaction.
@@ -239,24 +239,17 @@ interface IMetrom {
     /// on the same reward token in the same transaction.
     error DuplicatedMinimumRewardTokenRate();
 
+    /// @notice Thrown when trying to create a campaign with a duration that is too long.
+    error DurationTooLong();
+
+    /// @notice Thrown when trying to create a campaign with a duration that is too short.
+    error DurationTooShort();
+
     /// @notice Thrown when the desired operation's execution is forbidden to the caller.
     error Forbidden();
 
-    /// @notice Thrown when the specified account is invalid while setting a specific fee.
-    error InvalidAccount();
-
-    /// @notice Thrown at claim procession time when either a 0 amount or an amount surpassing
-    /// the total amount of claimable rewards for the campaign is specified.
-    error InvalidAmount();
-
-    /// @notice Thrown at rewards distribution time when 0-bytes data is specified.
-    error InvalidData();
-
     /// @notice Thrown when the specified fee goes over the maximum allowed amount.
     error InvalidFee();
-
-    /// @notice Thrown at campaign creation time when the specified from is in the past.
-    error InvalidFrom();
 
     /// @notice Thrown when the specified maximum campaign duration is less or equal to
     /// the current minimum campaign duration.
@@ -266,45 +259,11 @@ interface IMetrom {
     /// equal to the current maximum campaign duration.
     error InvalidMinimumCampaignDuration();
 
-    /// @notice Thrown at construction and ownership transfer time when the specified owner
-    /// is the zero address.
-    error InvalidOwner();
-
-    /// @notice Thrown at campaign creation time when the targeted pool is the zero address.
-    error InvalidPool();
-
     /// @notice Thrown at claim procession time when the provided Merkle proof is invalid.
     error InvalidProof();
 
-    /// @notice Thrown when the specified rebate goes over the maximum allowed amount.
-    error InvalidRebate();
-
-    /// @notice Thrown at claim procession time when the provided received is the zero address.
-    error InvalidReceiver();
-
-    /// @notice Thrown at campaign creation time when the provided rewards are invalid (either
-    /// because there are none, or too many, or because the reward token and reward amount arrays
-    /// have inconsistent lengths).
-    error InvalidRewards();
-
-    /// @notice Thrown at rewards distribution time when the specified root is 0-bytes.
-    error InvalidRoot();
-
-    /// @notice Thrown at campaign creation time either when the specified to timestamp comes
-    ///  before the specified from timestamp or when it results in an invalid campaign duration
-    ///  according to the current minimum and maximum allowed values.
-    error InvalidTo();
-
-    /// @notice Thrown at claim procession time when the provided token is the zero address.
-    error InvalidToken();
-
-    /// @notice Thrown at campaigns updater update time when the provided value is the zero
-    /// address.
-    error InvalidCampaignsUpdater();
-
-    /// @notice Thrown at rates updater update time when the provided value is the zero
-    /// address.
-    error InvalidRatesUpdater();
+    /// @notice Thrown when creating a campaign if no rewards were specified.
+    error NoRewards();
 
     /// @notice Thrown when a campaign that was required to exists does not exist.
     error NonExistentCampaign();
@@ -315,8 +274,55 @@ interface IMetrom {
     /// @notice Thrown when trying to upgrade the contract while ossified.
     error Ossified();
 
-    /// @notice Thrown at claim procession time when the requested claim amount is 0.
+    /// @notice Thrown when trying to set a fee rebate that is too high.
+    error RebateTooHigh();
+
+    /// @notice Thrown when trying to create a campaign when the specified reward amount is too low.
+    error RewardAmountTooLow();
+
+    /// @notice Thrown when trying to create a campaign with a from timestamp in the past.
+    error StartTimeInThePast();
+
+    /// @notice Thrown when trying to create a campaign when too many rewards are specified.
+    error TooManyRewards();
+
+    /// @notice Thrown when trying to claim a reward that is too much to be claimed.
+    error TooMuchClaimedAmount();
+
+    /// @notice Thrown when trying to set the campaigns updater to the zero address.
+    error ZeroAddressCampaignsUpdater();
+
+    /// @notice Thrown when trying to set the fee rebate for a zero address account.
+    error ZeroAddressAccount();
+
+    /// @notice Thrown when trying to transfer Metrom's or a campaign's ownership to the zero address.
+    error ZeroAddressOwner();
+
+    /// @notice Thrown when trying to create a campaign with a zero address pool.
+    error ZeroAddressPool();
+
+    /// @notice Thrown when trying to set the rates updater to the zero address.
+    error ZeroAddressRatesUpdater();
+
+    /// @notice Thrown when processing a claim with a zero address receiver or when claiming
+    /// fees for a zero address receiver.
+    error ZeroAddressReceiver();
+
+    /// @notice Thrown when trying to create a campaign with a zero address reward token or
+    /// when trying to set the minimum reward token rate for a zero address reward token.
+    error ZeroAddressRewardToken();
+
+    /// @notice Thrown at claim processing time when the requested claim amount is 0.
     error ZeroAmount();
+
+    /// @notice Thrown at rewards distribution time when 0-bytes data is specified.
+    error ZeroData();
+
+    /// @notice Thrown when trying to create a campaign with a zero reward amount.
+    error ZeroRewardAmount();
+
+    /// @notice Thrown at rewards distribution time when the specified root is 0-bytes.
+    error ZeroRoot();
 
     /// @notice Initializes the contract.
     /// @param owner The initial owner.
