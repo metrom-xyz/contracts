@@ -198,7 +198,7 @@ contract ClaimRewardsTest is BaseTest {
         DistributeRewardsBundle[] memory _distributeRewardBundles = new DistributeRewardsBundle[](1);
         _distributeRewardBundles[0] = _distributeRewardBundle;
 
-        vm.prank(updater);
+        vm.prank(campaignsUpdater);
         metrom.distributeRewards(_distributeRewardBundles);
 
         vm.assertEq(metrom.campaignById(metrom.campaignId(_createBundle)).root, _root);
@@ -338,7 +338,7 @@ contract ClaimRewardsTest is BaseTest {
         DistributeRewardsBundle[] memory _distributeRewardBundles = new DistributeRewardsBundle[](1);
         _distributeRewardBundles[0] = _distributeRewardBundle;
 
-        vm.prank(updater);
+        vm.prank(campaignsUpdater);
         metrom.distributeRewards(_distributeRewardBundles);
 
         vm.assertEq(metrom.campaignById(metrom.campaignId(_createBundle)).root, _root);
@@ -426,7 +426,7 @@ contract ClaimRewardsTest is BaseTest {
         DistributeRewardsBundle[] memory _distributeRewardBundles = new DistributeRewardsBundle[](1);
         _distributeRewardBundles[0] = _distributeRewardBundle;
 
-        vm.prank(updater);
+        vm.prank(campaignsUpdater);
         metrom.distributeRewards(_distributeRewardBundles);
 
         vm.assertEq(metrom.campaignById(metrom.campaignId(_createBundle)).root, _root);

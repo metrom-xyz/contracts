@@ -17,7 +17,7 @@ contract SetMinimumRewardTokenRatesTest is BaseTest {
     function test_successNoBundles() public {
         SetMinimumRewardTokenRateBundle[] memory _bundles = new SetMinimumRewardTokenRateBundle[](0);
 
-        vm.prank(updater);
+        vm.prank(ratesUpdater);
         metrom.setMinimumRewardTokenRates(_bundles);
     }
 
@@ -28,7 +28,7 @@ contract SetMinimumRewardTokenRatesTest is BaseTest {
         SetMinimumRewardTokenRateBundle[] memory _bundles = new SetMinimumRewardTokenRateBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.prank(updater);
+        vm.prank(ratesUpdater);
         vm.expectRevert(IMetrom.InvalidToken.selector);
         metrom.setMinimumRewardTokenRates(_bundles);
     }
@@ -43,7 +43,7 @@ contract SetMinimumRewardTokenRatesTest is BaseTest {
         _bundles[0] = _bundle1;
         _bundles[1] = _bundle2;
 
-        vm.prank(updater);
+        vm.prank(ratesUpdater);
         vm.expectRevert(IMetrom.DuplicatedMinimumRewardTokenRate.selector);
         metrom.setMinimumRewardTokenRates(_bundles);
     }
@@ -62,7 +62,7 @@ contract SetMinimumRewardTokenRatesTest is BaseTest {
         vm.expectEmit();
         emit IMetrom.SetMinimumRewardTokenRate(_token, _newRate);
 
-        vm.prank(updater);
+        vm.prank(ratesUpdater);
         metrom.setMinimumRewardTokenRates(_bundles);
 
         vm.assertEq(metrom.minimumRewardTokenRate(_token), _newRate);
@@ -79,7 +79,7 @@ contract SetMinimumRewardTokenRatesTest is BaseTest {
         vm.expectEmit();
         emit IMetrom.SetMinimumRewardTokenRate(_token, _newRate);
 
-        vm.prank(updater);
+        vm.prank(ratesUpdater);
         metrom.setMinimumRewardTokenRates(_bundles);
 
         vm.assertEq(metrom.minimumRewardTokenRate(_token), _newRate);
@@ -106,7 +106,7 @@ contract SetMinimumRewardTokenRatesTest is BaseTest {
         emit IMetrom.SetMinimumRewardTokenRate(_token1, _newRate1);
         emit IMetrom.SetMinimumRewardTokenRate(_token2, _newRate2);
 
-        vm.prank(updater);
+        vm.prank(ratesUpdater);
         metrom.setMinimumRewardTokenRates(_bundles);
 
         vm.assertEq(metrom.minimumRewardTokenRate(_token1), _newRate1);
@@ -128,7 +128,7 @@ contract SetMinimumRewardTokenRatesTest is BaseTest {
         emit IMetrom.SetMinimumRewardTokenRate(_token1, _newRate1);
         emit IMetrom.SetMinimumRewardTokenRate(_token2, _newRate2);
 
-        vm.prank(updater);
+        vm.prank(ratesUpdater);
         metrom.setMinimumRewardTokenRates(_bundles);
 
         vm.assertEq(metrom.minimumRewardTokenRate(_token1), _newRate1);
@@ -149,7 +149,7 @@ contract SetMinimumRewardTokenRatesTest is BaseTest {
         vm.expectEmit();
         emit IMetrom.SetMinimumRewardTokenRate(_token, _newRate);
 
-        vm.prank(updater);
+        vm.prank(ratesUpdater);
         metrom.setMinimumRewardTokenRates(_bundles);
 
         vm.assertEq(metrom.minimumRewardTokenRate(_token), _newRate);
@@ -178,7 +178,7 @@ contract SetMinimumRewardTokenRatesTest is BaseTest {
         emit IMetrom.SetMinimumRewardTokenRate(_token1, _newRate1);
         emit IMetrom.SetMinimumRewardTokenRate(_token2, _newRate2);
 
-        vm.prank(updater);
+        vm.prank(ratesUpdater);
         metrom.setMinimumRewardTokenRates(_bundles);
 
         vm.assertEq(metrom.minimumRewardTokenRate(_token1), _newRate1);

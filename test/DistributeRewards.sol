@@ -19,7 +19,7 @@ contract DistributeRewardsTest is BaseTest {
     function test_successNoBundles() public {
         DistributeRewardsBundle[] memory _bundles = new DistributeRewardsBundle[](0);
 
-        vm.prank(updater);
+        vm.prank(campaignsUpdater);
         metrom.distributeRewards(_bundles);
     }
 
@@ -30,7 +30,7 @@ contract DistributeRewardsTest is BaseTest {
         DistributeRewardsBundle[] memory _bundles = new DistributeRewardsBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.prank(updater);
+        vm.prank(campaignsUpdater);
         vm.expectRevert(IMetrom.InvalidRoot.selector);
         metrom.distributeRewards(_bundles);
     }
@@ -42,7 +42,7 @@ contract DistributeRewardsTest is BaseTest {
         DistributeRewardsBundle[] memory _bundles = new DistributeRewardsBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.prank(updater);
+        vm.prank(campaignsUpdater);
         vm.expectRevert(IMetrom.InvalidData.selector);
         metrom.distributeRewards(_bundles);
     }
@@ -54,7 +54,7 @@ contract DistributeRewardsTest is BaseTest {
         DistributeRewardsBundle[] memory _bundles = new DistributeRewardsBundle[](1);
         _bundles[0] = _bundle;
 
-        vm.prank(updater);
+        vm.prank(campaignsUpdater);
         vm.expectRevert(IMetrom.NonExistentCampaign.selector);
         metrom.distributeRewards(_bundles);
     }
@@ -69,7 +69,7 @@ contract DistributeRewardsTest is BaseTest {
         _bundles[0] = _bundle1;
         _bundles[1] = _bundle2;
 
-        vm.prank(updater);
+        vm.prank(campaignsUpdater);
         vm.expectRevert(IMetrom.DuplicatedDistribution.selector);
         metrom.distributeRewards(_bundles);
     }
@@ -108,7 +108,7 @@ contract DistributeRewardsTest is BaseTest {
         vm.expectEmit();
         emit IMetrom.DistributeReward(_bundle.campaignId, _bundle.root, _bundle.data);
 
-        vm.prank(updater);
+        vm.prank(campaignsUpdater);
         metrom.distributeRewards(_bundles);
     }
 }

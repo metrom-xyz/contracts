@@ -10,7 +10,8 @@ import {MAX_FEE, IMetrom, SetMinimumRewardTokenRateBundle, CreateBundle, RewardA
 /// SPDX-License-Identifier: GPL-3.0-or-later
 contract BaseTest is Test {
     address internal owner;
-    address internal updater;
+    address internal campaignsUpdater;
+    address internal ratesUpdater;
     uint32 internal fee;
     uint32 internal minimumCampaignDuration;
     uint32 internal maximumCampaignDuration;
@@ -18,7 +19,8 @@ contract BaseTest is Test {
 
     function setUp() external {
         owner = address(1);
-        updater = address(2);
+        campaignsUpdater = address(2);
+        ratesUpdater = address(3);
         fee = 10_000;
         minimumCampaignDuration = 1 seconds;
         maximumCampaignDuration = 10 minutes;
@@ -29,7 +31,8 @@ contract BaseTest is Test {
                     abi.encodeWithSelector(
                         IMetrom.initialize.selector,
                         owner,
-                        updater,
+                        campaignsUpdater,
+                        ratesUpdater,
                         fee,
                         minimumCampaignDuration,
                         maximumCampaignDuration
@@ -75,7 +78,7 @@ contract BaseTest is Test {
 
         vm.assertEq(metrom.minimumRewardTokenRate(_token), 0);
 
-        vm.prank(updater);
+        vm.prank(ratesUpdater);
         metrom.setMinimumRewardTokenRates(_minimumEmissionBundles);
 
         vm.assertEq(metrom.minimumRewardTokenRate(_token), _newRate);

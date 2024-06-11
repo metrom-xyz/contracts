@@ -41,7 +41,10 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     address public override pendingOwner;
 
     /// @inheritdoc IMetrom
-    address public override updater;
+    address public override campaignsUpdater;
+
+    /// @inheritdoc IMetrom
+    address public override ratesUpdater;
 
     /// @inheritdoc IMetrom
     uint32 public override fee;
@@ -69,23 +72,28 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     /// @inheritdoc IMetrom
     function initialize(
         address _owner,
-        address _updater,
+        address _campaignsUpdater,
+        address _ratesUpdater,
         uint32 _fee,
         uint32 _minimumCampaignDuration,
         uint32 _maximumCampaignDuration
     ) external override initializer {
         if (_owner == address(0)) revert InvalidOwner();
-        if (_updater == address(0)) revert InvalidUpdater();
+        if (_campaignsUpdater == address(0)) revert InvalidCampaignsUpdater();
+        if (_ratesUpdater == address(0)) revert InvalidRatesUpdater();
         if (_fee > MAX_FEE) revert InvalidFee();
         if (_minimumCampaignDuration >= _maximumCampaignDuration) revert InvalidMinimumCampaignDuration();
 
         owner = _owner;
-        updater = _updater;
+        campaignsUpdater = _campaignsUpdater;
+        ratesUpdater = _ratesUpdater;
         minimumCampaignDuration = _minimumCampaignDuration;
         maximumCampaignDuration = _maximumCampaignDuration;
         fee = _fee;
 
-        emit Initialize(_owner, _updater, _fee, _minimumCampaignDuration, _maximumCampaignDuration);
+        emit Initialize(
+            _owner, _campaignsUpdater, _ratesUpdater, _fee, _minimumCampaignDuration, _maximumCampaignDuration
+        );
     }
 
     /// @inheritdoc IMetrom
@@ -221,7 +229,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
 
     /// @inheritdoc IMetrom
     function distributeRewards(DistributeRewardsBundle[] calldata _bundles) external override {
-        if (msg.sender != updater) revert Forbidden();
+        if (msg.sender != campaignsUpdater) revert Forbidden();
 
         for (uint256 _i; _i < _bundles.length; _i++) {
             DistributeRewardsBundle calldata _bundle = _bundles[_i];
@@ -240,7 +248,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
 
     /// @inheritdoc IMetrom
     function setMinimumRewardTokenRates(SetMinimumRewardTokenRateBundle[] calldata _bundles) external override {
-        if (msg.sender != updater) revert Forbidden();
+        if (msg.sender != ratesUpdater) revert Forbidden();
 
         for (uint256 _i; _i < _bundles.length; _i++) {
             SetMinimumRewardTokenRateBundle calldata _bundle = _bundles[_i];
@@ -364,11 +372,19 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     }
 
     /// @inheritdoc IMetrom
-    function setUpdater(address _updater) external override {
+    function setCampaignsUpdater(address _campaignsUpdater) external override {
         if (msg.sender != owner) revert Forbidden();
-        if (_updater == address(0)) revert InvalidUpdater();
-        updater = _updater;
-        emit SetUpdater(_updater);
+        if (_campaignsUpdater == address(0)) revert InvalidCampaignsUpdater();
+        campaignsUpdater = _campaignsUpdater;
+        emit SetCampaignsUpdater(_campaignsUpdater);
+    }
+
+    /// @inheritdoc IMetrom
+    function setRatesUpdater(address _ratesUpdater) external override {
+        if (msg.sender != owner) revert Forbidden();
+        if (_ratesUpdater == address(0)) revert InvalidRatesUpdater();
+        ratesUpdater = _ratesUpdater;
+        emit SetRatesUpdater(_ratesUpdater);
     }
 
     /// @inheritdoc IMetrom

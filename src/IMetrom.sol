@@ -70,16 +70,17 @@ struct CreateBundle {
     RewardAmount[] rewards;
 }
 
-/// @notice Contains data that can be used by the current `updater` to distribute rewards
-/// on a campaign by specifying a Merkle root and a data link.
+/// @notice Contains data that can be used by the current `campaignsUpdater` to
+/// distribute rewards on a campaign by specifying a Merkle root and a data link.
 struct DistributeRewardsBundle {
     bytes32 campaignId;
     bytes32 root;
     bytes32 data;
 }
 
-/// @notice Contains data that can be used by the current `updater` or the `owner` to update
-/// the minimum required rate to be emitted in a campaign for a certain reward token.
+/// @notice Contains data that can be used by the current `ratesUpdater` or the
+/// `owner` to update the minimum required rate to be emitted in a campaign for
+/// a certain reward token.
 struct SetMinimumRewardTokenRateBundle {
     address token;
     uint256 minimumRate;
@@ -111,13 +112,15 @@ struct ClaimFeeBundle {
 interface IMetrom {
     /// @notice Emitted at initialization time.
     /// @param owner The initial contract's owner.
-    /// @param updater The initial contract's campaigns updater.
+    /// @param campaignsUpdater The initial contract's campaigns updater.
+    /// @param ratesUpdater The initial contract's rates updater.
     /// @param fee The initial contract's fee.
     /// @param minimumCampaignDuration The initial contract's minimum campaign duration.
     /// @param maximumCampaignDuration The initial contract's maximum campaign duration.
     event Initialize(
         address indexed owner,
-        address updater,
+        address campaignsUpdater,
+        address ratesUpdater,
         uint32 fee,
         uint32 minimumCampaignDuration,
         uint32 maximumCampaignDuration
@@ -146,7 +149,7 @@ interface IMetrom {
         CreatedCampaignReward[] rewards
     );
 
-    /// @notice Emitted when the updater distributes rewards on a campaign.
+    /// @notice Emitted when the campaigns updater distributes rewards on a campaign.
     /// @param campaignId The id of the campaign. on which the rewards were distributed.
     /// @param root The updated Merkle root for the campaign.
     /// @param data The updated data content hash for the campaign. This can be used to
@@ -154,8 +157,8 @@ interface IMetrom {
     /// data used to contruct the campaign's Merkle tree and verify the Merkle root.
     event DistributeReward(bytes32 indexed campaignId, bytes32 root, bytes32 data);
 
-    /// @notice Emitted when the updater or the owner updates the minimum emission rate of a
-    /// certain whitelisted reward token required in order to create a campaign.
+    /// @notice Emitted when the rates updater or the owner updates the minimum emission
+    /// rate of a certain whitelisted reward token required in order to create a campaign.
     /// @param token The address of the whitelisted reward token to update.
     /// @param minimumRate The new minimum rate required in order to create a
     /// campaign.
@@ -199,9 +202,13 @@ interface IMetrom {
     /// @param owner The new owner.
     event AcceptOwnership(address indexed owner);
 
-    /// @notice Emitted when Metrom's owner sets a new allowed updater address.
-    /// @param updater The new updater.
-    event SetUpdater(address indexed updater);
+    /// @notice Emitted when Metrom's owner sets a new allowed campaigns updater address.
+    /// @param campaignsUpdater The new campaigns updater.
+    event SetCampaignsUpdater(address indexed campaignsUpdater);
+
+    /// @notice Emitted when Metrom's owner sets a new allowed rates updater address.
+    /// @param ratesUpdater The new rates updater.
+    event SetRatesUpdater(address indexed ratesUpdater);
 
     /// @notice Emitted when Metrom's owner sets a new fee.
     /// @param fee The new fee.
@@ -291,8 +298,13 @@ interface IMetrom {
     /// @notice Thrown at claim procession time when the provided token is the zero address.
     error InvalidToken();
 
-    /// @notice Thrown updater update time when the provided address is the zero address.
-    error InvalidUpdater();
+    /// @notice Thrown at campaigns updater update time when the provided value is the zero
+    /// address.
+    error InvalidCampaignsUpdater();
+
+    /// @notice Thrown at rates updater update time when the provided value is the zero
+    /// address.
+    error InvalidRatesUpdater();
 
     /// @notice Thrown when a campaign that was required to exists does not exist.
     error NonExistentCampaign();
@@ -308,13 +320,15 @@ interface IMetrom {
 
     /// @notice Initializes the contract.
     /// @param owner The initial owner.
-    /// @param updater The initial updater.
+    /// @param campaignsUpdater The initial campaigns updater.
+    /// @param ratesUpdater The initial rates updater.
     /// @param fee The initial fee.
     /// @param minimumCampaignDuration The initial minimum campaign duration.
     /// @param maximumCampaignDuration The initial maximum campaign duration.
     function initialize(
         address owner,
-        address updater,
+        address campaignsUpdater,
+        address ratesUpdater,
         uint32 fee,
         uint32 minimumCampaignDuration,
         uint32 maximumCampaignDuration
@@ -336,9 +350,13 @@ interface IMetrom {
     /// @return pendingOwner The current pending owner.
     function pendingOwner() external view returns (address pendingOwner);
 
-    /// @notice Returns the currently allowed updater.
-    /// @return updater The currently allowed updater.
-    function updater() external view returns (address updater);
+    /// @notice Returns the currently allowed campaigns updater.
+    /// @return campaignsUpdater The currently allowed campaigns updater.
+    function campaignsUpdater() external view returns (address campaignsUpdater);
+
+    /// @notice Returns the currently allowed rates updater.
+    /// @return ratesUpdater The currently allowed rates updater.
+    function ratesUpdater() external view returns (address ratesUpdater);
 
     /// @notice Returns the current fee.
     /// @return fee The current fee.
@@ -451,8 +469,13 @@ interface IMetrom {
     /// @param bundles The bundles containing the data used to claim the fees.
     function claimFees(ClaimFeeBundle[] calldata bundles) external;
 
-    /// @notice Can be called by Metrom's owner to set a new allowed updater address.
-    function setUpdater(address updater) external;
+    /// @notice Can be called by Metrom's owner to set a new allowed campaigns updater address.
+    /// @param campaignsUpdater The new campaigns updater address.
+    function setCampaignsUpdater(address campaignsUpdater) external;
+
+    /// @notice Can be called by Metrom's owner to set a new allowed rates updater address.
+    /// @param ratesUpdater The new rates updater address.
+    function setRatesUpdater(address ratesUpdater) external;
 
     /// @notice Can be called by Metrom's owner to set a new fee value.
     function setFee(uint32 fee) external;
