@@ -1,5 +1,5 @@
 {
-    "include": ["index.ts"],
+    "include": ["index.ts", "gen/abi.ts"],
     "exclude": ["node_modules"],
     "compilerOptions": {
         "composite": false,

@@ -10,7 +10,8 @@
     "sideEffects": false,
     "exports": {
         ".": "./dist/index.js",
-        "./abis/Metrom.json": "./abis/Metrom.json"
+        "./abis/Metrom.json": "./dist/abis/Metrom.json",
+        "./abi": "./dist/gen/abi.js"
     },
     "files": [
         "./dist"

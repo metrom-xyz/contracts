@@ -30,6 +30,18 @@ const CURRENT_DIR = dirname(fileURLToPath(import.meta.url));
 console.log("Building contracts...");
 execSync("forge build", { stdio: "inherit" });
 
+const { abi } = JSON.parse(
+    readFileSync(join(CURRENT_DIR, "./out/IMetrom.sol/IMetrom.json")),
+);
+
+console.log("Generating ABI TypeScript file...");
+if (!existsSync(join(CURRENT_DIR, "./gen")))
+    mkdirSync(join(CURRENT_DIR, "./gen"));
+writeFileSync(
+    join(CURRENT_DIR, "./gen/abi.ts"),
+    `export const metromAbi = ${getJsonAsTypescript(abi)} as const;\n`,
+);
+
 if (existsSync(join(CURRENT_DIR, "./dist"))) {
     console.log("Removing previous dist folder...");
     rmSync(join(CURRENT_DIR, "./dist"), { recursive: true });
@@ -39,18 +51,8 @@ console.log("Building library...");
 execSync("pnpm tsc", { stdio: "inherit" });
 
 console.log("Bundling ABIs...");
-
-const { abi } = JSON.parse(
-    readFileSync(join(CURRENT_DIR, "./out/IMetrom.sol/IMetrom.json")),
-);
-
 mkdirSync(join(CURRENT_DIR, "./dist/abis"));
-
 writeFileSync(
     join(CURRENT_DIR, "./dist/abis/Metrom.json"),
     JSON.stringify(abi, undefined, 4),
-);
-appendFileSync(
-    join(CURRENT_DIR, "./dist/index.js"),
-    `export const metromAbi = ${getJsonAsTypescript(abi)};\n`,
 );
