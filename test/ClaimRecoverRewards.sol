@@ -296,7 +296,7 @@ contract ClaimRecoverRewards is BaseTest {
         DistributeRewardsBundle[] memory _distributeRewardBundles = new DistributeRewardsBundle[](1);
         _distributeRewardBundles[0] = _distributeRewardBundle;
 
-        vm.prank(campaignsUpdater);
+        vm.prank(updater);
         metrom.distributeRewards(_distributeRewardBundles);
 
         vm.assertEq(metrom.campaignById(metrom.campaignId(_createBundle)).root, _root);
@@ -382,7 +382,7 @@ contract ClaimRecoverRewards is BaseTest {
         DistributeRewardsBundle[] memory _distributeRewardBundles = new DistributeRewardsBundle[](1);
         _distributeRewardBundles[0] = _distributeRewardBundle;
 
-        vm.prank(campaignsUpdater);
+        vm.prank(updater);
         metrom.distributeRewards(_distributeRewardBundles);
 
         vm.assertEq(metrom.campaignById(metrom.campaignId(_createBundle)).root, _root);
