@@ -94,10 +94,8 @@ Brief explainer of the env variables:
   will also determine the network where the deployed contracts will reside.
 - `OWNER`: the address that will own the deployed contracts and that will be
   able to set the protocol parameters.
-- `CAMPAIGNS_UPDATER`: the address that will be allowed to update the Merkle
-  roots for active campaigns.
-- `RATES_UPDATER`: the address that will be allowed to update the minimum rates
-  for whitelisted reward tokens.
+- `UPDATER`: the address that will be allowed to update the Merkle roots for
+  active campaigns and whitelisted token address rates.
 - `FEE`: the fee to charge on campaigns creation, in points per million.
 - `MINIMUM_CAMPAIGN_DURATION`: the minimum allowed campaign duration in seconds.
 - `ETHERSCAN_API_KEY`: the Etherscan (or Blockscout) API key used to verify
@@ -112,7 +110,7 @@ After doing that, you can finally execute the following command to initiate the
 deployment:
 
 ```
-FOUNDRY_PROFILE=production forge script --broadcast --rpc-url $RPC_URL --sig 'run(address,address,address,uint32,uint32,uint32)' --verify Deploy $OWNER $CAMPAIGNS_UPDATER $RATES_UPDATER $GLOBAL_FEE $MINIMUM_CAMPAIGN_DURATION $MAXIMUM_CAMPAIGN_DURATION
+FOUNDRY_PROFILE=production forge script --broadcast --rpc-url $RPC_URL --sig 'run(address,address,uint32,uint32,uint32)' --verify Deploy $OWNER $UPDATER $GLOBAL_FEE $MINIMUM_CAMPAIGN_DURATION $MAXIMUM_CAMPAIGN_DURATION
 ```
 
 ### Addresses
