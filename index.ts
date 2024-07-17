@@ -25,7 +25,7 @@ export const ADDRESS: Record<
             blockCreated: 24833828,
         },
         [SupportedChain.MantleSepolia]: {
-            address: "0xe3dA4E4b76C4ed3e4227db20F20d1F25A4507f9b.",
+            address: "0xe3dA4E4b76C4ed3e4227db20F20d1F25A4507f9b",
             blockCreated: 9840417,
         },
     },
