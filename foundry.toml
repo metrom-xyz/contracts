@@ -22,4 +22,4 @@ runs = 100000
 [etherscan]
 holesky = { chain = 17000, key = "${ETHERSCAN_API_KEY}", url = "${VERIFIER_URL}" }
 celo_alfajores = { chain = 44787, key = "${ETHERSCAN_API_KEY}", url = "${VERIFIER_URL}" }
-linea_sepolia = { chain = 59141, key = "${ETHERSCAN_API_KEY}", url = "${VERIFIER_URL}" }
+mantle_sepolia = { chain = 5003, key = "${ETHERSCAN_API_KEY}", url = "${VERIFIER_URL}" }

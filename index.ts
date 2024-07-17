@@ -8,7 +8,7 @@ export enum Environment {
 export enum SupportedChain {
     Holesky = 17000,
     CeloAlfajores = 44787,
-    LineaSepolia = 59141,
+    MantleSepolia = 5003,
 }
 
 export const ADDRESS: Record<
@@ -24,9 +24,9 @@ export const ADDRESS: Record<
             address: "0x10E1A22034C5AF1E793c2Ac189b90ca47b252fF9",
             blockCreated: 24833828,
         },
-        [SupportedChain.LineaSepolia]: {
-            address: "0xe82c4D8b993D613a28600B953e91A3A93Ae69Fd6",
-            blockCreated: 2366812,
+        [SupportedChain.MantleSepolia]: {
+            address: "0xe3dA4E4b76C4ed3e4227db20F20d1F25A4507f9b.",
+            blockCreated: 9840417,
         },
     },
     [Environment.Staging]: {
@@ -38,9 +38,9 @@ export const ADDRESS: Record<
             address: "0xd1c1153fd809Aae3bb431b586C032C4856abaeD4",
             blockCreated: 24833840,
         },
-        [SupportedChain.LineaSepolia]: {
-            address: "0x3325a167DA3130D7788E41f614C725C11DcEb5E7",
-            blockCreated: 2366828,
+        [SupportedChain.MantleSepolia]: {
+            address: "0xBbB06b25484AB9E23FEe8Ee321Af8e253ea7A76a",
+            blockCreated: 9840495,
         },
     },
 };
