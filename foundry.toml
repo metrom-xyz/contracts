@@ -2,7 +2,7 @@
 remappings = [
     'forge-std/=lib/forge-std/src/',
     'oz/=lib/openzeppelin-contracts/contracts/',
-    'oz-up/=lib/openzeppelin-contracts-upgradeable/contracts/'
+    'oz-up/=lib/openzeppelin-contracts-upgradeable/contracts/',
 ]
 optimizer = false
 solc_version = "0.8.26"
@@ -20,6 +20,6 @@ runs = 16384
 runs = 100000
 
 [etherscan]
-holesky = { chain = 17000, key = "${ETHERSCAN_API_KEY}", url = "${VERIFIER_URL}" }
-celo_alfajores = { chain = 44787, key = "${ETHERSCAN_API_KEY}", url = "${VERIFIER_URL}" }
-mantle_sepolia = { chain = 5003, key = "${ETHERSCAN_API_KEY}", url = "${VERIFIER_URL}" }
+holesky = { chain = 17000, key = "${ETHERSCAN_API_KEY}", url = "https://api-holesky.etherscan.io/api" }
+celo_alfajores = { chain = 44787, key = "${ETHERSCAN_API_KEY}", url = "https://api-alfajores.celoscan.io/api" }
+mantle_sepolia = { chain = 5003, key = "${ETHERSCAN_API_KEY}", url = "https://api-sepolia.mantlescan.xyz/api" }
