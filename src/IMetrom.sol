@@ -225,14 +225,6 @@ interface IMetrom {
     /// @notice Thrown when trying to create a campaign with a non-whitelisted reward token.
     error DisallowedRewardToken();
 
-    /// @notice Thrown when trying to distribute rewards multiple times on the same
-    /// campaign in the same transaction.
-    error DuplicatedDistribution();
-
-    /// @notice Thrown when trying to set a minimum whitelisted reward rate multiple times
-    /// on the same reward token in the same transaction.
-    error DuplicatedMinimumRewardTokenRate();
-
     /// @notice Thrown when trying to create a campaign with a duration that is too long.
     error DurationTooLong();
 

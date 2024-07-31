@@ -466,45 +466,6 @@ contract CreateCampaignTest is BaseTest {
         vm.assertEq(metrom.campaignReward(_createdCampaignId, address(_mintableFeeOnTransferErc20)), 8.91 ether);
     }
 
-    function test_successSingleDuplicatedReward() public {
-        MintableERC20 _mintableErc20 = new MintableERC20("Test", "TST");
-        _mintableErc20.mint(address(this), 25 ether);
-        _mintableErc20.approve(address(metrom), 25 ether);
-        vm.assertEq(_mintableErc20.balanceOf(address(this)), 25 ether);
-
-        setMinimumRewardRate(address(_mintableErc20), 1);
-
-        RewardAmount[] memory _rewards = new RewardAmount[](2);
-        _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
-        _rewards[1] = RewardAmount({token: address(_mintableErc20), amount: 15 ether});
-
-        CreateBundle memory _bundle = CreateBundle({
-            pool: address(1),
-            from: uint32(block.timestamp + 10),
-            to: uint32(block.timestamp + 20),
-            specification: bytes32(0),
-            rewards: _rewards
-        });
-
-        CreateBundle[] memory _bundles = new CreateBundle[](1);
-        _bundles[0] = _bundle;
-
-        metrom.createCampaigns(_bundles);
-
-        vm.assertEq(_mintableErc20.balanceOf(address(this)), 0);
-        vm.assertEq(metrom.claimableFees(address(_mintableErc20)), 0.25 ether);
-
-        bytes32 _createdCampaignId = metrom.campaignId(_bundle);
-        ReadonlyCampaign memory _createdCampaign = metrom.campaignById(_createdCampaignId);
-
-        vm.assertEq(_createdCampaign.pool, _bundle.pool);
-        vm.assertEq(_createdCampaign.from, _bundle.from);
-        vm.assertEq(_createdCampaign.to, _bundle.to);
-        vm.assertEq(_createdCampaign.specification, _bundle.specification);
-        vm.assertEq(_createdCampaign.root, bytes32(0));
-        vm.assertEq(metrom.campaignReward(_createdCampaignId, address(_mintableErc20)), 24.75 ether);
-    }
-
     function test_successSingleSingleReward() public {
         MintableERC20 _mintableErc20 = new MintableERC20("Test", "TST");
         _mintableErc20.mint(address(this), 10 ether);

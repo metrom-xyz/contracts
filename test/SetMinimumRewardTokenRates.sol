@@ -33,21 +33,6 @@ contract SetMinimumRewardTokenRatesTest is BaseTest {
         metrom.setMinimumRewardTokenRates(_bundles);
     }
 
-    function test_failDuplicate() public {
-        SetMinimumRewardTokenRateBundle memory _bundle1 =
-            SetMinimumRewardTokenRateBundle({token: address(1), minimumRate: 10});
-        SetMinimumRewardTokenRateBundle memory _bundle2 =
-            SetMinimumRewardTokenRateBundle({token: address(1), minimumRate: 11});
-
-        SetMinimumRewardTokenRateBundle[] memory _bundles = new SetMinimumRewardTokenRateBundle[](2);
-        _bundles[0] = _bundle1;
-        _bundles[1] = _bundle2;
-
-        vm.prank(updater);
-        vm.expectRevert(IMetrom.DuplicatedMinimumRewardTokenRate.selector);
-        metrom.setMinimumRewardTokenRates(_bundles);
-    }
-
     function test_successSingleRepeatedUpdate() public {
         address _token = address(100000000001);
         vm.assertEq(metrom.minimumRewardTokenRate(_token), 0);

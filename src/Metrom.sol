@@ -224,9 +224,6 @@ contract Metrom is IMetrom, UUPSUpgradeable {
             DistributeRewardsBundle calldata _bundle = _bundles[_i];
             if (_bundle.root == bytes32(0)) revert ZeroRoot();
             if (_bundle.data == bytes32(0)) revert ZeroData();
-            for (uint256 _j = _i + 1; _j < _bundles.length; _j++) {
-                if (_bundles[_i].campaignId == _bundles[_j].campaignId) revert DuplicatedDistribution();
-            }
 
             Campaign storage campaign = _getExistingCampaign(_bundle.campaignId);
             campaign.root = _bundle.root;
@@ -242,9 +239,6 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         for (uint256 _i; _i < _bundles.length; _i++) {
             SetMinimumRewardTokenRateBundle calldata _bundle = _bundles[_i];
             if (_bundle.token == address(0)) revert ZeroAddressRewardToken();
-            for (uint256 _j = _i + 1; _j < _bundles.length; _j++) {
-                if (_bundles[_i].token == _bundles[_j].token) revert DuplicatedMinimumRewardTokenRate();
-            }
 
             minimumRewardTokenRate[_bundle.token] = _bundle.minimumRate;
             emit SetMinimumRewardTokenRate(_bundle.token, _bundle.minimumRate);
