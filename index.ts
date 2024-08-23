@@ -17,30 +17,30 @@ export const ADDRESS: Record<
 > = {
     [Environment.Development]: {
         [SupportedChain.Holesky]: {
-            address: "0xBB7a0d06c6f37B1607bceeaFA452216BC843C193",
-            blockCreated: 2039209,
+            address: "0xE2461a09B782efF63a2B50964a6DA3C15dD2A51e",
+            blockCreated: 2189164,
         },
         [SupportedChain.CeloAlfajores]: {
-            address: "0x766faa004398d68Ef7f64926525E7ad2933A0f87",
-            blockCreated: 25404664,
+            address: "0x0Fe5A93b63ACcf31679321dd0Daf341c037A1187",
+            blockCreated: 25798782,
         },
         [SupportedChain.MantleSepolia]: {
-            address: "0x080a71eC6Cb5C67480DE006A59d7991cD8fD2329",
-            blockCreated: 10444146,
+            address: "0xB6044f769f519a634A5150645484b18d0C031ae8",
+            blockCreated: 11430844,
         },
     },
     [Environment.Staging]: {
         [SupportedChain.Holesky]: {
-            address: "0x44d112ACD0764960667a7b9eA95B8120f39f58C4",
-            blockCreated: 2039220,
+            address: "0xd2C71C57645e62f60E20287d759b0F8054693783",
+            blockCreated: 2189175,
         },
         [SupportedChain.CeloAlfajores]: {
-            address: "0x52015b596e765F7AA2668BCC30Fc715748A20A8e",
-            blockCreated: 25404677,
+            address: "0x8a5FEc616053539757f4a990948DBbF69b9C052e",
+            blockCreated: 25798811,
         },
         [SupportedChain.MantleSepolia]: {
-            address: "0x87d24272071593B4a7907fd133E74EC30025D4F9",
-            blockCreated: 10444197,
+            address: "0xEc0B101CDC03ae65F78cF5477F2b9e0FaB9f2b28",
+            blockCreated: 11430921,
         },
     },
 };
