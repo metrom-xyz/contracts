@@ -53,8 +53,8 @@ export const ADDRESS: Record<
     },
     [Environment.Production]: {
         [SupportedChain.Mode]: {
-            address: "0xD4AC4AaFb81eC774E49AA755A66EfCe4574D6276",
-            blockCreated: 12556110,
+            address: "0x3325a167DA3130D7788E41f614C725C11DcEb5E7",
+            blockCreated: 12613427,
         },
     },
 };
