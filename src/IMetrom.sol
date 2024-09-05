@@ -45,6 +45,7 @@ struct ReadonlyCampaign {
     uint32 to;
     bytes32 specification;
     bytes32 root;
+    bytes32 data;
 }
 
 struct RewardAmount {

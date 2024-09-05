@@ -131,7 +131,8 @@ contract Metrom is IMetrom, UUPSUpgradeable {
             from: campaign.from,
             to: campaign.to,
             specification: campaign.specification,
-            root: campaign.root
+            root: campaign.root,
+            data: campaign.data
         });
     }
 

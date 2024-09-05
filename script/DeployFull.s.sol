@@ -7,7 +7,7 @@ import {ERC1967Proxy} from "oz/proxy/ERC1967/ERC1967Proxy.sol";
 import {Metrom} from "../src/Metrom.sol";
 
 /// SPDX-License-Identifier: GPL-3.0-or-later
-contract Deploy is Script {
+contract DeployFull is Script {
     function run(
         address _owner,
         address _updater,

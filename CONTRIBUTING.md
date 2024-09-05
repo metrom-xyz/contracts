@@ -110,7 +110,11 @@ After doing that, you can finally execute the following command to initiate the
 deployment:
 
 ```
-FOUNDRY_PROFILE=production forge script --broadcast --chain $CHAIN --rpc-url $RPC_URL --sig 'run(address,address,uint32,uint32,uint32)' --verify Deploy $OWNER $UPDATER $GLOBAL_FEE $MINIMUM_CAMPAIGN_DURATION $MAXIMUM_CAMPAIGN_DURATION
+# for the full deployment (proxy + implmentation)
+FOUNDRY_PROFILE=production forge script --broadcast --chain $CHAIN --rpc-url $RPC_URL --sig 'run(address,address,uint32,uint32,uint32)' --verify DeployFull $OWNER $UPDATER $GLOBAL_FEE $MINIMUM_CAMPAIGN_DURATION $MAXIMUM_CAMPAIGN_DURATION
+
+# for the implementation-only deployment
+FOUNDRY_PROFILE=production forge script --broadcast --chain $CHAIN --rpc-url $RPC_URL --verify DeployImplementation
 ```
 
 ### Addresses
