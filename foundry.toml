@@ -24,3 +24,4 @@ holesky = { chain = 17000, key = "${ETHERSCAN_API_KEY}", url = "https://api-hole
 celo_alfajores = { chain = 44787, key = "${ETHERSCAN_API_KEY}", url = "https://api-alfajores.celoscan.io/api" }
 mantle_sepolia = { chain = 5003, key = "${ETHERSCAN_API_KEY}", url = "https://api-sepolia.mantlescan.xyz/api" }
 mode = { chain = 34443, key = "${ETHERSCAN_API_KEY}", url = "https://api.routescan.io/v2/network/mainnet/evm/34443/etherscan/api" }
+mantle = { chain = 5000, key = "${ETHERSCAN_API_KEY}", url = "https://api.mantlescan.xyz/api" }

@@ -4,6 +4,7 @@ import {
     celoAlfajores,
     mantleSepoliaTestnet,
     mode,
+    mantle,
 } from "viem/chains";
 
 export enum Environment {
@@ -17,6 +18,7 @@ export enum SupportedChain {
     CeloAlfajores = celoAlfajores.id,
     MantleSepolia = mantleSepoliaTestnet.id,
     Mode = mode.id,
+    Mantle = mantle.id,
 }
 
 export const ADDRESS: Record<
@@ -55,6 +57,10 @@ export const ADDRESS: Record<
         [SupportedChain.Mode]: {
             address: "0x3325a167DA3130D7788E41f614C725C11DcEb5E7",
             blockCreated: 12613427,
+        },
+        [SupportedChain.Mantle]: {
+            address: "0xD6e88c910329fE3597498772eB94991a0630306d",
+            blockCreated: 68914159,
         },
     },
 };
