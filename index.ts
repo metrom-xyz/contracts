@@ -59,8 +59,8 @@ export const ADDRESS: Record<
             blockCreated: 12904333,
         },
         [SupportedChain.Mantle]: {
-            address: "0xD6e88c910329fE3597498772eB94991a0630306d",
-            blockCreated: 68914159,
+            address: "0x4300d4C410f87c7c1824Cbc2eF67431030106604",
+            blockCreated: 68933021,
         },
     },
 };
