@@ -1,11 +1,4 @@
 import { type ChainContract } from "viem";
-import {
-    holesky,
-    celoAlfajores,
-    mantleSepoliaTestnet,
-    mode,
-    mantle,
-} from "viem/chains";
 
 export enum Environment {
     Development = "development",
@@ -13,16 +6,18 @@ export enum Environment {
 }
 
 export enum SupportedChain {
-    Holesky = holesky.id,
-    CeloAlfajores = celoAlfajores.id,
-    MantleSepolia = mantleSepoliaTestnet.id,
-    Mode = mode.id,
-    Mantle = mantle.id,
+    Holesky = 17_000,
+    CeloAlfajores = 44_787,
+    MantleSepolia = 5_003,
+    SonicTestnet = 64165,
+
+    Mode = 34_443,
+    Mantle = 5_000,
 }
 
 export const ADDRESS: Record<
     Environment,
-    Record<SupportedChain, ChainContract | undefined>
+    { [chainId: number]: ChainContract | undefined }
 > = {
     [Environment.Development]: {
         [SupportedChain.Holesky]: {
@@ -36,6 +31,10 @@ export const ADDRESS: Record<
         [SupportedChain.MantleSepolia]: {
             address: "0xB6044f769f519a634A5150645484b18d0C031ae8",
             blockCreated: 11430844,
+        },
+        [SupportedChain.SonicTestnet]: {
+            address: "0xD4AC4AaFb81eC774E49AA755A66EfCe4574D6276",
+            blockCreated: 73294873,
         },
     },
     [Environment.Production]: {
