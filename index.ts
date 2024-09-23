@@ -9,7 +9,7 @@ export enum SupportedChain {
     Holesky = 17_000,
     CeloAlfajores = 44_787,
     MantleSepolia = 5_003,
-    SonicTestnet = 64165,
+    SonicTestnet = 64_165,
 
     Mode = 34_443,
     Mantle = 5_000,
