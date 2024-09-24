@@ -13,6 +13,7 @@ export enum SupportedChain {
 
     Mode = 34_443,
     Mantle = 5_000,
+    Base = 8_453,
 }
 
 export const ADDRESS: Record<
@@ -35,6 +36,10 @@ export const ADDRESS: Record<
         [SupportedChain.SonicTestnet]: {
             address: "0xD4AC4AaFb81eC774E49AA755A66EfCe4574D6276",
             blockCreated: 73294873,
+        },
+        [SupportedChain.Base]: {
+            address: "0xD3Fe5d463dD1fd943CCC2271F2ea980B898B5DA3",
+            blockCreated: 20191282,
         },
     },
     [Environment.Production]: {
