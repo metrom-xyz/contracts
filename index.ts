@@ -37,12 +37,12 @@ export const ADDRESS: Record<
             address: "0xD4AC4AaFb81eC774E49AA755A66EfCe4574D6276",
             blockCreated: 73294873,
         },
+    },
+    [Environment.Production]: {
         [SupportedChain.Base]: {
             address: "0xD3Fe5d463dD1fd943CCC2271F2ea980B898B5DA3",
             blockCreated: 20191282,
         },
-    },
-    [Environment.Production]: {
         [SupportedChain.Mode]: {
             address: "0xc325890958D399ee26c26D21bBeFbDA17B03a611",
             blockCreated: 12904333,
