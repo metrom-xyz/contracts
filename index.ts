@@ -6,6 +6,7 @@ export enum SupportedChain {
     CeloAlfajores = 44_787,
     MantleSepolia = 5_003,
     SonicTestnet = 64_165,
+    BaseTestnet = 84_532,
 
     // mainnets
     Mode = 34_443,
@@ -29,6 +30,10 @@ export const ADDRESS: Record<SupportedChain, ChainContract> = {
     [SupportedChain.SonicTestnet]: {
         address: "0xD4AC4AaFb81eC774E49AA755A66EfCe4574D6276",
         blockCreated: 73294873,
+    },
+    [SupportedChain.BaseTestnet]: {
+        address: "0xD4AC4AaFb81eC774E49AA755A66EfCe4574D6276",
+        blockCreated: 16130946,
     },
     [SupportedChain.Base]: {
         address: "0xD3Fe5d463dD1fd943CCC2271F2ea980B898B5DA3",

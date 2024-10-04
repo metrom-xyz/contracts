@@ -26,3 +26,4 @@ mantle_sepolia = { chain = 5003, key = "${ETHERSCAN_API_KEY}", url = "https://ap
 mode = { chain = 34443, key = "${ETHERSCAN_API_KEY}", url = "https://api.routescan.io/v2/network/mainnet/evm/34443/etherscan/api" }
 mantle = { chain = 5000, key = "${ETHERSCAN_API_KEY}", url = "https://api.mantlescan.xyz/api" }
 base = { chain = 8453, key = "${ETHERSCAN_API_KEY}", url = "https://api.basescan.org/api" }
+base_testnet = { chain = 84532, key = "${ETHERSCAN_API_KEY}", url = "https://api-sepolia.basescan.org/api" }
