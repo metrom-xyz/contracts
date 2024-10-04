@@ -1,7 +1,7 @@
 {
     "type": "module",
     "name": "@metrom-xyz/contracts",
-    "version": "0.25.1",
+    "version": "0.26.0",
     "description": "Smart contracts for Metrom.",
     "author": "Federico Luzzi <federico.luzzi@metrom.xyz>",
     "license": "GPL-3.0-or-later",
