@@ -36,8 +36,8 @@ export const ADDRESS: Record<SupportedChain, ChainContract> = {
         blockCreated: 16130946,
     },
     [SupportedChain.Base]: {
-        address: "0xD3Fe5d463dD1fd943CCC2271F2ea980B898B5DA3",
-        blockCreated: 20191282,
+        address: "0xD1D3Cf05Ef211C71056f0aF1a7FD1DF989E109c3",
+        blockCreated: 20622498,
     },
     [SupportedChain.Mode]: {
         address: "0xc325890958D399ee26c26D21bBeFbDA17B03a611",
