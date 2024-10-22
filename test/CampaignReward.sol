@@ -12,13 +12,6 @@ contract CampaignRewardTest is BaseTest {
         metrom.campaignReward(bytes32(0), address(0));
     }
 
-    function test_failNonExistentReward() public {
-        bytes32 _campaignId = createFixedCampaign();
-
-        vm.expectRevert(IMetrom.NonExistentReward.selector);
-        metrom.campaignReward(_campaignId, address(0));
-    }
-
     function test_success() public {
         MintableERC20 _mintableErc20 = new MintableERC20("Test", "TST");
         _mintableErc20.mint(address(this), 10 ether);

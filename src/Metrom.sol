@@ -112,9 +112,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     }
 
     function _getExistingCampaignReward(bytes32 _id, address _token) internal view returns (Reward storage) {
-        Reward storage reward = _getExistingCampaign(_id).reward[_token];
-        if (reward.amount == 0) revert NonExistentReward();
-        return reward;
+        return _getExistingCampaign(_id).reward[_token];
     }
 
     function _resolvedFee() internal view returns (uint32) {

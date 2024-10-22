@@ -11,7 +11,7 @@ contract DeployImplementation is Script {
         vm.startBroadcast(vm.envUint("PRIVATE_KEY"));
 
         Metrom _metrom = new Metrom();
-        console2.log("Metrom address: ", address(_metrom));
+        console2.log("Implementation address: ", address(_metrom));
 
         vm.stopBroadcast();
     }
