@@ -13,6 +13,7 @@ export enum SupportedChain {
     Mantle = 5_000,
     Base = 8_453,
     Taiko = 167_000,
+    Scroll = 534_352,
 }
 
 export const ADDRESS: Record<SupportedChain, ChainContract> = {
@@ -51,5 +52,9 @@ export const ADDRESS: Record<SupportedChain, ChainContract> = {
     [SupportedChain.Taiko]: {
         address: "0xD4AC4AaFb81eC774E49AA755A66EfCe4574D6276",
         blockCreated: 460190,
+    },
+    [SupportedChain.Scroll]: {
+        address: "0xD4AC4AaFb81eC774E49AA755A66EfCe4574D6276",
+        blockCreated: 10721351,
     },
 };
