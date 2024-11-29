@@ -8,6 +8,7 @@ export enum SupportedChain {
     SonicTestnet = 64_165,
     BaseSepolia = 84_532,
     FormTestnet = 132_902,
+    ArtheraTestnet = 10_243,
 
     // mainnets
     Mode = 34_443,
@@ -41,6 +42,10 @@ export const ADDRESS: Record<SupportedChain, ChainContract> = {
     [SupportedChain.FormTestnet]: {
         address: "0xBbB06b25484AB9E23FEe8Ee321Af8e253ea7A76a",
         blockCreated: 14587762,
+    },
+    [SupportedChain.ArtheraTestnet]: {
+        address: "0xD4AC4AaFb81eC774E49AA755A66EfCe4574D6276",
+        blockCreated: 74503,
     },
     [SupportedChain.Base]: {
         address: "0xD1D3Cf05Ef211C71056f0aF1a7FD1DF989E109c3",
