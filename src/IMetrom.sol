@@ -33,12 +33,10 @@ struct RewardsCampaign {
 
 /// @notice Represents a points based campaign in the contract's state, with its owner,
 /// target pool, running period, specification, root and data links, as well as rewards
-/// information. A particular note must be made for the `specification` and `data` fields.
-/// These can optionally contain a SHA256 hash of some JSON content stored on IPFS such
-/// that a CID can be constructed from them. `specification` can point to an IPFS JSON
-/// file with additional information/parameters on the campaign, while the `data` field
-/// must point to a JSON file containing the raw leaves from which the current campaign's
-/// Merkle tree and root was calculated.
+/// information. A particular note must be made for the `specification` field.
+/// This can optionally contain a SHA256 hash of some JSON content stored on IPFS such
+/// that a CID can be constructed from it. `specification` can point to an IPFS JSON
+/// file with additional information/parameters on the campaign.
 struct PointsCampaign {
     address owner;
     address pendingOwner;
