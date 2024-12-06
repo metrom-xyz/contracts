@@ -3,10 +3,6 @@ pragma solidity >=0.8.0;
 /// @dev Represents the maximum value for fee percentages (100%).
 uint32 constant UNIT = 1_000_000;
 
-/// @dev Represents the maximum number of different rewards allowed for a
-/// single campaign.
-uint256 constant MAX_REWARDS_PER_CAMPAIGN = 5;
-
 /// @notice Represents a reward in the contract's state.
 /// It keeps track of the remaining amount after fees
 /// as well as a mapping of claimed amounts for each user.
@@ -15,15 +11,15 @@ struct Reward {
     mapping(address user => uint256 amount) claimed;
 }
 
-/// @notice Represents a campaign in the contract's state, with its owner, target pool,
-/// running period, specification, root and data links, as well as rewards information.
-/// A particular note must be made for the `specification` and `data` fields. These can
-/// optionally contain a SHA256 hash of some JSON content stored on IPFS such that a CID
-/// can be constructed from them. `specification` can point to an IPFS JSON file with
+/// @notice Represents a rewards based campaign in the contract's state, with its owner,
+/// target pool, running period, specification, root and data links, as well as rewards
+/// information. A particular note must be made for the `specification` and `data` fields.
+/// These can optionally contain a SHA256 hash of some JSON content stored on IPFS such that
+/// a CID can be constructed from them. `specification` can point to an IPFS JSON file with
 /// additional information/parameters on the campaign, while the `data` field must point
 /// to a JSON file containing the raw leaves from which the current campaign's Merkle
 /// tree and root was calculated.
-struct Campaign {
+struct RewardsCampaign {
     address owner;
     address pendingOwner;
     address pool;
@@ -35,9 +31,27 @@ struct Campaign {
     mapping(address token => Reward) reward;
 }
 
-/// @notice Represents a version of the campaign entity that can be used in readonly, getter
-/// like functions.
-struct ReadonlyCampaign {
+/// @notice Represents a points based campaign in the contract's state, with its owner,
+/// target pool, running period, specification, root and data links, as well as rewards
+/// information. A particular note must be made for the `specification` and `data` fields.
+/// These can optionally contain a SHA256 hash of some JSON content stored on IPFS such
+/// that a CID can be constructed from them. `specification` can point to an IPFS JSON
+/// file with additional information/parameters on the campaign, while the `data` field
+/// must point to a JSON file containing the raw leaves from which the current campaign's
+/// Merkle tree and root was calculated.
+struct PointsCampaign {
+    address owner;
+    address pendingOwner;
+    address pool;
+    uint32 from;
+    uint32 to;
+    bytes32 specification;
+    bytes32 data;
+    uint256 points;
+}
+
+/// @notice Represents a readonly rewards based campaign.
+struct ReadonlyRewardsCampaign {
     address owner;
     address pendingOwner;
     address pool;
@@ -46,6 +60,18 @@ struct ReadonlyCampaign {
     bytes32 specification;
     bytes32 root;
     bytes32 data;
+}
+
+/// @notice Represents a readonly points based campaign
+struct ReadonlyPointsCampaign {
+    address owner;
+    address pendingOwner;
+    address pool;
+    uint32 from;
+    uint32 to;
+    bytes32 specification;
+    bytes32 data;
+    uint256 points;
 }
 
 struct RewardAmount {
@@ -59,13 +85,23 @@ struct CreatedCampaignReward {
     uint256 fee;
 }
 
-/// @notice Contains data that can be used by anyone to create a campaign.
-struct CreateBundle {
+/// @notice Contains data that can be used by anyone to create a rewards based campaign.
+struct CreateRewardsCampaignBundle {
     address pool;
     uint32 from;
     uint32 to;
     bytes32 specification;
     RewardAmount[] rewards;
+}
+
+/// @notice Contains data that can be used by anyone to create a points based campaign.
+struct CreatePointsCampaignBundle {
+    address pool;
+    uint32 from;
+    uint32 to;
+    bytes32 specification;
+    uint256 points;
+    address feeToken;
 }
 
 /// @notice Contains data that can be used by the current `updater` to
@@ -78,8 +114,8 @@ struct DistributeRewardsBundle {
 
 /// @notice Contains data that can be used by the current `updater` or the
 /// `owner` to update the minimum required rate to be emitted in a campaign for
-/// a certain reward token.
-struct SetMinimumRewardTokenRateBundle {
+/// a certain reward token or the minimum fee token rate.
+struct SetMinimumTokenRateBundle {
     address token;
     uint256 minimumRate;
 }
@@ -111,7 +147,7 @@ interface IMetrom {
     /// @notice Emitted at initialization time.
     /// @param owner The initial contract's owner.
     /// @param updater The initial contract's updater.
-    /// @param fee The initial contract's fee.
+    /// @param fee The initial contract's rewards campaign fee.
     /// @param minimumCampaignDuration The initial contract's minimum campaign duration.
     /// @param maximumCampaignDuration The initial contract's maximum campaign duration.
     event Initialize(
@@ -125,7 +161,7 @@ interface IMetrom {
     /// @notice Emitted when the contract is ossified.
     event Ossify();
 
-    /// @notice Emitted when a campaign is created.
+    /// @notice Emitted when a rewards based campaign is created.
     /// @param id The id of the campaign.
     /// @param owner The initial owner of the campaign.
     /// @param pool The targeted pool address of the campaign.
@@ -135,7 +171,7 @@ interface IMetrom {
     /// @param rewards A list of the reward tokens deposited in the campaign. Each list
     /// item contains the used reward token address along with the after-fee amount and
     /// the fee amount paid.
-    event CreateCampaign(
+    event CreateRewardsCampaign(
         bytes32 indexed id,
         address indexed owner,
         address pool,
@@ -143,6 +179,28 @@ interface IMetrom {
         uint32 to,
         bytes32 specification,
         CreatedCampaignReward[] rewards
+    );
+
+    /// @notice Emitted when a points based campaign is created.
+    /// @param id The id of the campaign.
+    /// @param owner The initial owner of the campaign.
+    /// @param pool The targeted pool address of the campaign.
+    /// @param from From when the campaign will run.
+    /// @param to To when the campaign will run.
+    /// @param specification The campaign's specification data hash.
+    /// @param points The amount of points to distribute (scaled to account for 18 decimals).
+    /// @param feeToken The token used to pay the creation fee.
+    /// @param fee The creation fee amount.
+    event CreatePointsCampaign(
+        bytes32 indexed id,
+        address indexed owner,
+        address pool,
+        uint32 from,
+        uint32 to,
+        bytes32 specification,
+        uint256 points,
+        address feeToken,
+        uint256 fee
     );
 
     /// @notice Emitted when the campaigns updater distributes rewards on a campaign.
@@ -154,11 +212,19 @@ interface IMetrom {
     event DistributeReward(bytes32 indexed campaignId, bytes32 root, bytes32 data);
 
     /// @notice Emitted when the rates updater or the owner updates the minimum emission
-    /// rate of a certain whitelisted reward token required in order to create a campaign.
+    /// rate of a certain whitelisted reward token required in order to create a rewards based
+    /// campaign.
     /// @param token The address of the whitelisted reward token to update.
     /// @param minimumRate The new minimum rate required in order to create a
     /// campaign.
     event SetMinimumRewardTokenRate(address indexed token, uint256 minimumRate);
+
+    /// @notice Emitted when the rates updater or the owner updates the minimum rate for a
+    /// certain whitelisted fee token required in order to create a points based campaign.
+    /// @param token The address of the whitelisted fee token to update.
+    /// @param minimumRate The new minimum rate required in order to create a
+    /// campaign.
+    event SetMinimumFeeTokenRate(address indexed token, uint256 minimumRate);
 
     /// @notice Emitted when an eligible LP claims a reward.
     /// @param campaignId The id of the campaign on which the claim is performed.
@@ -202,12 +268,12 @@ interface IMetrom {
     /// @param updater The new updater.
     event SetUpdater(address indexed updater);
 
-    /// @notice Emitted when Metrom's owner sets a new fee.
-    /// @param fee The new fee.
+    /// @notice Emitted when Metrom's owner sets a new rewards based campaign fee.
+    /// @param fee The new rewards campaign fee.
     event SetFee(uint32 fee);
 
     /// @notice Emitted when Metrom's owner sets a new address-specific
-    /// rebate for protocol fees.
+    /// rebate for the protocol rewards based campaign fees.
     /// @param account The account for which the rebate was set.
     /// @param rebate The rebate.
     event SetFeeRebate(address account, uint32 rebate);
@@ -248,6 +314,9 @@ interface IMetrom {
 
     /// @notice Thrown at claim procession time when the provided Merkle proof is invalid.
     error InvalidProof();
+
+    /// @notice Thrown when creating a points based campaign if a zero points amount was specified.
+    error NoPoints();
 
     /// @notice Thrown when creating a campaign if no rewards were specified.
     error NoRewards();
@@ -291,6 +360,15 @@ interface IMetrom {
     /// @notice Thrown when processing a claim with a zero address receiver or when claiming
     /// fees for a zero address receiver.
     error ZeroAddressReceiver();
+
+    /// @notice Thrown when trying to create a points based campaign with a zero address fee token.
+    error ZeroAddressFeeToken();
+
+    /// @notice Thrown when trying to create a points based campaign with a disallowed fee token.
+    error DisallowedFeeToken();
+
+    /// @notice Thrown when trying to create a points based campaign with a non adequate fee.
+    error FeeAmountTooLow();
 
     /// @notice Thrown when trying to create a campaign with a zero address reward token or
     /// when trying to set the minimum reward token rate for a zero address reward token.
@@ -371,10 +449,22 @@ interface IMetrom {
     /// @return minimumRate The reward token's minimum required emission rate.
     function minimumRewardTokenRate(address token) external view returns (uint256 minimumRate);
 
-    /// @notice Returns a campaign in readonly format.
+    /// @notice Returns the minimum fee token rate required in order to create a
+    /// points-based campaign with the given token. Returns 0 if the token is not
+    /// whitelisted and it cannot be used to create a campaign.
+    /// @param token The fee token's address.
+    /// @return minimumRate The reward token's minimum required rate.
+    function minimumFeeTokenRate(address token) external view returns (uint256 minimumRate);
+
+    /// @notice Returns a points based campaign in readonly format.
     /// @param id The wanted campaign id.
-    /// @return campaign The campaign in readonly format.
-    function campaignById(bytes32 id) external view returns (ReadonlyCampaign memory campaign);
+    /// @return campaign The points based campaign in readonly format.
+    function pointsCampaignById(bytes32 id) external view returns (ReadonlyPointsCampaign memory campaign);
+
+    /// @notice Returns a rewards based campaign in readonly format.
+    /// @param id The wanted campaign id.
+    /// @return campaign The rewards based campaign in readonly format.
+    function rewardsCampaignById(bytes32 id) external view returns (ReadonlyRewardsCampaign memory campaign);
 
     /// @notice Returns the reward amount for a campaign and a reward token.
     /// @param id The id of the campaign to query.
@@ -394,19 +484,28 @@ interface IMetrom {
 
     /// @notice Creates one or more campaigns. The transaction will revert even if one
     /// of the specified bundles results in a creation failure (all or none).
-    /// @param bundles The bundles containing the data used to create the campaigns.
-    function createCampaigns(CreateBundle[] calldata bundles) external;
+    /// @param rewardsCampaignBundles The bundles containing the data used to create new rewards
+    /// based campaigns.
+    /// @param pointsCampaignBundles The bundles containing the data used to create new points
+    /// based campaigns.
+    function createCampaigns(
+        CreateRewardsCampaignBundle[] calldata rewardsCampaignBundles,
+        CreatePointsCampaignBundle[] calldata pointsCampaignBundles
+    ) external;
 
     /// @notice Distributes rewards on one or more campaigns. The transaction will revert
     /// even if only one of the specified bundles results in a distribution failure (all or none).
     /// @param bundles The bundles containing the data used to distribute the rewards.
     function distributeRewards(DistributeRewardsBundle[] calldata bundles) external;
 
-    /// @notice Sets the minimum emission rate allowed for the given whitelisted reward
-    /// tokens to be used in a campaign.
-    /// @param bundles The bundles containing the data used to update the minimum whitelisted
+    /// @notice Sets the minimum rates for both reward and fee tokens.
+    /// @param rewardTokenBundles The bundles containing the data used to update the minimum whitelisted
     /// reward token rates.
-    function setMinimumRewardTokenRates(SetMinimumRewardTokenRateBundle[] calldata bundles) external;
+    /// @param feeTokenBundles The bundles containing the data used to update the minimum fee token rates.
+    function setMinimumTokenRates(
+        SetMinimumTokenRateBundle[] calldata rewardTokenBundles,
+        SetMinimumTokenRateBundle[] calldata feeTokenBundles
+    ) external;
 
     /// @notice Claims outstanding rewards on one or more campaigns. The transaction will revert
     /// even if only one of the specified bundles results in a claim failure (all or none).

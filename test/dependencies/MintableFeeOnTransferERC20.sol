@@ -1,8 +1,9 @@
-pragma solidity 0.8.26;
+pragma solidity 0.8.28;
 
 import {ERC20} from "oz/token/ERC20/ERC20.sol";
 import {UNIT} from "../../src/IMetrom.sol";
 
+/// SPDX-License-Identifier: GPL-3.0-or-later
 contract MintableFeeOnTransferERC20 is ERC20 {
     uint32 public fee;
     address public recipient;
