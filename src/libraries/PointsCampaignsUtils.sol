@@ -84,7 +84,6 @@ library PointsCampaignsUtils {
             from: campaign.from,
             to: campaign.to,
             specification: campaign.specification,
-            data: campaign.data,
             points: campaign.points
         });
     }

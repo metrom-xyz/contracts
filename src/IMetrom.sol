@@ -46,7 +46,6 @@ struct PointsCampaign {
     uint32 from;
     uint32 to;
     bytes32 specification;
-    bytes32 data;
     uint256 points;
 }
 
@@ -70,7 +69,6 @@ struct ReadonlyPointsCampaign {
     uint32 from;
     uint32 to;
     bytes32 specification;
-    bytes32 data;
     uint256 points;
 }
 
