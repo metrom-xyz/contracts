@@ -208,6 +208,40 @@ contract CreatePointsCampaignTest is BaseTest {
         metrom.createCampaigns(new CreateRewardsCampaignBundle[](0), _createPointsCampaignBundles);
     }
 
+    function test_successFeeRebate() public {
+        MintableERC20 _mintableErc20 = new MintableERC20("Test", "TST");
+
+        setMinimumFeeRate(address(_mintableErc20), 1 ether);
+
+        CreatePointsCampaignBundle memory _createPointsCampaignBundle = CreatePointsCampaignBundle({
+            pool: address(1),
+            from: uint32(block.timestamp + 10),
+            to: uint32(block.timestamp + 10 + 30 minutes),
+            specification: bytes32(0),
+            points: 1 ether,
+            feeToken: address(_mintableErc20)
+        });
+        CreatePointsCampaignBundle[] memory _createPointsCampaignBundles = new CreatePointsCampaignBundle[](1);
+        _createPointsCampaignBundles[0] = _createPointsCampaignBundle;
+
+        vm.prank(owner);
+        metrom.setFeeRebate(address(this), UNIT);
+
+        metrom.createCampaigns(new CreateRewardsCampaignBundle[](0), _createPointsCampaignBundles);
+
+        vm.assertEq(_mintableErc20.balanceOf(address(this)), 0);
+        vm.assertEq(metrom.claimableFees(address(_mintableErc20)), 0 ether);
+
+        bytes32 _createdCampaignId = metrom.pointsCampaignId(_createPointsCampaignBundle);
+        ReadonlyPointsCampaign memory _createdCampaign = metrom.pointsCampaignById(_createdCampaignId);
+
+        vm.assertEq(_createdCampaign.pool, _createPointsCampaignBundle.pool);
+        vm.assertEq(_createdCampaign.from, _createPointsCampaignBundle.from);
+        vm.assertEq(_createdCampaign.to, _createPointsCampaignBundle.to);
+        vm.assertEq(_createdCampaign.specification, _createPointsCampaignBundle.specification);
+        vm.assertEq(_createdCampaign.points, 1 ether);
+    }
+
     function test_success() public {
         MintableERC20 _mintableErc20 = new MintableERC20("Test", "TST");
         _mintableErc20.mint(address(this), 0.5 ether);

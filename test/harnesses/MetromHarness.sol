@@ -25,10 +25,6 @@ contract MetromHarness is Metrom {
     function pointsCampaignId(CreatePointsCampaignBundle memory _bundle) external view returns (bytes32) {
         return PointsCampaignsUtils.generateId(_bundle);
     }
-
-    function resolvedRewardsCampaignFee() external view returns (uint32) {
-        return _resolvedRewardsCampaignFee();
-    }
 }
 
 contract MetromHarnessUpgraded is MetromHarness {

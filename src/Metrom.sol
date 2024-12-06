@@ -114,10 +114,6 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         if (ossified) revert Ossified();
     }
 
-    function _resolvedRewardsCampaignFee() internal view returns (uint32) {
-        return uint32(uint64(fee) * (UNIT - feeRebate[msg.sender]) / UNIT);
-    }
-
     /// @inheritdoc IMetrom
     function rewardsCampaignById(bytes32 _id) external view override returns (ReadonlyRewardsCampaign memory) {
         return rewardsCampaigns.getExistingReadonly(_id);
@@ -148,14 +144,16 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         CreateRewardsCampaignBundle[] calldata _rewardsCampaignBundles,
         CreatePointsCampaignBundle[] calldata _pointsCampaignBundles
     ) external {
-        uint32 _resolvedFee = _resolvedRewardsCampaignFee();
+        uint32 _fee = fee;
+        uint32 _feeRebate = feeRebate[msg.sender];
+        uint32 _resolvedRewardsCampaignFee = uint32(uint64(_fee) * (UNIT - _feeRebate) / UNIT);
         uint32 _minimumCampaignDuration = minimumCampaignDuration;
         uint32 _maximumCampaignDuration = maximumCampaignDuration;
 
         for (uint256 _i = 0; _i < _rewardsCampaignBundles.length; _i++) {
             CreateRewardsCampaignBundle calldata _rewardsCampaignBundle = _rewardsCampaignBundles[_i];
             (bytes32 _id, CreatedCampaignReward[] memory _createdCampaignRewards) = createRewardsCampaign(
-                _rewardsCampaignBundle, _minimumCampaignDuration, _maximumCampaignDuration, _resolvedFee
+                _rewardsCampaignBundle, _minimumCampaignDuration, _maximumCampaignDuration, _resolvedRewardsCampaignFee
             );
             emit CreateRewardsCampaign(
                 _id,
@@ -170,8 +168,9 @@ contract Metrom is IMetrom, UUPSUpgradeable {
 
         for (uint256 _i = 0; _i < _pointsCampaignBundles.length; _i++) {
             CreatePointsCampaignBundle calldata _pointsCampaignBundle = _pointsCampaignBundles[_i];
-            (bytes32 _id, uint256 _feeAmount) =
-                createPointsCampaign(_pointsCampaignBundle, _minimumCampaignDuration, _maximumCampaignDuration);
+            (bytes32 _id, uint256 _feeAmount) = createPointsCampaign(
+                _pointsCampaignBundle, _minimumCampaignDuration, _maximumCampaignDuration, _feeRebate
+            );
             emit CreatePointsCampaign(
                 _id,
                 msg.sender,
@@ -244,7 +243,8 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     function createPointsCampaign(
         CreatePointsCampaignBundle memory _bundle,
         uint32 _minimumCampaignDuration,
-        uint32 _maximumCampaignDuration
+        uint32 _maximumCampaignDuration,
+        uint32 _feeRebate
     ) internal returns (bytes32, uint256) {
         uint32 _duration = BaseCampaignsUtils.validate(
             _bundle.pool, _bundle.from, _bundle.to, _minimumCampaignDuration, _maximumCampaignDuration
@@ -253,7 +253,8 @@ contract Metrom is IMetrom, UUPSUpgradeable {
 
         uint256 _minimumFeeTokenRate = minimumFeeTokenRate[_bundle.feeToken];
         if (_minimumFeeTokenRate == 0) revert DisallowedFeeToken();
-        uint256 _requiredFeeAmount = _minimumFeeTokenRate * _duration / 1 hours;
+        uint256 _fullRequiredFeeAmount = _minimumFeeTokenRate * _duration / 1 hours;
+        uint256 _requiredFeeAmount = _fullRequiredFeeAmount * (UNIT - _feeRebate) / UNIT;
 
         (bytes32 _id, PointsCampaign storage campaign) = pointsCampaigns.getNew(_bundle);
         campaign.owner = msg.sender;
@@ -263,13 +264,18 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         campaign.specification = _bundle.specification;
         campaign.points = _bundle.points;
 
-        uint256 _balanceBefore = IERC20(_bundle.feeToken).balanceOf(address(this));
-        IERC20(_bundle.feeToken).safeTransferFrom(msg.sender, address(this), _requiredFeeAmount);
-        uint256 _feeAmount = IERC20(_bundle.feeToken).balanceOf(address(this)) - _balanceBefore;
-        if (_feeAmount < _requiredFeeAmount) revert FeeAmountTooLow();
-        claimableFees[_bundle.feeToken] += _feeAmount;
+        uint256 _feeAmount = collectPointsCampaignFee(_bundle.feeToken, _requiredFeeAmount);
 
         return (_id, _feeAmount);
+    }
+
+    function collectPointsCampaignFee(address _feeToken, uint256 _requiredFeeAmount) internal returns (uint256) {
+        uint256 _balanceBefore = IERC20(_feeToken).balanceOf(address(this));
+        IERC20(_feeToken).safeTransferFrom(msg.sender, address(this), _requiredFeeAmount);
+        uint256 _collectedFeeAmount = IERC20(_feeToken).balanceOf(address(this)) - _balanceBefore;
+        if (_collectedFeeAmount < _requiredFeeAmount) revert FeeAmountTooLow();
+        claimableFees[_feeToken] += _collectedFeeAmount;
+        return _collectedFeeAmount;
     }
 
     /// @inheritdoc IMetrom
