@@ -5,7 +5,7 @@ remappings = [
     'oz-up/=lib/openzeppelin-contracts-upgradeable/contracts/',
 ]
 optimizer = false
-solc_version = "0.8.26"
+solc_version = "0.8.28"
 
 [profile.production]
 optimizer = true

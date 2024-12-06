@@ -1,4 +1,4 @@
-pragma solidity 0.8.26;
+pragma solidity 0.8.28;
 
 import {MetromHarness} from "./harnesses/MetromHarness.sol";
 import {BaseTest} from "./Base.t.sol";
