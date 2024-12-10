@@ -1,10 +1,11 @@
-pragma solidity 0.8.26;
+pragma solidity 0.8.28;
 
 import {MetromHarness} from "./harnesses/MetromHarness.sol";
 import {BaseTest} from "./Base.t.sol";
 import {
     IMetrom,
-    CreateBundle,
+    CreateRewardsCampaignBundle,
+    CreatePointsCampaignBundle,
     ClaimFeeBundle,
     DistributeRewardsBundle,
     ClaimRewardBundle,
@@ -30,7 +31,7 @@ contract ClaimedCampaignRewardTest is BaseTest {
         RewardAmount[] memory _rewards = new RewardAmount[](1);
         _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 1000 ether});
 
-        CreateBundle memory _createBundle = CreateBundle({
+        CreateRewardsCampaignBundle memory _createRewardsCampaignBundle = CreateRewardsCampaignBundle({
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -38,10 +39,12 @@ contract ClaimedCampaignRewardTest is BaseTest {
             rewards: _rewards
         });
 
-        CreateBundle[] memory _createBundles = new CreateBundle[](1);
-        _createBundles[0] = _createBundle;
+        CreateRewardsCampaignBundle[] memory _createRewardsCampaignBundles = new CreateRewardsCampaignBundle[](1);
+        _createRewardsCampaignBundles[0] = _createRewardsCampaignBundle;
 
-        metrom.createCampaigns(_createBundles);
+        CreatePointsCampaignBundle[] memory _createPointsCampaignBundles = new CreatePointsCampaignBundle[](0);
+
+        metrom.createCampaigns(_createRewardsCampaignBundles, _createPointsCampaignBundles);
         vm.assertEq(_mintableErc20.balanceOf(address(this)), 0 ether);
 
         // the following root is taken by constructing a tree
@@ -60,7 +63,7 @@ contract ClaimedCampaignRewardTest is BaseTest {
         // ]
         // then the provided proof at claim time is the one for the second claim
 
-        bytes32 _createdCampaignId = metrom.campaignId(_createBundle);
+        bytes32 _createdCampaignId = metrom.rewardsCampaignId(_createRewardsCampaignBundle);
         {
             bytes32 _root = bytes32(0xb1ba26940192dab1dbb383cfc69674e93fb8011037f51703624b66d5238661b5);
             DistributeRewardsBundle memory _distributeRewardBundle =
@@ -70,7 +73,7 @@ contract ClaimedCampaignRewardTest is BaseTest {
 
             vm.prank(updater);
             metrom.distributeRewards(_distributeRewardBundles);
-            vm.assertEq(metrom.campaignById(metrom.campaignId(_createBundle)).root, _root);
+            vm.assertEq(metrom.rewardsCampaignById(metrom.rewardsCampaignId(_createRewardsCampaignBundle)).root, _root);
         }
 
         bytes32[] memory _proof = new bytes32[](1);

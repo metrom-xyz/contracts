@@ -1,23 +1,29 @@
-pragma solidity 0.8.26;
+pragma solidity 0.8.28;
 
+import {RewardsCampaignsUtils, RewardsCampaigns} from "../../src/libraries/RewardsCampaignsUtils.sol";
+import {PointsCampaignsUtils, PointsCampaigns} from "../../src/libraries/PointsCampaignsUtils.sol";
 import {Metrom} from "../../src/Metrom.sol";
-import {Campaign, CreateBundle} from "../../src/IMetrom.sol";
+import {CreateRewardsCampaignBundle, CreatePointsCampaignBundle, RewardsCampaign} from "../../src/IMetrom.sol";
 
 contract MetromHarness is Metrom {
+    using RewardsCampaignsUtils for RewardsCampaigns;
+    using PointsCampaignsUtils for PointsCampaigns;
+
     function campaignExists(bytes32 _id) external view {
-        _getExistingCampaign(_id);
+        RewardsCampaign storage campaign = rewardsCampaigns.get(_id);
+        if (campaign.owner == address(0)) pointsCampaigns.getExisting(_id);
     }
 
     function campaignRewardExists(bytes32 _id, address _token) external view {
-        _getExistingCampaignReward(_id, _token);
+        rewardsCampaigns.getRewardOnExistingCampaign(_id, _token).amount != 0;
     }
 
-    function campaignId(CreateBundle memory _bundle) external view returns (bytes32) {
-        return _campaignId(_bundle);
+    function rewardsCampaignId(CreateRewardsCampaignBundle memory _bundle) external view returns (bytes32) {
+        return RewardsCampaignsUtils.generateId(_bundle);
     }
 
-    function resolvedFee() external view returns (uint32) {
-        return _resolvedFee();
+    function pointsCampaignId(CreatePointsCampaignBundle memory _bundle) external view returns (bytes32) {
+        return PointsCampaignsUtils.generateId(_bundle);
     }
 }
 

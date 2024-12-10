@@ -1,12 +1,13 @@
-pragma solidity 0.8.26;
+pragma solidity 0.8.28;
 
 import {MetromHarness} from "./harnesses/MetromHarness.sol";
 import {BaseTest} from "./Base.t.sol";
 import {
     IMetrom,
-    CreateBundle,
+    CreateRewardsCampaignBundle,
+    CreatePointsCampaignBundle,
     ClaimRewardBundle,
-    ReadonlyCampaign,
+    ReadonlyRewardsCampaign,
     DistributeRewardsBundle,
     RewardAmount
 } from "../src/IMetrom.sol";
@@ -29,7 +30,7 @@ contract ClaimRewardsTest is BaseTest {
         RewardAmount[] memory _rewards = new RewardAmount[](1);
         _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
 
-        CreateBundle memory _createBundle = CreateBundle({
+        CreateRewardsCampaignBundle memory _createRewardsCampaignBundle = CreateRewardsCampaignBundle({
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -37,15 +38,17 @@ contract ClaimRewardsTest is BaseTest {
             rewards: _rewards
         });
 
-        CreateBundle[] memory _createBundles = new CreateBundle[](1);
-        _createBundles[0] = _createBundle;
+        CreateRewardsCampaignBundle[] memory _createRewardsCampaignBundles = new CreateRewardsCampaignBundle[](1);
+        _createRewardsCampaignBundles[0] = _createRewardsCampaignBundle;
 
-        metrom.createCampaigns(_createBundles);
+        CreatePointsCampaignBundle[] memory _createPointsCampaignBundles = new CreatePointsCampaignBundle[](0);
+
+        metrom.createCampaigns(_createRewardsCampaignBundles, _createPointsCampaignBundles);
 
         bytes32[] memory _proof = new bytes32[](0);
 
         ClaimRewardBundle memory _bundle = ClaimRewardBundle({
-            campaignId: metrom.campaignId(_createBundle),
+            campaignId: metrom.rewardsCampaignId(_createRewardsCampaignBundle),
             proof: _proof,
             token: address(1),
             amount: 10 ether,
@@ -69,7 +72,7 @@ contract ClaimRewardsTest is BaseTest {
         RewardAmount[] memory _rewards = new RewardAmount[](1);
         _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
 
-        CreateBundle memory _createBundle = CreateBundle({
+        CreateRewardsCampaignBundle memory _createRewardsCampaignBundle = CreateRewardsCampaignBundle({
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -77,15 +80,17 @@ contract ClaimRewardsTest is BaseTest {
             rewards: _rewards
         });
 
-        CreateBundle[] memory _createBundles = new CreateBundle[](1);
-        _createBundles[0] = _createBundle;
+        CreateRewardsCampaignBundle[] memory _createRewardsCampaignBundles = new CreateRewardsCampaignBundle[](1);
+        _createRewardsCampaignBundles[0] = _createRewardsCampaignBundle;
 
-        metrom.createCampaigns(_createBundles);
+        CreatePointsCampaignBundle[] memory _createPointsCampaignBundles = new CreatePointsCampaignBundle[](0);
+
+        metrom.createCampaigns(_createRewardsCampaignBundles, _createPointsCampaignBundles);
 
         bytes32[] memory _proof = new bytes32[](0);
 
         ClaimRewardBundle memory _bundle = ClaimRewardBundle({
-            campaignId: metrom.campaignId(_createBundle),
+            campaignId: metrom.rewardsCampaignId(_createRewardsCampaignBundle),
             proof: _proof,
             token: address(0),
             amount: 10 ether,
@@ -109,7 +114,7 @@ contract ClaimRewardsTest is BaseTest {
         RewardAmount[] memory _rewards = new RewardAmount[](1);
         _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
 
-        CreateBundle memory _createBundle = CreateBundle({
+        CreateRewardsCampaignBundle memory _createRewardsCampaignBundle = CreateRewardsCampaignBundle({
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -117,15 +122,17 @@ contract ClaimRewardsTest is BaseTest {
             rewards: _rewards
         });
 
-        CreateBundle[] memory _createBundles = new CreateBundle[](1);
-        _createBundles[0] = _createBundle;
+        CreateRewardsCampaignBundle[] memory _createRewardsCampaignBundles = new CreateRewardsCampaignBundle[](1);
+        _createRewardsCampaignBundles[0] = _createRewardsCampaignBundle;
 
-        metrom.createCampaigns(_createBundles);
+        CreatePointsCampaignBundle[] memory _createPointsCampaignBundles = new CreatePointsCampaignBundle[](0);
+
+        metrom.createCampaigns(_createRewardsCampaignBundles, _createPointsCampaignBundles);
 
         bytes32[] memory _proof = new bytes32[](0);
 
         ClaimRewardBundle memory _bundle = ClaimRewardBundle({
-            campaignId: metrom.campaignId(_createBundle),
+            campaignId: metrom.rewardsCampaignId(_createRewardsCampaignBundle),
             proof: _proof,
             token: address(1),
             amount: 0,
@@ -150,7 +157,7 @@ contract ClaimRewardsTest is BaseTest {
         RewardAmount[] memory _rewards = new RewardAmount[](1);
         _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 1000 ether});
 
-        CreateBundle memory _createBundle = CreateBundle({
+        CreateRewardsCampaignBundle memory _createRewardsCampaignBundle = CreateRewardsCampaignBundle({
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -158,19 +165,21 @@ contract ClaimRewardsTest is BaseTest {
             rewards: _rewards
         });
 
-        CreateBundle[] memory _createBundles = new CreateBundle[](1);
-        _createBundles[0] = _createBundle;
+        CreateRewardsCampaignBundle[] memory _createRewardsCampaignBundles = new CreateRewardsCampaignBundle[](1);
+        _createRewardsCampaignBundles[0] = _createRewardsCampaignBundle;
 
-        metrom.createCampaigns(_createBundles);
+        CreatePointsCampaignBundle[] memory _createPointsCampaignBundles = new CreatePointsCampaignBundle[](0);
+
+        metrom.createCampaigns(_createRewardsCampaignBundles, _createPointsCampaignBundles);
         vm.assertEq(_mintableErc20.balanceOf(address(this)), 0 ether);
 
-        bytes32 _createdCampaignId = metrom.campaignId(_createBundle);
-        ReadonlyCampaign memory _createdCampaign = metrom.campaignById(_createdCampaignId);
+        bytes32 _createdCampaignId = metrom.rewardsCampaignId(_createRewardsCampaignBundle);
+        ReadonlyRewardsCampaign memory _createdCampaign = metrom.rewardsCampaignById(_createdCampaignId);
 
-        vm.assertEq(_createdCampaign.pool, _createBundle.pool);
-        vm.assertEq(_createdCampaign.from, _createBundle.from);
-        vm.assertEq(_createdCampaign.to, _createBundle.to);
-        vm.assertEq(_createdCampaign.specification, _createBundle.specification);
+        vm.assertEq(_createdCampaign.pool, _createRewardsCampaignBundle.pool);
+        vm.assertEq(_createdCampaign.from, _createRewardsCampaignBundle.from);
+        vm.assertEq(_createdCampaign.to, _createRewardsCampaignBundle.to);
+        vm.assertEq(_createdCampaign.specification, _createRewardsCampaignBundle.specification);
         vm.assertEq(_createdCampaign.root, bytes32(0));
         vm.assertEq(metrom.campaignReward(_createdCampaignId, address(_mintableErc20)), 990 ether);
         vm.assertEq(_mintableErc20.balanceOf(address(metrom)), 1000 ether);
@@ -200,7 +209,7 @@ contract ClaimRewardsTest is BaseTest {
         vm.prank(updater);
         metrom.distributeRewards(_distributeRewardBundles);
 
-        vm.assertEq(metrom.campaignById(metrom.campaignId(_createBundle)).root, _root);
+        vm.assertEq(metrom.rewardsCampaignById(metrom.rewardsCampaignId(_createRewardsCampaignBundle)).root, _root);
 
         bytes32[] memory _proof = new bytes32[](1);
         _proof[0] = bytes32(0x8d67ceed8123952c42fc6264420185abfbffce5ebebea680b578e3a882e48b85);
@@ -249,7 +258,7 @@ contract ClaimRewardsTest is BaseTest {
         RewardAmount[] memory _rewards = new RewardAmount[](1);
         _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
 
-        CreateBundle memory _createBundle = CreateBundle({
+        CreateRewardsCampaignBundle memory _createRewardsCampaignBundle = CreateRewardsCampaignBundle({
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -257,15 +266,17 @@ contract ClaimRewardsTest is BaseTest {
             rewards: _rewards
         });
 
-        CreateBundle[] memory _createBundles = new CreateBundle[](1);
-        _createBundles[0] = _createBundle;
+        CreateRewardsCampaignBundle[] memory _createRewardsCampaignBundles = new CreateRewardsCampaignBundle[](1);
+        _createRewardsCampaignBundles[0] = _createRewardsCampaignBundle;
 
-        metrom.createCampaigns(_createBundles);
+        CreatePointsCampaignBundle[] memory _createPointsCampaignBundles = new CreatePointsCampaignBundle[](0);
+
+        metrom.createCampaigns(_createRewardsCampaignBundles, _createPointsCampaignBundles);
 
         bytes32[] memory _proof = new bytes32[](0);
 
         ClaimRewardBundle memory _bundle = ClaimRewardBundle({
-            campaignId: metrom.campaignId(_createBundle),
+            campaignId: metrom.rewardsCampaignId(_createRewardsCampaignBundle),
             proof: _proof,
             token: address(1),
             amount: 1 ether,
@@ -290,7 +301,7 @@ contract ClaimRewardsTest is BaseTest {
         RewardAmount[] memory _rewards = new RewardAmount[](1);
         _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 1000 ether});
 
-        CreateBundle memory _createBundle = CreateBundle({
+        CreateRewardsCampaignBundle memory _createRewardsCampaignBundle = CreateRewardsCampaignBundle({
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -298,19 +309,21 @@ contract ClaimRewardsTest is BaseTest {
             rewards: _rewards
         });
 
-        CreateBundle[] memory _createBundles = new CreateBundle[](1);
-        _createBundles[0] = _createBundle;
+        CreateRewardsCampaignBundle[] memory _createRewardsCampaignBundles = new CreateRewardsCampaignBundle[](1);
+        _createRewardsCampaignBundles[0] = _createRewardsCampaignBundle;
 
-        metrom.createCampaigns(_createBundles);
+        CreatePointsCampaignBundle[] memory _createPointsCampaignBundles = new CreatePointsCampaignBundle[](0);
+
+        metrom.createCampaigns(_createRewardsCampaignBundles, _createPointsCampaignBundles);
         vm.assertEq(_mintableErc20.balanceOf(address(this)), 0 ether);
 
-        bytes32 _createdCampaignId = metrom.campaignId(_createBundle);
-        ReadonlyCampaign memory _createdCampaign = metrom.campaignById(_createdCampaignId);
+        bytes32 _createdCampaignId = metrom.rewardsCampaignId(_createRewardsCampaignBundle);
+        ReadonlyRewardsCampaign memory _createdCampaign = metrom.rewardsCampaignById(_createdCampaignId);
 
-        vm.assertEq(_createdCampaign.pool, _createBundle.pool);
-        vm.assertEq(_createdCampaign.from, _createBundle.from);
-        vm.assertEq(_createdCampaign.to, _createBundle.to);
-        vm.assertEq(_createdCampaign.specification, _createBundle.specification);
+        vm.assertEq(_createdCampaign.pool, _createRewardsCampaignBundle.pool);
+        vm.assertEq(_createdCampaign.from, _createRewardsCampaignBundle.from);
+        vm.assertEq(_createdCampaign.to, _createRewardsCampaignBundle.to);
+        vm.assertEq(_createdCampaign.specification, _createRewardsCampaignBundle.specification);
         vm.assertEq(_createdCampaign.root, bytes32(0));
         vm.assertEq(metrom.campaignReward(_createdCampaignId, address(_mintableErc20)), 990 ether);
         vm.assertEq(_mintableErc20.balanceOf(address(metrom)), 1000 ether);
@@ -340,7 +353,7 @@ contract ClaimRewardsTest is BaseTest {
         vm.prank(updater);
         metrom.distributeRewards(_distributeRewardBundles);
 
-        vm.assertEq(metrom.campaignById(metrom.campaignId(_createBundle)).root, _root);
+        vm.assertEq(metrom.rewardsCampaignById(metrom.rewardsCampaignId(_createRewardsCampaignBundle)).root, _root);
 
         bytes32[] memory _proof = new bytes32[](1);
         _proof[0] = bytes32(0x8d67ceed8123952c42fc6264420185abfbffce5ebebea680b578e3a882e48b85);
@@ -378,7 +391,7 @@ contract ClaimRewardsTest is BaseTest {
         RewardAmount[] memory _rewards = new RewardAmount[](1);
         _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 1000 ether});
 
-        CreateBundle memory _createBundle = CreateBundle({
+        CreateRewardsCampaignBundle memory _createRewardsCampaignBundle = CreateRewardsCampaignBundle({
             pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
@@ -386,19 +399,21 @@ contract ClaimRewardsTest is BaseTest {
             rewards: _rewards
         });
 
-        CreateBundle[] memory _createBundles = new CreateBundle[](1);
-        _createBundles[0] = _createBundle;
+        CreateRewardsCampaignBundle[] memory _createRewardsCampaignBundles = new CreateRewardsCampaignBundle[](1);
+        _createRewardsCampaignBundles[0] = _createRewardsCampaignBundle;
 
-        metrom.createCampaigns(_createBundles);
+        CreatePointsCampaignBundle[] memory _createPointsCampaignBundles = new CreatePointsCampaignBundle[](0);
+
+        metrom.createCampaigns(_createRewardsCampaignBundles, _createPointsCampaignBundles);
         vm.assertEq(_mintableErc20.balanceOf(address(this)), 0 ether);
 
-        bytes32 _createdCampaignId = metrom.campaignId(_createBundle);
-        ReadonlyCampaign memory _createdCampaign = metrom.campaignById(_createdCampaignId);
+        bytes32 _createdCampaignId = metrom.rewardsCampaignId(_createRewardsCampaignBundle);
+        ReadonlyRewardsCampaign memory _createdCampaign = metrom.rewardsCampaignById(_createdCampaignId);
 
-        vm.assertEq(_createdCampaign.pool, _createBundle.pool);
-        vm.assertEq(_createdCampaign.from, _createBundle.from);
-        vm.assertEq(_createdCampaign.to, _createBundle.to);
-        vm.assertEq(_createdCampaign.specification, _createBundle.specification);
+        vm.assertEq(_createdCampaign.pool, _createRewardsCampaignBundle.pool);
+        vm.assertEq(_createdCampaign.from, _createRewardsCampaignBundle.from);
+        vm.assertEq(_createdCampaign.to, _createRewardsCampaignBundle.to);
+        vm.assertEq(_createdCampaign.specification, _createRewardsCampaignBundle.specification);
         vm.assertEq(_createdCampaign.root, bytes32(0));
         vm.assertEq(metrom.campaignReward(_createdCampaignId, address(_mintableErc20)), 990 ether);
         vm.assertEq(_mintableErc20.balanceOf(address(metrom)), 1000 ether);
@@ -428,7 +443,7 @@ contract ClaimRewardsTest is BaseTest {
         vm.prank(updater);
         metrom.distributeRewards(_distributeRewardBundles);
 
-        vm.assertEq(metrom.campaignById(metrom.campaignId(_createBundle)).root, _root);
+        vm.assertEq(metrom.rewardsCampaignById(metrom.rewardsCampaignId(_createRewardsCampaignBundle)).root, _root);
 
         bytes32[] memory _proof = new bytes32[](1);
         _proof[0] = bytes32(0x8d67ceed8123952c42fc6264420185abfbffce5ebebea680b578e3a882e48b85);
