@@ -28,3 +28,4 @@ mantle = { chain = 5000, key = "${ETHERSCAN_API_KEY}", url = "https://api.mantle
 base = { chain = 8453, key = "${ETHERSCAN_API_KEY}", url = "https://api.basescan.org/api" }
 base_sepolia = { chain = 84532, key = "${ETHERSCAN_API_KEY}", url = "https://api-sepolia.basescan.org/api" }
 taiko = { chain = 167000, key = "${ETHERSCAN_API_KEY}", url = "https://api.taikoscan.io/api" }
+sonic_blaze_testnet = { chain = 57054, key = "${ETHERSCAN_API_KEY}", url = "https://api-testnet.sonicscan.org/api" }

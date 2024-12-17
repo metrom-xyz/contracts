@@ -5,7 +5,7 @@ export enum SupportedChain {
     Holesky = 17_000,
     CeloAlfajores = 44_787,
     MantleSepolia = 5_003,
-    SonicTestnet = 64_165,
+    SonicBlazeTestnet = 57_054,
     BaseSepolia = 84_532,
     FormTestnet = 132_902,
     ArtheraTestnet = 10_243,
@@ -31,10 +31,6 @@ export const ADDRESS: Record<SupportedChain, ChainContract> = {
         address: "0xB6044f769f519a634A5150645484b18d0C031ae8",
         blockCreated: 11430844,
     },
-    [SupportedChain.SonicTestnet]: {
-        address: "0xD4AC4AaFb81eC774E49AA755A66EfCe4574D6276",
-        blockCreated: 73294873,
-    },
     [SupportedChain.BaseSepolia]: {
         address: "0xD4AC4AaFb81eC774E49AA755A66EfCe4574D6276",
         blockCreated: 16130946,
@@ -42,6 +38,10 @@ export const ADDRESS: Record<SupportedChain, ChainContract> = {
     [SupportedChain.FormTestnet]: {
         address: "0xBbB06b25484AB9E23FEe8Ee321Af8e253ea7A76a",
         blockCreated: 14587762,
+    },
+    [SupportedChain.SonicBlazeTestnet]: {
+        address: "0x4300d4C410f87c7c1824Cbc2eF67431030106604",
+        blockCreated: 4856278,
     },
     [SupportedChain.ArtheraTestnet]: {
         address: "0xD4AC4AaFb81eC774E49AA755A66EfCe4574D6276",
