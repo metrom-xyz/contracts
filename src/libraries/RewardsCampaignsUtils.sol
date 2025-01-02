@@ -29,9 +29,7 @@ library RewardsCampaignsUtils {
     /// @param _bundle The rewards based campaign creation bundle.
     /// @return The generated campaign id.
     function generateId(CreateRewardsCampaignBundle memory _bundle) internal view returns (bytes32) {
-        return keccak256(
-            abi.encode(msg.sender, _bundle.pool, _bundle.from, _bundle.to, _bundle.specification, _bundle.rewards)
-        );
+        return keccak256(abi.encode(msg.sender, _bundle));
     }
 
     /// @notice Given a campaign id returns a storage pointer to that campaign in the registry.
@@ -102,7 +100,6 @@ library RewardsCampaignsUtils {
         return ReadonlyRewardsCampaign({
             owner: campaign.owner,
             pendingOwner: campaign.pendingOwner,
-            pool: campaign.pool,
             from: campaign.from,
             to: campaign.to,
             specification: campaign.specification,
