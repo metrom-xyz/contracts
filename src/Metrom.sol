@@ -158,7 +158,6 @@ contract Metrom is IMetrom, UUPSUpgradeable {
             emit CreateRewardsCampaign(
                 _id,
                 msg.sender,
-                _rewardsCampaignBundle.pool,
                 _rewardsCampaignBundle.from,
                 _rewardsCampaignBundle.to,
                 _rewardsCampaignBundle.specification,
@@ -174,7 +173,6 @@ contract Metrom is IMetrom, UUPSUpgradeable {
             emit CreatePointsCampaign(
                 _id,
                 msg.sender,
-                _pointsCampaignBundle.pool,
                 _pointsCampaignBundle.from,
                 _pointsCampaignBundle.to,
                 _pointsCampaignBundle.specification,
@@ -191,15 +189,13 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         uint32 _maximumCampaignDuration,
         uint32 _resolvedFee
     ) internal returns (bytes32, CreatedCampaignReward[] memory) {
-        uint32 _duration = BaseCampaignsUtils.validate(
-            _bundle.pool, _bundle.from, _bundle.to, _minimumCampaignDuration, _maximumCampaignDuration
-        );
+        uint32 _duration =
+            BaseCampaignsUtils.validate(_bundle.from, _bundle.to, _minimumCampaignDuration, _maximumCampaignDuration);
         if (_bundle.rewards.length == 0) revert NoRewards();
         if (_bundle.rewards.length > MAX_REWARDS_PER_CAMPAIGN) revert TooManyRewards();
 
         (bytes32 _id, RewardsCampaign storage campaign) = rewardsCampaigns.getNew(_bundle);
         campaign.owner = msg.sender;
-        campaign.pool = _bundle.pool;
         campaign.from = _bundle.from;
         campaign.to = _bundle.to;
         campaign.specification = _bundle.specification;
@@ -246,9 +242,8 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         uint32 _maximumCampaignDuration,
         uint32 _feeRebate
     ) internal returns (bytes32, uint256) {
-        uint32 _duration = BaseCampaignsUtils.validate(
-            _bundle.pool, _bundle.from, _bundle.to, _minimumCampaignDuration, _maximumCampaignDuration
-        );
+        uint32 _duration =
+            BaseCampaignsUtils.validate(_bundle.from, _bundle.to, _minimumCampaignDuration, _maximumCampaignDuration);
         if (_bundle.points == 0) revert NoPoints();
 
         uint256 _minimumFeeTokenRate = minimumFeeTokenRate[_bundle.feeToken];
@@ -258,7 +253,6 @@ contract Metrom is IMetrom, UUPSUpgradeable {
 
         (bytes32 _id, PointsCampaign storage campaign) = pointsCampaigns.getNew(_bundle);
         campaign.owner = msg.sender;
-        campaign.pool = _bundle.pool;
         campaign.from = _bundle.from;
         campaign.to = _bundle.to;
         campaign.specification = _bundle.specification;

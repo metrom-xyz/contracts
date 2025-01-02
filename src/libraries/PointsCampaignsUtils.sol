@@ -23,9 +23,7 @@ library PointsCampaignsUtils {
     /// @param _bundle The points based campaign creation bundle.
     /// @return The generated campaign id.
     function generateId(CreatePointsCampaignBundle memory _bundle) internal view returns (bytes32) {
-        return keccak256(
-            abi.encode(msg.sender, _bundle.pool, _bundle.from, _bundle.to, _bundle.specification, _bundle.points)
-        );
+        return keccak256(abi.encode(msg.sender, _bundle));
     }
 
     /// @notice Given a campaign id returns a storage pointer to that campaign in the registry.
@@ -80,7 +78,6 @@ library PointsCampaignsUtils {
         return ReadonlyPointsCampaign({
             owner: campaign.owner,
             pendingOwner: campaign.pendingOwner,
-            pool: campaign.pool,
             from: campaign.from,
             to: campaign.to,
             specification: campaign.specification,
