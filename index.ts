@@ -16,6 +16,7 @@ export enum SupportedChain {
     Scroll = 534_352,
     Sonic = 146,
     Arthera = 10_242,
+    Form = 478,
 }
 
 export const ADDRESS: Record<SupportedChain, ChainContract> = {
@@ -66,5 +67,9 @@ export const ADDRESS: Record<SupportedChain, ChainContract> = {
     [SupportedChain.Arthera]: {
         address: "0xD4AC4AaFb81eC774E49AA755A66EfCe4574D6276",
         blockCreated: 20052564,
+    },
+    [SupportedChain.Form]: {
+        address: "0xD6e88c910329fE3597498772eB94991a0630306d",
+        blockCreated: 1238292,
     },
 };
