@@ -12,13 +12,13 @@ struct Reward {
 }
 
 /// @notice Represents a rewards based campaign in the contract's state, with its owner,
-/// target pool, running period, specification, root and data links, as well as rewards
-/// information. A particular note must be made for the `specification` and `data` fields.
-/// These can optionally contain a SHA256 hash of some JSON content stored on IPFS such that
-/// a CID can be constructed from them. `specification` can point to an IPFS JSON file with
-/// additional information/parameters on the campaign, while the `data` field must point
-/// to a JSON file containing the raw leaves from which the current campaign's Merkle
-/// tree and root was calculated.
+/// target pool, running period, specification hash, root and data hash links, as well
+/// as rewards information. A particular note must be made for the `specificationHash` and
+/// `data` fields. These can optionally contain a SHA256 hash of some JSON content stored
+/// on IPFS such that a CID can be constructed from them. `specificationHash` can point
+/// to an IPFS JSON file with additional information/parameters on the campaign, while
+/// the `data` field must point to a JSON file containing the raw leaves from which the
+/// current campaign's Merkle tree and root was calculated.
 struct RewardsCampaignV1 {
     address owner;
     address pendingOwner;
@@ -32,11 +32,11 @@ struct RewardsCampaignV1 {
 }
 
 /// @notice Represents a points based campaign in the contract's state, with its owner,
-/// target pool, running period, specification, root and data links, as well as rewards
-/// information. A particular note must be made for the `specification` field.
-/// This can optionally contain a SHA256 hash of some JSON content stored on IPFS such
-/// that a CID can be constructed from it. `specification` can point to an IPFS JSON
-/// file with additional information/parameters on the campaign.
+/// target pool, running period, specification hash and root, as well as points information.
+/// A particular note must be made for the `specificationHash` field. This can optionally
+/// contain a SHA256 hash of some JSON content stored on IPFS such that a CID can be
+/// constructed from it. `specificationHash` can point to an IPFS JSON file with additional
+/// information/parameters on the campaign.
 struct PointsCampaignV1 {
     address owner;
     address pendingOwner;
@@ -48,10 +48,10 @@ struct PointsCampaignV1 {
 }
 
 /// @notice Represents a rewards based campaign in the contract's state, with its owner,
-/// running period, type, data, specification, root and data links, as well as rewards
-/// information. A particular note must be made for the `specification` and `data` fields.
+/// running period, type, data, specification hash, root and data hash links, as well as rewards
+/// information. A particular note must be made for the `specificationHash` and `dataHash` fields.
 /// These can optionally contain a SHA256 hash of some JSON content stored on IPFS such that
-/// a CID can be constructed from them. `specification` can point to an IPFS JSON file with
+/// a CID can be constructed from them. `specificationHash` can point to an IPFS JSON file with
 /// additional information/parameters on the campaign, while the `data` field must point
 /// to a JSON file containing the raw leaves from which the current campaign's Merkle
 /// tree and root was calculated.
@@ -69,11 +69,11 @@ struct RewardsCampaignV2 {
 }
 
 /// @notice Represents a points based campaign in the contract's state, with its owner,
-/// running period, type, data, specification, root and data links, as well as rewards
-/// information. A particular note must be made for the `specification` field.
-/// This can optionally contain a SHA256 hash of some JSON content stored on IPFS such
-/// that a CID can be constructed from it. `specification` can point to an IPFS JSON
-/// file with additional information/parameters on the campaign.
+/// running period, type, data, specification hash, root and points information.
+/// A particular note must be made for the `specificationHash` field. This can optionally
+/// contain a SHA256 hash of some JSON content stored on IPFS such that a CID can be
+/// constructed from it. `specificationHash` can point to an IPFS JSON file with additional
+/// information/parameters on the campaign.
 struct PointsCampaignV2 {
     address owner;
     address pendingOwner;
