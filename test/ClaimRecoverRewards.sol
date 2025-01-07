@@ -31,10 +31,11 @@ contract ClaimRecoverRewards is BaseTest {
         _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
 
         CreateRewardsCampaignBundle memory _createRewardsCampaignBundle = CreateRewardsCampaignBundle({
-            pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
-            specification: bytes32(0),
+            kind: 1,
+            data: abi.encode(address(1)),
+            specificationHash: bytes32(0),
             rewards: _rewards
         });
 
@@ -74,10 +75,11 @@ contract ClaimRecoverRewards is BaseTest {
         _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
 
         CreateRewardsCampaignBundle memory _createRewardsCampaignBundle = CreateRewardsCampaignBundle({
-            pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
-            specification: bytes32(0),
+            kind: 1,
+            data: abi.encode(address(1)),
+            specificationHash: bytes32(0),
             rewards: _rewards
         });
 
@@ -116,10 +118,11 @@ contract ClaimRecoverRewards is BaseTest {
         _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
 
         CreateRewardsCampaignBundle memory _createRewardsCampaignBundle = CreateRewardsCampaignBundle({
-            pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
-            specification: bytes32(0),
+            kind: 1,
+            data: abi.encode(address(1)),
+            specificationHash: bytes32(0),
             rewards: _rewards
         });
 
@@ -158,10 +161,11 @@ contract ClaimRecoverRewards is BaseTest {
         _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
 
         CreateRewardsCampaignBundle memory _createRewardsCampaignBundle = CreateRewardsCampaignBundle({
-            pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
-            specification: bytes32(0),
+            kind: 1,
+            data: abi.encode(address(1)),
+            specificationHash: bytes32(0),
             rewards: _rewards
         });
 
@@ -218,10 +222,11 @@ contract ClaimRecoverRewards is BaseTest {
         _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
 
         CreateRewardsCampaignBundle memory _createRewardsCampaignBundle = CreateRewardsCampaignBundle({
-            pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
-            specification: bytes32(0),
+            kind: 1,
+            data: abi.encode(address(1)),
+            specificationHash: bytes32(0),
             rewards: _rewards
         });
 
@@ -261,10 +266,11 @@ contract ClaimRecoverRewards is BaseTest {
         _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 1000 ether});
 
         CreateRewardsCampaignBundle memory _createRewardsCampaignBundle = CreateRewardsCampaignBundle({
-            pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
-            specification: bytes32(0),
+            kind: 1,
+            data: abi.encode(address(1)),
+            specificationHash: bytes32(0),
             rewards: _rewards
         });
 
@@ -279,10 +285,11 @@ contract ClaimRecoverRewards is BaseTest {
         bytes32 _createdCampaignId = metrom.rewardsCampaignId(_createRewardsCampaignBundle);
         ReadonlyRewardsCampaign memory _createdCampaign = metrom.rewardsCampaignById(_createdCampaignId);
 
-        vm.assertEq(_createdCampaign.pool, _createRewardsCampaignBundle.pool);
         vm.assertEq(_createdCampaign.from, _createRewardsCampaignBundle.from);
         vm.assertEq(_createdCampaign.to, _createRewardsCampaignBundle.to);
-        vm.assertEq(_createdCampaign.specification, _createRewardsCampaignBundle.specification);
+        vm.assertEq(_createdCampaign.kind, 1);
+        vm.assertEq(_createdCampaign.data, _createRewardsCampaignBundle.data);
+        vm.assertEq(_createdCampaign.specificationHash, _createRewardsCampaignBundle.specificationHash);
         vm.assertEq(_createdCampaign.root, bytes32(0));
         vm.assertEq(metrom.campaignReward(_createdCampaignId, address(_mintableErc20)), 990 ether);
         vm.assertEq(_mintableErc20.balanceOf(address(metrom)), 1000 ether);
@@ -305,7 +312,7 @@ contract ClaimRecoverRewards is BaseTest {
 
         bytes32 _root = bytes32(0x40e9e0b48e6b5b10bcf2b72e0c7af4fe754c94bb43ef3e668c9fb535bb3554ae);
         DistributeRewardsBundle memory _distributeRewardBundle =
-            DistributeRewardsBundle({campaignId: _createdCampaignId, root: _root, data: bytes32("foo")});
+            DistributeRewardsBundle({campaignId: _createdCampaignId, root: _root, dataHash: bytes32("foo")});
         DistributeRewardsBundle[] memory _distributeRewardBundles = new DistributeRewardsBundle[](1);
         _distributeRewardBundles[0] = _distributeRewardBundle;
 
@@ -349,10 +356,11 @@ contract ClaimRecoverRewards is BaseTest {
         _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 1000 ether});
 
         CreateRewardsCampaignBundle memory _createRewardsCampaignBundle = CreateRewardsCampaignBundle({
-            pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
-            specification: bytes32(0),
+            kind: 1,
+            data: abi.encode(address(1)),
+            specificationHash: bytes32(0),
             rewards: _rewards
         });
 
@@ -367,10 +375,11 @@ contract ClaimRecoverRewards is BaseTest {
         bytes32 _createdCampaignId = metrom.rewardsCampaignId(_createRewardsCampaignBundle);
         ReadonlyRewardsCampaign memory _createdCampaign = metrom.rewardsCampaignById(_createdCampaignId);
 
-        vm.assertEq(_createdCampaign.pool, _createRewardsCampaignBundle.pool);
         vm.assertEq(_createdCampaign.from, _createRewardsCampaignBundle.from);
         vm.assertEq(_createdCampaign.to, _createRewardsCampaignBundle.to);
-        vm.assertEq(_createdCampaign.specification, _createRewardsCampaignBundle.specification);
+        vm.assertEq(_createdCampaign.kind, _createRewardsCampaignBundle.kind);
+        vm.assertEq(_createdCampaign.data, _createRewardsCampaignBundle.data);
+        vm.assertEq(_createdCampaign.specificationHash, _createRewardsCampaignBundle.specificationHash);
         vm.assertEq(_createdCampaign.root, bytes32(0));
         vm.assertEq(metrom.campaignReward(_createdCampaignId, address(_mintableErc20)), 990 ether);
         vm.assertEq(_mintableErc20.balanceOf(address(metrom)), 1000 ether);
@@ -393,7 +402,7 @@ contract ClaimRecoverRewards is BaseTest {
 
         bytes32 _root = bytes32(0x40e9e0b48e6b5b10bcf2b72e0c7af4fe754c94bb43ef3e668c9fb535bb3554ae);
         DistributeRewardsBundle memory _distributeRewardBundle =
-            DistributeRewardsBundle({campaignId: _createdCampaignId, root: _root, data: bytes32("foo")});
+            DistributeRewardsBundle({campaignId: _createdCampaignId, root: _root, dataHash: bytes32("foo")});
         DistributeRewardsBundle[] memory _distributeRewardBundles = new DistributeRewardsBundle[](1);
         _distributeRewardBundles[0] = _distributeRewardBundle;
 

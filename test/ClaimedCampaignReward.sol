@@ -32,10 +32,11 @@ contract ClaimedCampaignRewardTest is BaseTest {
         _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 1000 ether});
 
         CreateRewardsCampaignBundle memory _createRewardsCampaignBundle = CreateRewardsCampaignBundle({
-            pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
-            specification: bytes32(0),
+            kind: 1,
+            data: abi.encode(address(1)),
+            specificationHash: bytes32(0),
             rewards: _rewards
         });
 
@@ -67,7 +68,7 @@ contract ClaimedCampaignRewardTest is BaseTest {
         {
             bytes32 _root = bytes32(0xb1ba26940192dab1dbb383cfc69674e93fb8011037f51703624b66d5238661b5);
             DistributeRewardsBundle memory _distributeRewardBundle =
-                DistributeRewardsBundle({campaignId: _createdCampaignId, root: _root, data: bytes32("foo")});
+                DistributeRewardsBundle({campaignId: _createdCampaignId, root: _root, dataHash: bytes32("foo")});
             DistributeRewardsBundle[] memory _distributeRewardBundles = new DistributeRewardsBundle[](1);
             _distributeRewardBundles[0] = _distributeRewardBundle;
 

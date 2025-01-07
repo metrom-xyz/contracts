@@ -29,7 +29,7 @@ contract DistributeRewardsTest is BaseTest {
 
     function test_failZeroRoot() public {
         DistributeRewardsBundle memory _bundle =
-            DistributeRewardsBundle({campaignId: bytes32(0), root: bytes32(0), data: bytes32(0)});
+            DistributeRewardsBundle({campaignId: bytes32(0), root: bytes32(0), dataHash: bytes32(0)});
 
         DistributeRewardsBundle[] memory _bundles = new DistributeRewardsBundle[](1);
         _bundles[0] = _bundle;
@@ -41,7 +41,7 @@ contract DistributeRewardsTest is BaseTest {
 
     function test_failZeroData() public {
         DistributeRewardsBundle memory _bundle =
-            DistributeRewardsBundle({campaignId: bytes32(0), root: bytes32("test"), data: bytes32(0)});
+            DistributeRewardsBundle({campaignId: bytes32(0), root: bytes32("test"), dataHash: bytes32(0)});
 
         DistributeRewardsBundle[] memory _bundles = new DistributeRewardsBundle[](1);
         _bundles[0] = _bundle;
@@ -53,7 +53,7 @@ contract DistributeRewardsTest is BaseTest {
 
     function test_failNonExistentCampaign() public {
         DistributeRewardsBundle memory _bundle =
-            DistributeRewardsBundle({campaignId: bytes32(0), root: bytes32("test"), data: bytes32("test")});
+            DistributeRewardsBundle({campaignId: bytes32(0), root: bytes32("test"), dataHash: bytes32("test")});
 
         DistributeRewardsBundle[] memory _bundles = new DistributeRewardsBundle[](1);
         _bundles[0] = _bundle;
@@ -74,10 +74,11 @@ contract DistributeRewardsTest is BaseTest {
         _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
 
         CreateRewardsCampaignBundle memory _createRewardsCampaignBundle = CreateRewardsCampaignBundle({
-            pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
-            specification: bytes32(0),
+            kind: 1,
+            data: abi.encode(address(1)),
+            specificationHash: bytes32(0),
             rewards: _rewards
         });
 
@@ -91,13 +92,13 @@ contract DistributeRewardsTest is BaseTest {
         DistributeRewardsBundle memory _bundle = DistributeRewardsBundle({
             campaignId: metrom.rewardsCampaignId(_createRewardsCampaignBundle),
             root: bytes32("test"),
-            data: bytes32("test")
+            dataHash: bytes32("test")
         });
         DistributeRewardsBundle[] memory _bundles = new DistributeRewardsBundle[](1);
         _bundles[0] = _bundle;
 
         vm.expectEmit();
-        emit IMetrom.DistributeReward(_bundle.campaignId, _bundle.root, _bundle.data);
+        emit IMetrom.DistributeReward(_bundle.campaignId, _bundle.root, _bundle.dataHash);
 
         vm.prank(updater);
         metrom.distributeRewards(_bundles);
