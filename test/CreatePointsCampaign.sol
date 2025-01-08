@@ -21,28 +21,14 @@ contract CreatePointsCampaignTest is BaseTest {
         metrom.createCampaigns(_createRewardsCampaignBundles, _createPointsCampaignBundles);
     }
 
-    function test_failZeroAddressPool() public {
-        CreatePointsCampaignBundle[] memory _createPointsCampaignBundles = new CreatePointsCampaignBundle[](1);
-        _createPointsCampaignBundles[0] = CreatePointsCampaignBundle({
-            pool: address(0),
-            from: uint32(block.timestamp + 10),
-            to: uint32(block.timestamp + 20),
-            specification: bytes32(0),
-            points: 1 ether,
-            feeToken: address(1)
-        });
-
-        vm.expectRevert(IMetrom.ZeroAddressPool.selector);
-        metrom.createCampaigns(new CreateRewardsCampaignBundle[](0), _createPointsCampaignBundles);
-    }
-
     function test_failStartTimeInThePast() public {
         CreatePointsCampaignBundle[] memory _createPointsCampaignBundles = new CreatePointsCampaignBundle[](1);
         _createPointsCampaignBundles[0] = CreatePointsCampaignBundle({
-            pool: address(1),
             from: uint32(block.timestamp),
             to: uint32(block.timestamp + 20),
-            specification: bytes32(0),
+            kind: 1,
+            data: abi.encode(address(1)),
+            specificationHash: bytes32(0),
             points: 1 ether,
             feeToken: address(1)
         });
@@ -54,10 +40,11 @@ contract CreatePointsCampaignTest is BaseTest {
     function test_failInvalidToBeforeFrom() public {
         CreatePointsCampaignBundle[] memory _createPointsCampaignBundles = new CreatePointsCampaignBundle[](1);
         _createPointsCampaignBundles[0] = CreatePointsCampaignBundle({
-            pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 9),
-            specification: bytes32(0),
+            kind: 1,
+            data: abi.encode(address(1)),
+            specificationHash: bytes32(0),
             points: 1 ether,
             feeToken: address(1)
         });
@@ -74,10 +61,11 @@ contract CreatePointsCampaignTest is BaseTest {
 
         CreatePointsCampaignBundle[] memory _createPointsCampaignBundles = new CreatePointsCampaignBundle[](1);
         _createPointsCampaignBundles[0] = CreatePointsCampaignBundle({
-            pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 10 + _minimumCampaignDuration - 1),
-            specification: bytes32(0),
+            kind: 1,
+            data: abi.encode(address(1)),
+            specificationHash: bytes32(0),
             points: 1 ether,
             feeToken: address(1)
         });
@@ -94,10 +82,11 @@ contract CreatePointsCampaignTest is BaseTest {
 
         CreatePointsCampaignBundle[] memory _createPointsCampaignBundles = new CreatePointsCampaignBundle[](1);
         _createPointsCampaignBundles[0] = CreatePointsCampaignBundle({
-            pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 10 + _maximumCampaignDuration + 1),
-            specification: bytes32(0),
+            kind: 1,
+            data: abi.encode(address(1)),
+            specificationHash: bytes32(0),
             points: 1 ether,
             feeToken: address(1)
         });
@@ -109,10 +98,11 @@ contract CreatePointsCampaignTest is BaseTest {
     function test_failNoPoints() public {
         CreatePointsCampaignBundle[] memory _createPointsCampaignBundles = new CreatePointsCampaignBundle[](1);
         _createPointsCampaignBundles[0] = CreatePointsCampaignBundle({
-            pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
-            specification: bytes32(0),
+            kind: 1,
+            data: abi.encode(address(1)),
+            specificationHash: bytes32(0),
             points: 0,
             feeToken: address(1)
         });
@@ -129,10 +119,11 @@ contract CreatePointsCampaignTest is BaseTest {
 
         CreatePointsCampaignBundle[] memory _createPointsCampaignBundles = new CreatePointsCampaignBundle[](1);
         _createPointsCampaignBundles[0] = CreatePointsCampaignBundle({
-            pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
-            specification: bytes32(0),
+            kind: 1,
+            data: abi.encode(address(1)),
+            specificationHash: bytes32(0),
             points: 10 ether,
             feeToken: address(_mintableErc20)
         });
@@ -146,10 +137,11 @@ contract CreatePointsCampaignTest is BaseTest {
     function test_failNotWhitelistedFeeToken() public {
         CreatePointsCampaignBundle[] memory _createPointsCampaignBundles = new CreatePointsCampaignBundle[](1);
         _createPointsCampaignBundles[0] = CreatePointsCampaignBundle({
-            pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
-            specification: bytes32(0),
+            kind: 1,
+            data: abi.encode(address(1)),
+            specificationHash: bytes32(0),
             points: 10 ether,
             feeToken: address(12)
         });
@@ -173,10 +165,11 @@ contract CreatePointsCampaignTest is BaseTest {
 
         CreatePointsCampaignBundle[] memory _createPointsCampaignBundles = new CreatePointsCampaignBundle[](1);
         _createPointsCampaignBundles[0] = CreatePointsCampaignBundle({
-            pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 10 + 1 hours),
-            specification: bytes32(0),
+            kind: 1,
+            data: abi.encode(address(1)),
+            specificationHash: bytes32(0),
             points: 10 ether,
             feeToken: address(_mintableErc20)
         });
@@ -196,10 +189,11 @@ contract CreatePointsCampaignTest is BaseTest {
 
         CreatePointsCampaignBundle[] memory _createPointsCampaignBundles = new CreatePointsCampaignBundle[](1);
         _createPointsCampaignBundles[0] = CreatePointsCampaignBundle({
-            pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 10 + 30 minutes),
-            specification: bytes32(0),
+            kind: 1,
+            data: abi.encode(address(1)),
+            specificationHash: bytes32(0),
             points: 10 ether,
             feeToken: address(_mintableFeeOnTransferErc20)
         });
@@ -214,10 +208,11 @@ contract CreatePointsCampaignTest is BaseTest {
         setMinimumFeeRate(address(_mintableErc20), 1 ether);
 
         CreatePointsCampaignBundle memory _createPointsCampaignBundle = CreatePointsCampaignBundle({
-            pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 10 + 30 minutes),
-            specification: bytes32(0),
+            kind: 1,
+            data: abi.encode(address(1)),
+            specificationHash: bytes32(0),
             points: 1 ether,
             feeToken: address(_mintableErc20)
         });
@@ -235,10 +230,11 @@ contract CreatePointsCampaignTest is BaseTest {
         bytes32 _createdCampaignId = metrom.pointsCampaignId(_createPointsCampaignBundle);
         ReadonlyPointsCampaign memory _createdCampaign = metrom.pointsCampaignById(_createdCampaignId);
 
-        vm.assertEq(_createdCampaign.pool, _createPointsCampaignBundle.pool);
         vm.assertEq(_createdCampaign.from, _createPointsCampaignBundle.from);
         vm.assertEq(_createdCampaign.to, _createPointsCampaignBundle.to);
-        vm.assertEq(_createdCampaign.specification, _createPointsCampaignBundle.specification);
+        vm.assertEq(_createdCampaign.kind, _createPointsCampaignBundle.kind);
+        vm.assertEq(_createdCampaign.data, _createPointsCampaignBundle.data);
+        vm.assertEq(_createdCampaign.specificationHash, _createPointsCampaignBundle.specificationHash);
         vm.assertEq(_createdCampaign.points, 1 ether);
     }
 
@@ -251,10 +247,11 @@ contract CreatePointsCampaignTest is BaseTest {
         setMinimumFeeRate(address(_mintableErc20), 1 ether);
 
         CreatePointsCampaignBundle memory _createPointsCampaignBundle = CreatePointsCampaignBundle({
-            pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 10 + 30 minutes),
-            specification: bytes32(0),
+            kind: 1,
+            data: abi.encode(address(1)),
+            specificationHash: bytes32(0),
             points: 10 ether,
             feeToken: address(_mintableErc20)
         });
@@ -269,10 +266,11 @@ contract CreatePointsCampaignTest is BaseTest {
         bytes32 _createdCampaignId = metrom.pointsCampaignId(_createPointsCampaignBundle);
         ReadonlyPointsCampaign memory _createdCampaign = metrom.pointsCampaignById(_createdCampaignId);
 
-        vm.assertEq(_createdCampaign.pool, _createPointsCampaignBundle.pool);
         vm.assertEq(_createdCampaign.from, _createPointsCampaignBundle.from);
         vm.assertEq(_createdCampaign.to, _createPointsCampaignBundle.to);
-        vm.assertEq(_createdCampaign.specification, _createPointsCampaignBundle.specification);
+        vm.assertEq(_createdCampaign.kind, _createPointsCampaignBundle.kind);
+        vm.assertEq(_createdCampaign.data, _createPointsCampaignBundle.data);
+        vm.assertEq(_createdCampaign.specificationHash, _createPointsCampaignBundle.specificationHash);
         vm.assertEq(_createdCampaign.points, _createPointsCampaignBundle.points);
     }
 }

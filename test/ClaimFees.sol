@@ -69,10 +69,11 @@ contract CollectFeesTest is BaseTest {
         _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
 
         CreateRewardsCampaignBundle memory _createRewardsCampaignBundle = CreateRewardsCampaignBundle({
-            pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 20),
-            specification: bytes32(0),
+            kind: 1,
+            data: abi.encode(address(1)),
+            specificationHash: bytes32(0),
             rewards: _rewards
         });
 
@@ -114,10 +115,11 @@ contract CollectFeesTest is BaseTest {
         setMinimumFeeRate(address(_mintableErc20), 1 ether);
 
         CreatePointsCampaignBundle memory _createPointsCampaignBundle = CreatePointsCampaignBundle({
-            pool: address(1),
             from: uint32(block.timestamp + 10),
             to: uint32(block.timestamp + 10 + 30 minutes),
-            specification: bytes32(0),
+            kind: 1,
+            data: abi.encode(address(1)),
+            specificationHash: bytes32(0),
             points: 10 ether,
             feeToken: address(_mintableErc20)
         });

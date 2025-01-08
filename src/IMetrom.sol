@@ -12,38 +12,76 @@ struct Reward {
 }
 
 /// @notice Represents a rewards based campaign in the contract's state, with its owner,
-/// target pool, running period, specification, root and data links, as well as rewards
-/// information. A particular note must be made for the `specification` and `data` fields.
-/// These can optionally contain a SHA256 hash of some JSON content stored on IPFS such that
-/// a CID can be constructed from them. `specification` can point to an IPFS JSON file with
-/// additional information/parameters on the campaign, while the `data` field must point
-/// to a JSON file containing the raw leaves from which the current campaign's Merkle
-/// tree and root was calculated.
-struct RewardsCampaign {
+/// target pool, running period, specification hash, root and data hash links, as well
+/// as rewards information. A particular note must be made for the `specificationHash` and
+/// `data` fields. These can optionally contain a SHA256 hash of some JSON content stored
+/// on IPFS such that a CID can be constructed from them. `specificationHash` can point
+/// to an IPFS JSON file with additional information/parameters on the campaign, while
+/// the `data` field must point to a JSON file containing the raw leaves from which the
+/// current campaign's Merkle tree and root was calculated.
+struct RewardsCampaignV1 {
     address owner;
     address pendingOwner;
     address pool;
     uint32 from;
     uint32 to;
-    bytes32 specification;
+    bytes32 specificationHash;
+    bytes32 dataHash;
     bytes32 root;
-    bytes32 data;
     mapping(address token => Reward) reward;
 }
 
 /// @notice Represents a points based campaign in the contract's state, with its owner,
-/// target pool, running period, specification, root and data links, as well as rewards
-/// information. A particular note must be made for the `specification` field.
-/// This can optionally contain a SHA256 hash of some JSON content stored on IPFS such
-/// that a CID can be constructed from it. `specification` can point to an IPFS JSON
-/// file with additional information/parameters on the campaign.
-struct PointsCampaign {
+/// target pool, running period, specification hash and root, as well as points information.
+/// A particular note must be made for the `specificationHash` field. This can optionally
+/// contain a SHA256 hash of some JSON content stored on IPFS such that a CID can be
+/// constructed from it. `specificationHash` can point to an IPFS JSON file with additional
+/// information/parameters on the campaign.
+struct PointsCampaignV1 {
     address owner;
     address pendingOwner;
     address pool;
     uint32 from;
     uint32 to;
-    bytes32 specification;
+    bytes32 specificationHash;
+    uint256 points;
+}
+
+/// @notice Represents a rewards based campaign in the contract's state, with its owner,
+/// running period, type, data, specification hash, root and data hash links, as well as rewards
+/// information. A particular note must be made for the `specificationHash` and `dataHash` fields.
+/// These can optionally contain a SHA256 hash of some JSON content stored on IPFS such that
+/// a CID can be constructed from them. `specificationHash` can point to an IPFS JSON file with
+/// additional information/parameters on the campaign, while the `data` field must point
+/// to a JSON file containing the raw leaves from which the current campaign's Merkle
+/// tree and root was calculated.
+struct RewardsCampaignV2 {
+    address owner;
+    address pendingOwner;
+    uint32 from;
+    uint32 to;
+    uint32 kind;
+    bytes data;
+    bytes32 specificationHash;
+    bytes32 dataHash;
+    bytes32 root;
+    mapping(address token => Reward) reward;
+}
+
+/// @notice Represents a points based campaign in the contract's state, with its owner,
+/// running period, type, data, specification hash, root and points information.
+/// A particular note must be made for the `specificationHash` field. This can optionally
+/// contain a SHA256 hash of some JSON content stored on IPFS such that a CID can be
+/// constructed from it. `specificationHash` can point to an IPFS JSON file with additional
+/// information/parameters on the campaign.
+struct PointsCampaignV2 {
+    address owner;
+    address pendingOwner;
+    uint32 from;
+    uint32 to;
+    uint32 kind;
+    bytes data;
+    bytes32 specificationHash;
     uint256 points;
 }
 
@@ -51,22 +89,24 @@ struct PointsCampaign {
 struct ReadonlyRewardsCampaign {
     address owner;
     address pendingOwner;
-    address pool;
     uint32 from;
     uint32 to;
-    bytes32 specification;
+    uint32 kind;
+    bytes data;
+    bytes32 specificationHash;
+    bytes32 dataHash;
     bytes32 root;
-    bytes32 data;
 }
 
 /// @notice Represents a readonly points based campaign
 struct ReadonlyPointsCampaign {
     address owner;
     address pendingOwner;
-    address pool;
     uint32 from;
     uint32 to;
-    bytes32 specification;
+    uint32 kind;
+    bytes data;
+    bytes32 specificationHash;
     uint256 points;
 }
 
@@ -83,19 +123,21 @@ struct CreatedCampaignReward {
 
 /// @notice Contains data that can be used by anyone to create a rewards based campaign.
 struct CreateRewardsCampaignBundle {
-    address pool;
     uint32 from;
     uint32 to;
-    bytes32 specification;
+    uint32 kind;
+    bytes data;
+    bytes32 specificationHash;
     RewardAmount[] rewards;
 }
 
 /// @notice Contains data that can be used by anyone to create a points based campaign.
 struct CreatePointsCampaignBundle {
-    address pool;
     uint32 from;
     uint32 to;
-    bytes32 specification;
+    uint32 kind;
+    bytes data;
+    bytes32 specificationHash;
     uint256 points;
     address feeToken;
 }
@@ -105,7 +147,7 @@ struct CreatePointsCampaignBundle {
 struct DistributeRewardsBundle {
     bytes32 campaignId;
     bytes32 root;
-    bytes32 data;
+    bytes32 dataHash;
 }
 
 /// @notice Contains data that can be used by the current `updater` or the
@@ -160,40 +202,44 @@ interface IMetrom {
     /// @notice Emitted when a rewards based campaign is created.
     /// @param id The id of the campaign.
     /// @param owner The initial owner of the campaign.
-    /// @param pool The targeted pool address of the campaign.
     /// @param from From when the campaign will run.
     /// @param to To when the campaign will run.
-    /// @param specification The campaign's specification data hash.
+    /// @param kind The campaign's kind.
+    /// @param data ABI-encoded campaign-specific data.
+    /// @param specificationHash The campaign's specification hash.
     /// @param rewards A list of the reward tokens deposited in the campaign. Each list
     /// item contains the used reward token address along with the after-fee amount and
     /// the fee amount paid.
     event CreateRewardsCampaign(
         bytes32 indexed id,
         address indexed owner,
-        address pool,
         uint32 from,
         uint32 to,
-        bytes32 specification,
+        uint32 kind,
+        bytes data,
+        bytes32 specificationHash,
         CreatedCampaignReward[] rewards
     );
 
     /// @notice Emitted when a points based campaign is created.
     /// @param id The id of the campaign.
     /// @param owner The initial owner of the campaign.
-    /// @param pool The targeted pool address of the campaign.
     /// @param from From when the campaign will run.
     /// @param to To when the campaign will run.
-    /// @param specification The campaign's specification data hash.
+    /// @param kind The campaign's kind.
+    /// @param data ABI-encoded campaign-specific data.
+    /// @param specificationHash The campaign's specification data hash.
     /// @param points The amount of points to distribute (scaled to account for 18 decimals).
     /// @param feeToken The token used to pay the creation fee.
     /// @param fee The creation fee amount.
     event CreatePointsCampaign(
         bytes32 indexed id,
         address indexed owner,
-        address pool,
         uint32 from,
         uint32 to,
-        bytes32 specification,
+        uint32 kind,
+        bytes data,
+        bytes32 specificationHash,
         uint256 points,
         address feeToken,
         uint256 fee
@@ -349,9 +395,6 @@ interface IMetrom {
 
     /// @notice Thrown when trying to transfer Metrom's or a campaign's ownership to the zero address.
     error ZeroAddressOwner();
-
-    /// @notice Thrown when trying to create a campaign with a zero address pool.
-    error ZeroAddressPool();
 
     /// @notice Thrown when processing a claim with a zero address receiver or when claiming
     /// fees for a zero address receiver.

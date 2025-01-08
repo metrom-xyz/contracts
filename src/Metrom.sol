@@ -6,15 +6,21 @@ import {MerkleProof} from "oz/utils/cryptography/MerkleProof.sol";
 import {UUPSUpgradeable} from "oz-up/proxy/utils/UUPSUpgradeable.sol";
 
 import {BaseCampaignsUtils} from "./libraries/BaseCampaignsUtils.sol";
+import {RewardsCampaignsV1, RewardsCampaignsV1Utils} from "./libraries/RewardsCampaignsV1Utils.sol";
 import {
-    RewardsCampaigns, RewardsCampaignsUtils, MAX_REWARDS_PER_CAMPAIGN
-} from "./libraries/RewardsCampaignsUtils.sol";
-import {PointsCampaigns, PointsCampaignsUtils} from "./libraries/PointsCampaignsUtils.sol";
+    RewardsCampaignsV2,
+    RewardsCampaignsV2Utils,
+    MAX_REWARDS_PER_CAMPAIGN
+} from "./libraries/RewardsCampaignsV2Utils.sol";
+import {PointsCampaignsV1, PointsCampaignsV1Utils} from "./libraries/PointsCampaignsV1Utils.sol";
+import {PointsCampaignsV2, PointsCampaignsV2Utils} from "./libraries/PointsCampaignsV2Utils.sol";
 import {
     IMetrom,
-    RewardsCampaign,
+    RewardsCampaignV1,
+    RewardsCampaignV2,
     Reward,
-    PointsCampaign,
+    PointsCampaignV1,
+    PointsCampaignV2,
     ReadonlyRewardsCampaign,
     ReadonlyPointsCampaign,
     CreateRewardsCampaignBundle,
@@ -36,8 +42,12 @@ import {
 /// @author Federico Luzzi - <federico.luzzi@metrom.xyz>
 contract Metrom is IMetrom, UUPSUpgradeable {
     using SafeERC20 for IERC20;
-    using RewardsCampaignsUtils for RewardsCampaigns;
-    using PointsCampaignsUtils for PointsCampaigns;
+
+    using RewardsCampaignsV1Utils for RewardsCampaignsV1;
+    using RewardsCampaignsV2Utils for RewardsCampaignsV2;
+
+    using PointsCampaignsV1Utils for PointsCampaignsV1;
+    using PointsCampaignsV2Utils for PointsCampaignsV2;
 
     /// @inheritdoc IMetrom
     bool public override ossified;
@@ -60,7 +70,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     /// @inheritdoc IMetrom
     uint32 public override maximumCampaignDuration;
 
-    RewardsCampaigns internal rewardsCampaigns;
+    RewardsCampaignsV1 internal rewardsCampaignsV1;
 
     /// @inheritdoc IMetrom
     mapping(address account => uint32 rebate) public override feeRebate;
@@ -74,7 +84,11 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     /// @inheritdoc IMetrom
     mapping(address token => uint256 minimumRate) public override minimumFeeTokenRate;
 
-    PointsCampaigns internal pointsCampaigns;
+    PointsCampaignsV1 internal pointsCampaignsV1;
+
+    RewardsCampaignsV2 internal rewardsCampaignsV2;
+
+    PointsCampaignsV2 internal pointsCampaignsV2;
 
     constructor() {
         _disableInitializers();
@@ -116,17 +130,45 @@ contract Metrom is IMetrom, UUPSUpgradeable {
 
     /// @inheritdoc IMetrom
     function rewardsCampaignById(bytes32 _id) external view override returns (ReadonlyRewardsCampaign memory) {
-        return rewardsCampaigns.getExistingReadonly(_id);
+        RewardsCampaignV1 storage campaignV1 = rewardsCampaignsV1.get(_id);
+        return campaignV1.from != 0
+            ? ReadonlyRewardsCampaign({
+                owner: campaignV1.owner,
+                pendingOwner: campaignV1.pendingOwner,
+                from: campaignV1.from,
+                to: campaignV1.to,
+                kind: 1,
+                data: abi.encode(campaignV1.pool),
+                specificationHash: campaignV1.specificationHash,
+                dataHash: campaignV1.dataHash,
+                root: campaignV1.root
+            })
+            : rewardsCampaignsV2.getExistingReadonly(_id);
     }
 
     /// @inheritdoc IMetrom
     function pointsCampaignById(bytes32 _id) external view override returns (ReadonlyPointsCampaign memory) {
-        return pointsCampaigns.getExistingReadonly(_id);
+        PointsCampaignV1 storage campaignV1 = pointsCampaignsV1.get(_id);
+        return campaignV1.from != 0
+            ? ReadonlyPointsCampaign({
+                owner: campaignV1.owner,
+                pendingOwner: campaignV1.pendingOwner,
+                from: campaignV1.from,
+                to: campaignV1.to,
+                kind: 1,
+                data: abi.encode(campaignV1.pool),
+                specificationHash: campaignV1.specificationHash,
+                points: campaignV1.points
+            })
+            : pointsCampaignsV2.getExistingReadonly(_id);
     }
 
     /// @inheritdoc IMetrom
     function campaignReward(bytes32 _id, address _token) external view override returns (uint256) {
-        return rewardsCampaigns.getRewardOnExistingCampaign(_id, _token).amount;
+        RewardsCampaignV1 storage campaignV1 = rewardsCampaignsV1.get(_id);
+        return campaignV1.from != 0
+            ? campaignV1.reward[_token].amount
+            : rewardsCampaignsV2.getRewardOnExistingCampaign(_id, _token).amount;
     }
 
     /// @inheritdoc IMetrom
@@ -136,7 +178,10 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         override
         returns (uint256)
     {
-        return rewardsCampaigns.getRewardOnExistingCampaign(_id, _token).claimed[_account];
+        RewardsCampaignV1 storage campaignV1 = rewardsCampaignsV1.get(_id);
+        return campaignV1.from != 0
+            ? campaignV1.reward[_token].claimed[_account]
+            : rewardsCampaignsV2.getRewardOnExistingCampaign(_id, _token).claimed[_account];
     }
 
     /// @inheritdoc IMetrom
@@ -158,10 +203,11 @@ contract Metrom is IMetrom, UUPSUpgradeable {
             emit CreateRewardsCampaign(
                 _id,
                 msg.sender,
-                _rewardsCampaignBundle.pool,
                 _rewardsCampaignBundle.from,
                 _rewardsCampaignBundle.to,
-                _rewardsCampaignBundle.specification,
+                _rewardsCampaignBundle.kind,
+                _rewardsCampaignBundle.data,
+                _rewardsCampaignBundle.specificationHash,
                 _createdCampaignRewards
             );
         }
@@ -174,10 +220,11 @@ contract Metrom is IMetrom, UUPSUpgradeable {
             emit CreatePointsCampaign(
                 _id,
                 msg.sender,
-                _pointsCampaignBundle.pool,
                 _pointsCampaignBundle.from,
                 _pointsCampaignBundle.to,
-                _pointsCampaignBundle.specification,
+                _pointsCampaignBundle.kind,
+                _pointsCampaignBundle.data,
+                _pointsCampaignBundle.specificationHash,
                 _pointsCampaignBundle.points,
                 _pointsCampaignBundle.feeToken,
                 _feeAmount
@@ -191,18 +238,18 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         uint32 _maximumCampaignDuration,
         uint32 _resolvedFee
     ) internal returns (bytes32, CreatedCampaignReward[] memory) {
-        uint32 _duration = BaseCampaignsUtils.validate(
-            _bundle.pool, _bundle.from, _bundle.to, _minimumCampaignDuration, _maximumCampaignDuration
-        );
+        uint32 _duration =
+            BaseCampaignsUtils.validate(_bundle.from, _bundle.to, _minimumCampaignDuration, _maximumCampaignDuration);
         if (_bundle.rewards.length == 0) revert NoRewards();
         if (_bundle.rewards.length > MAX_REWARDS_PER_CAMPAIGN) revert TooManyRewards();
 
-        (bytes32 _id, RewardsCampaign storage campaign) = rewardsCampaigns.getNew(_bundle);
+        (bytes32 _id, RewardsCampaignV2 storage campaign) = rewardsCampaignsV2.getNew(_bundle);
         campaign.owner = msg.sender;
-        campaign.pool = _bundle.pool;
         campaign.from = _bundle.from;
         campaign.to = _bundle.to;
-        campaign.specification = _bundle.specification;
+        campaign.kind = _bundle.kind;
+        campaign.data = _bundle.data;
+        campaign.specificationHash = _bundle.specificationHash;
 
         CreatedCampaignReward[] memory _createdCampaignRewards = new CreatedCampaignReward[](_bundle.rewards.length);
         for (uint256 _j = 0; _j < _bundle.rewards.length; _j++) {
@@ -233,8 +280,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
             _createdCampaignRewards[_j] =
                 CreatedCampaignReward({token: _token, amount: _rewardAmountMinusFees, fee: _feeAmount});
 
-            Reward storage reward = campaign.reward[_token];
-            reward.amount += _rewardAmountMinusFees;
+            campaign.reward[_token].amount += _rewardAmountMinusFees;
         }
 
         return (_id, _createdCampaignRewards);
@@ -246,9 +292,8 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         uint32 _maximumCampaignDuration,
         uint32 _feeRebate
     ) internal returns (bytes32, uint256) {
-        uint32 _duration = BaseCampaignsUtils.validate(
-            _bundle.pool, _bundle.from, _bundle.to, _minimumCampaignDuration, _maximumCampaignDuration
-        );
+        uint32 _duration =
+            BaseCampaignsUtils.validate(_bundle.from, _bundle.to, _minimumCampaignDuration, _maximumCampaignDuration);
         if (_bundle.points == 0) revert NoPoints();
 
         uint256 _minimumFeeTokenRate = minimumFeeTokenRate[_bundle.feeToken];
@@ -256,12 +301,13 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         uint256 _fullRequiredFeeAmount = _minimumFeeTokenRate * _duration / 1 hours;
         uint256 _requiredFeeAmount = _fullRequiredFeeAmount * (UNIT - _feeRebate) / UNIT;
 
-        (bytes32 _id, PointsCampaign storage campaign) = pointsCampaigns.getNew(_bundle);
+        (bytes32 _id, PointsCampaignV2 storage campaign) = pointsCampaignsV2.getNew(_bundle);
         campaign.owner = msg.sender;
-        campaign.pool = _bundle.pool;
         campaign.from = _bundle.from;
         campaign.to = _bundle.to;
-        campaign.specification = _bundle.specification;
+        campaign.kind = _bundle.kind;
+        campaign.data = _bundle.data;
+        campaign.specificationHash = _bundle.specificationHash;
         campaign.points = _bundle.points;
 
         uint256 _feeAmount = collectPointsCampaignFee(_bundle.feeToken, _requiredFeeAmount);
@@ -285,12 +331,19 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         for (uint256 _i; _i < _bundles.length; _i++) {
             DistributeRewardsBundle calldata _bundle = _bundles[_i];
             if (_bundle.root == bytes32(0)) revert ZeroRoot();
-            if (_bundle.data == bytes32(0)) revert ZeroData();
+            if (_bundle.dataHash == bytes32(0)) revert ZeroData();
 
-            RewardsCampaign storage campaign = rewardsCampaigns.getExisting(_bundle.campaignId);
-            campaign.root = _bundle.root;
-            campaign.data = _bundle.data;
-            emit DistributeReward(_bundle.campaignId, _bundle.root, _bundle.data);
+            RewardsCampaignV1 storage campaignV1 = rewardsCampaignsV1.get(_bundle.campaignId);
+            if (campaignV1.from != 0) {
+                campaignV1.root = _bundle.root;
+                campaignV1.dataHash = _bundle.dataHash;
+            } else {
+                RewardsCampaignV2 storage campaignV2 = rewardsCampaignsV2.getExisting(_bundle.campaignId);
+                campaignV2.root = _bundle.root;
+                campaignV2.dataHash = _bundle.dataHash;
+            }
+
+            emit DistributeReward(_bundle.campaignId, _bundle.root, _bundle.dataHash);
         }
     }
 
@@ -319,7 +372,8 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     }
 
     function _processRewardClaim(
-        RewardsCampaign storage campaign,
+        bytes32 _campaignRoot,
+        Reward storage reward,
         ClaimRewardBundle calldata _bundle,
         address _claimOwner
     ) internal returns (uint256) {
@@ -328,9 +382,8 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         if (_bundle.amount == 0) revert ZeroAmount();
 
         bytes32 _leaf = keccak256(bytes.concat(keccak256(abi.encode(_claimOwner, _bundle.token, _bundle.amount))));
-        if (!MerkleProof.verifyCalldata(_bundle.proof, campaign.root, _leaf)) revert InvalidProof();
+        if (!MerkleProof.verifyCalldata(_bundle.proof, _campaignRoot, _leaf)) revert InvalidProof();
 
-        Reward storage reward = campaign.reward[_bundle.token];
         uint256 _claimAmount = _bundle.amount - reward.claimed[_claimOwner];
         if (_claimAmount == 0) revert ZeroAmount();
         if (_claimAmount > reward.amount) revert TooMuchClaimedAmount();
@@ -343,12 +396,28 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         return _claimAmount;
     }
 
+    function _claimableRewardAndRoot(ClaimRewardBundle calldata _bundle, bool _checkOwner)
+        internal
+        view
+        returns (bytes32, Reward storage)
+    {
+        RewardsCampaignV1 storage rewardsCampaignV1 = rewardsCampaignsV1.get(_bundle.campaignId);
+        if (rewardsCampaignV1.from != 0) {
+            if (_checkOwner && rewardsCampaignV1.owner != msg.sender) revert Forbidden();
+            return (rewardsCampaignV1.root, rewardsCampaignV1.reward[_bundle.token]);
+        }
+
+        RewardsCampaignV2 storage rewardsCampaignV2 = rewardsCampaignsV2.getExisting(_bundle.campaignId);
+        if (_checkOwner && rewardsCampaignV2.owner != msg.sender) revert Forbidden();
+        return (rewardsCampaignV2.root, rewardsCampaignV2.reward[_bundle.token]);
+    }
+
     /// @inheritdoc IMetrom
     function claimRewards(ClaimRewardBundle[] calldata _bundles) external override {
         for (uint256 _i; _i < _bundles.length; _i++) {
             ClaimRewardBundle calldata _bundle = _bundles[_i];
-            uint256 _claimedAmount =
-                _processRewardClaim(rewardsCampaigns.getExisting(_bundle.campaignId), _bundle, msg.sender);
+            (bytes32 _root, Reward storage claimableReward) = _claimableRewardAndRoot(_bundle, false);
+            uint256 _claimedAmount = _processRewardClaim(_root, claimableReward, _bundle, msg.sender);
             emit ClaimReward(_bundle.campaignId, _bundle.token, _claimedAmount, _bundle.receiver);
         }
     }
@@ -357,11 +426,8 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     function recoverRewards(ClaimRewardBundle[] calldata _bundles) external override {
         for (uint256 _i; _i < _bundles.length; _i++) {
             ClaimRewardBundle calldata _bundle = _bundles[_i];
-
-            RewardsCampaign storage campaign = rewardsCampaigns.getExisting(_bundle.campaignId);
-            if (msg.sender != campaign.owner) revert Forbidden();
-
-            uint256 _claimedAmount = _processRewardClaim(campaign, _bundle, address(0));
+            (bytes32 _root, Reward storage claimableReward) = _claimableRewardAndRoot(_bundle, true);
+            uint256 _claimedAmount = _processRewardClaim(_root, claimableReward, _bundle, address(0));
             emit RecoverReward(_bundle.campaignId, _bundle.token, _claimedAmount, _bundle.receiver);
         }
     }
@@ -387,32 +453,54 @@ contract Metrom is IMetrom, UUPSUpgradeable {
 
     /// @inheritdoc IMetrom
     function campaignOwner(bytes32 _id) external view override returns (address) {
-        address _owner = rewardsCampaigns.get(_id).owner;
-        return _owner == address(0) ? pointsCampaigns.get(_id).owner : _owner;
+        address _owner = rewardsCampaignsV1.get(_id).owner;
+        if (_owner == address(0)) _owner = rewardsCampaignsV2.get(_id).owner;
+        if (_owner == address(0)) _owner = pointsCampaignsV1.get(_id).owner;
+        if (_owner == address(0)) _owner = pointsCampaignsV2.get(_id).owner;
+        return _owner;
     }
 
     /// @inheritdoc IMetrom
     function campaignPendingOwner(bytes32 _id) external view override returns (address) {
-        address _pendingOwner = rewardsCampaigns.get(_id).pendingOwner;
-        return _pendingOwner == address(0) ? pointsCampaigns.get(_id).pendingOwner : _pendingOwner;
+        address _pendingOwner = rewardsCampaignsV1.get(_id).pendingOwner;
+        if (_pendingOwner == address(0)) _pendingOwner = rewardsCampaignsV2.get(_id).pendingOwner;
+        if (_pendingOwner == address(0)) _pendingOwner = pointsCampaignsV1.get(_id).pendingOwner;
+        if (_pendingOwner == address(0)) _pendingOwner = pointsCampaignsV2.get(_id).pendingOwner;
+        return _pendingOwner;
     }
 
     /// @inheritdoc IMetrom
     function transferCampaignOwnership(bytes32 _id, address _owner) external override {
         if (_owner == address(0)) revert ZeroAddressOwner();
 
-        RewardsCampaign storage rewardsCampaign = rewardsCampaigns.get(_id);
-        if (rewardsCampaign.owner != address(0)) {
-            if (msg.sender != rewardsCampaign.owner) revert Forbidden();
-            rewardsCampaign.pendingOwner = _owner;
+        RewardsCampaignV1 storage rewardsCampaignV1 = rewardsCampaignsV1.get(_id);
+        if (rewardsCampaignV1.from != 0) {
+            if (msg.sender != rewardsCampaignV1.owner) revert Forbidden();
+            rewardsCampaignV1.pendingOwner = _owner;
             emit TransferCampaignOwnership(_id, _owner);
             return;
         }
 
-        PointsCampaign storage pointsCampaign = pointsCampaigns.get(_id);
-        if (pointsCampaign.owner != address(0)) {
-            if (msg.sender != pointsCampaign.owner) revert Forbidden();
-            pointsCampaign.pendingOwner = _owner;
+        RewardsCampaignV2 storage rewardsCampaignV2 = rewardsCampaignsV2.get(_id);
+        if (rewardsCampaignV2.from != 0) {
+            if (msg.sender != rewardsCampaignV2.owner) revert Forbidden();
+            rewardsCampaignV2.pendingOwner = _owner;
+            emit TransferCampaignOwnership(_id, _owner);
+            return;
+        }
+
+        PointsCampaignV1 storage pointsCampaignV1 = pointsCampaignsV1.get(_id);
+        if (pointsCampaignV1.owner != address(0)) {
+            if (msg.sender != pointsCampaignV1.owner) revert Forbidden();
+            pointsCampaignV1.pendingOwner = _owner;
+            emit TransferCampaignOwnership(_id, _owner);
+            return;
+        }
+
+        PointsCampaignV2 storage pointsCampaignV2 = pointsCampaignsV2.get(_id);
+        if (pointsCampaignV2.owner != address(0)) {
+            if (msg.sender != pointsCampaignV2.owner) revert Forbidden();
+            pointsCampaignV2.pendingOwner = _owner;
             emit TransferCampaignOwnership(_id, _owner);
             return;
         }
@@ -422,20 +510,38 @@ contract Metrom is IMetrom, UUPSUpgradeable {
 
     /// @inheritdoc IMetrom
     function acceptCampaignOwnership(bytes32 _id) external override {
-        RewardsCampaign storage rewardsCampaign = rewardsCampaigns.get(_id);
-        if (rewardsCampaign.owner != address(0)) {
-            if (msg.sender != rewardsCampaign.pendingOwner) revert Forbidden();
-            delete rewardsCampaign.pendingOwner;
-            rewardsCampaign.owner = msg.sender;
+        RewardsCampaignV1 storage rewardsCampaignV1 = rewardsCampaignsV1.get(_id);
+        if (rewardsCampaignV1.owner != address(0)) {
+            if (msg.sender != rewardsCampaignV1.pendingOwner) revert Forbidden();
+            delete rewardsCampaignV1.pendingOwner;
+            rewardsCampaignV1.owner = msg.sender;
             emit AcceptCampaignOwnership(_id, msg.sender);
             return;
         }
 
-        PointsCampaign storage pointsCampaign = pointsCampaigns.get(_id);
-        if (pointsCampaign.owner != address(0)) {
-            if (msg.sender != pointsCampaign.pendingOwner) revert Forbidden();
-            delete pointsCampaign.pendingOwner;
-            pointsCampaign.owner = msg.sender;
+        RewardsCampaignV2 storage rewardsCampaignV2 = rewardsCampaignsV2.get(_id);
+        if (rewardsCampaignV2.owner != address(0)) {
+            if (msg.sender != rewardsCampaignV2.pendingOwner) revert Forbidden();
+            delete rewardsCampaignV2.pendingOwner;
+            rewardsCampaignV2.owner = msg.sender;
+            emit AcceptCampaignOwnership(_id, msg.sender);
+            return;
+        }
+
+        PointsCampaignV1 storage pointsCampaignV1 = pointsCampaignsV1.get(_id);
+        if (pointsCampaignV1.owner != address(0)) {
+            if (msg.sender != pointsCampaignV1.pendingOwner) revert Forbidden();
+            delete pointsCampaignV1.pendingOwner;
+            pointsCampaignV1.owner = msg.sender;
+            emit AcceptCampaignOwnership(_id, msg.sender);
+            return;
+        }
+
+        PointsCampaignV2 storage pointsCampaignV2 = pointsCampaignsV2.get(_id);
+        if (pointsCampaignV2.owner != address(0)) {
+            if (msg.sender != pointsCampaignV2.pendingOwner) revert Forbidden();
+            delete pointsCampaignV2.pendingOwner;
+            pointsCampaignV2.owner = msg.sender;
             emit AcceptCampaignOwnership(_id, msg.sender);
             return;
         }
