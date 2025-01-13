@@ -29,3 +29,4 @@ base = { chain = 8453, key = "${ETHERSCAN_API_KEY}", url = "https://api.basescan
 base_sepolia = { chain = 84532, key = "${ETHERSCAN_API_KEY}", url = "https://api-sepolia.basescan.org/api" }
 taiko = { chain = 167000, key = "${ETHERSCAN_API_KEY}", url = "https://api.taikoscan.io/api" }
 sonic = { chain = 146, key = "${ETHERSCAN_API_KEY}", url = "https://api.sonicscan.org/api" }
+sepolia = { chain = 11155111, key = "${ETHERSCAN_API_KEY}", url = "https://api-sepolia.etherscan.io/api" }
