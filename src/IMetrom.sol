@@ -26,8 +26,8 @@ struct RewardsCampaignV1 {
     uint32 from;
     uint32 to;
     bytes32 specificationHash;
-    bytes32 dataHash;
     bytes32 root;
+    bytes32 dataHash;
     mapping(address token => Reward) reward;
 }
 
