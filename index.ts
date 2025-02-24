@@ -19,6 +19,7 @@ export enum SupportedChain {
     // Arthera = 10_242,
     Form = 478,
     Gnosis = 100,
+    Telos = 40,
 }
 
 export const ADDRESS: Record<SupportedChain, ChainContract> = {
@@ -81,5 +82,9 @@ export const ADDRESS: Record<SupportedChain, ChainContract> = {
     [SupportedChain.Gnosis]: {
         address: "0x9430990117A7451e3d0a3d89796FC0b0c294Da9c",
         blockCreated: 38018174,
+    },
+    [SupportedChain.Telos]: {
+        address: "0xD4AC4AaFb81eC774E49AA755A66EfCe4574D6276",
+        blockCreated: 390899406,
     },
 };

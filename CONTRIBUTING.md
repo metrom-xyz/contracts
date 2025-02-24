@@ -116,11 +116,17 @@ FOUNDRY_PROFILE=production forge script --broadcast --chain $CHAIN --rpc-url $RP
 # for the full deployment with blockscout verification
 FOUNDRY_PROFILE=production forge script --broadcast --rpc-url $RPC_URL --sig 'run(address,address,uint32,uint32,uint32)' --verify --verifier blockscout DeployFull $OWNER $UPDATER $GLOBAL_FEE $MINIMUM_CAMPAIGN_DURATION $MAXIMUM_CAMPAIGN_DURATION
 
+# for the full deployment with sourcify verification
+FOUNDRY_PROFILE=production forge script --broadcast --rpc-url $RPC_URL --sig 'run(address,address,uint32,uint32,uint32)' --verify --verifier sourcify DeployFull $OWNER $UPDATER $GLOBAL_FEE $MINIMUM_CAMPAIGN_DURATION $MAXIMUM_CAMPAIGN_DURATION
+
 # for the implementation-only deployment
 FOUNDRY_PROFILE=production forge script --broadcast --chain $CHAIN --rpc-url $RPC_URL --verify DeployImplementation
 
 # for the implementation-only deployment with blockscout verification
 FOUNDRY_PROFILE=production forge script --broadcast --rpc-url $RPC_URL --verify --verifier blockscout DeployImplementation
+
+# for the implementation-only deployment with sourcify verification
+FOUNDRY_PROFILE=production forge script --broadcast --rpc-url $RPC_URL --verify --verifier sourcify DeployImplementation
 ```
 
 ### Addresses
