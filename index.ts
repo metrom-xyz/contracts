@@ -3,7 +3,7 @@ import { type ChainContract } from "viem";
 export enum SupportedChain {
     // testnets
     Holesky = 17_000,
-    CeloAlfajores = 44_787,
+    // CeloAlfajores = 44_787,
     // MantleSepolia = 5_003,
     BaseSepolia = 84_532,
     // FormTestnet = 132_902,
@@ -27,10 +27,10 @@ export const ADDRESS: Record<SupportedChain, ChainContract> = {
         address: "0xE2461a09B782efF63a2B50964a6DA3C15dD2A51e",
         blockCreated: 2189164,
     },
-    [SupportedChain.CeloAlfajores]: {
-        address: "0x0Fe5A93b63ACcf31679321dd0Daf341c037A1187",
-        blockCreated: 25798782,
-    },
+    // [SupportedChain.CeloAlfajores]: {
+    //     address: "0x0Fe5A93b63ACcf31679321dd0Daf341c037A1187",
+    //     blockCreated: 25798782,
+    // },
     // [SupportedChain.MantleSepolia]: {
     //     address: "0xB6044f769f519a634A5150645484b18d0C031ae8",
     //     blockCreated: 11430844,
