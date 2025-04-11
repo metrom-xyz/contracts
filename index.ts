@@ -2,25 +2,26 @@ import { type ChainContract } from "viem";
 
 export enum SupportedChain {
     // testnets
-    Holesky = 17_000,
+    Holesky = 17000,
     // CeloAlfajores = 44_787,
     // MantleSepolia = 5_003,
-    BaseSepolia = 84_532,
+    BaseSepolia = 84532,
     // FormTestnet = 132_902,
-    Sepolia = 11_155_111,
+    Sepolia = 11155111,
 
     // mainnets
-    Mode = 34_443,
-    Mantle = 5_000,
-    Base = 8_453,
-    Taiko = 167_000,
-    Scroll = 534_352,
+    Mode = 34443,
+    Mantle = 5000,
+    Base = 8453,
+    Taiko = 167000,
+    Scroll = 534352,
     Sonic = 146,
     // Arthera = 10_242,
     Form = 478,
     Gnosis = 100,
     Telos = 40,
     LightLinkPhoenix = 1890,
+    Sei = 1329,
 }
 
 export const ADDRESS: Record<SupportedChain, ChainContract> = {
@@ -91,5 +92,9 @@ export const ADDRESS: Record<SupportedChain, ChainContract> = {
     [SupportedChain.LightLinkPhoenix]: {
         address: "0xD4AC4AaFb81eC774E49AA755A66EfCe4574D6276",
         blockCreated: 134711473,
+    },
+    [SupportedChain.Sei]: {
+        address: "0xD4AC4AaFb81eC774E49AA755A66EfCe4574D6276",
+        blockCreated: 141494257,
     },
 };
