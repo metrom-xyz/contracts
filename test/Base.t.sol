@@ -1,4 +1,4 @@
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import {Test} from "forge-std/Test.sol";
 import {ERC1967Proxy} from "oz/proxy/ERC1967/ERC1967Proxy.sol";
@@ -17,7 +17,8 @@ import {
 contract BaseTest is Test {
     address internal owner;
     address internal updater;
-    uint32 internal fee;
+    uint32 internal creationFee;
+    uint32 internal reimbursementFee;
     uint32 internal minimumCampaignDuration;
     uint32 internal maximumCampaignDuration;
     MetromHarness internal metrom;
@@ -25,7 +26,8 @@ contract BaseTest is Test {
     function setUp() external {
         owner = address(1);
         updater = address(2);
-        fee = 10_000;
+        creationFee = 10_000;
+        reimbursementFee = 50_000;
         minimumCampaignDuration = 1 seconds;
         maximumCampaignDuration = 30 minutes;
         metrom = MetromHarness(
@@ -36,7 +38,8 @@ contract BaseTest is Test {
                         IMetrom.initialize.selector,
                         owner,
                         updater,
-                        fee,
+                        creationFee,
+                        reimbursementFee,
                         minimumCampaignDuration,
                         maximumCampaignDuration
                     )

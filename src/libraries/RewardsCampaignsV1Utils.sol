@@ -1,4 +1,4 @@
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import {BaseCampaignsUtils} from "./BaseCampaignsUtils.sol";
 import {IMetrom, RewardsCampaignV1, ReadonlyRewardsCampaign, Reward} from "../IMetrom.sol";

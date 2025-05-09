@@ -1,4 +1,4 @@
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import {IMetrom, PointsCampaignV2, CreatePointsCampaignBundle, ReadonlyPointsCampaign} from "../IMetrom.sol";
 
