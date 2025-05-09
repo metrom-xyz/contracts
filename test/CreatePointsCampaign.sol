@@ -220,7 +220,7 @@ contract CreatePointsCampaignTest is BaseTest {
         _createPointsCampaignBundles[0] = _createPointsCampaignBundle;
 
         vm.prank(owner);
-        metrom.setFeeRebate(address(this), UNIT);
+        metrom.setCreationFeeRebate(address(this), UNIT);
 
         metrom.createCampaigns(new CreateRewardsCampaignBundle[](0), _createPointsCampaignBundles);
 

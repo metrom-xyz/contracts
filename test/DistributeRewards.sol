@@ -28,8 +28,12 @@ contract DistributeRewardsTest is BaseTest {
     }
 
     function test_failZeroRoot() public {
-        DistributeRewardsBundle memory _bundle =
-            DistributeRewardsBundle({campaignId: bytes32(0), root: bytes32(0), dataHash: bytes32(0)});
+        DistributeRewardsBundle memory _bundle = DistributeRewardsBundle({
+            campaignId: bytes32(0),
+            root: bytes32(0),
+            dataHash: bytes32(0),
+            reimbursementFees: new RewardAmount[](0)
+        });
 
         DistributeRewardsBundle[] memory _bundles = new DistributeRewardsBundle[](1);
         _bundles[0] = _bundle;
@@ -40,8 +44,12 @@ contract DistributeRewardsTest is BaseTest {
     }
 
     function test_failZeroData() public {
-        DistributeRewardsBundle memory _bundle =
-            DistributeRewardsBundle({campaignId: bytes32(0), root: bytes32("test"), dataHash: bytes32(0)});
+        DistributeRewardsBundle memory _bundle = DistributeRewardsBundle({
+            campaignId: bytes32(0),
+            root: bytes32("test"),
+            dataHash: bytes32(0),
+            reimbursementFees: new RewardAmount[](0)
+        });
 
         DistributeRewardsBundle[] memory _bundles = new DistributeRewardsBundle[](1);
         _bundles[0] = _bundle;
@@ -52,8 +60,12 @@ contract DistributeRewardsTest is BaseTest {
     }
 
     function test_failNonExistentCampaign() public {
-        DistributeRewardsBundle memory _bundle =
-            DistributeRewardsBundle({campaignId: bytes32(0), root: bytes32("test"), dataHash: bytes32("test")});
+        DistributeRewardsBundle memory _bundle = DistributeRewardsBundle({
+            campaignId: bytes32(0),
+            root: bytes32("test"),
+            dataHash: bytes32("test"),
+            reimbursementFees: new RewardAmount[](0)
+        });
 
         DistributeRewardsBundle[] memory _bundles = new DistributeRewardsBundle[](1);
         _bundles[0] = _bundle;
@@ -92,15 +104,63 @@ contract DistributeRewardsTest is BaseTest {
         DistributeRewardsBundle memory _bundle = DistributeRewardsBundle({
             campaignId: metrom.rewardsCampaignId(_createRewardsCampaignBundle),
             root: bytes32("test"),
-            dataHash: bytes32("test")
+            dataHash: bytes32("test"),
+            reimbursementFees: new RewardAmount[](0)
         });
         DistributeRewardsBundle[] memory _bundles = new DistributeRewardsBundle[](1);
         _bundles[0] = _bundle;
 
         vm.expectEmit();
-        emit IMetrom.DistributeReward(_bundle.campaignId, _bundle.root, _bundle.dataHash);
+        emit IMetrom.DistributeReward(_bundle.campaignId, _bundle.root, _bundle.dataHash, new RewardAmount[](0));
 
         vm.prank(updater);
         metrom.distributeRewards(_bundles);
+    }
+
+    function test_successSingleCampaignWithReimbursementFees() public {
+        MintableERC20 _mintableErc20 = new MintableERC20("Test", "TST");
+        _mintableErc20.mint(address(this), 10.1 ether);
+        _mintableErc20.approve(address(metrom), 10.1 ether);
+        vm.assertEq(_mintableErc20.balanceOf(address(this)), 10.1 ether);
+        setMinimumRewardRate(address(_mintableErc20), 1);
+
+        RewardAmount[] memory _rewards = new RewardAmount[](1);
+        _rewards[0] = RewardAmount({token: address(_mintableErc20), amount: 10 ether});
+
+        CreateRewardsCampaignBundle memory _createRewardsCampaignBundle = CreateRewardsCampaignBundle({
+            from: uint32(block.timestamp + 10),
+            to: uint32(block.timestamp + 20),
+            kind: 1,
+            data: abi.encode(address(1)),
+            specificationHash: bytes32(0),
+            rewards: _rewards
+        });
+
+        CreateRewardsCampaignBundle[] memory _createRewardsCampaignBundles = new CreateRewardsCampaignBundle[](1);
+        _createRewardsCampaignBundles[0] = _createRewardsCampaignBundle;
+
+        CreatePointsCampaignBundle[] memory _createPointsCampaignBundles = new CreatePointsCampaignBundle[](0);
+
+        metrom.createCampaigns(_createRewardsCampaignBundles, _createPointsCampaignBundles);
+
+        RewardAmount[] memory _reimbursementFees = new RewardAmount[](1);
+        _reimbursementFees[0] = RewardAmount({token: address(_mintableErc20), amount: 2 ether});
+
+        DistributeRewardsBundle memory _bundle = DistributeRewardsBundle({
+            campaignId: metrom.rewardsCampaignId(_createRewardsCampaignBundle),
+            root: bytes32("test"),
+            dataHash: bytes32("test"),
+            reimbursementFees: _reimbursementFees
+        });
+        DistributeRewardsBundle[] memory _bundles = new DistributeRewardsBundle[](1);
+        _bundles[0] = _bundle;
+
+        vm.expectEmit();
+        emit IMetrom.DistributeReward(_bundle.campaignId, _bundle.root, _bundle.dataHash, _reimbursementFees);
+
+        vm.prank(updater);
+        metrom.distributeRewards(_bundles);
+
+        vm.assertEq(metrom.claimableFees(address(_mintableErc20)), 2.1 ether);
     }
 }
