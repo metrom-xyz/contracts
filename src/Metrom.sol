@@ -20,6 +20,7 @@ import {
     RewardsCampaignV2,
     Reward,
     RewardAmount,
+    ResolvedFee,
     PointsCampaignV1,
     PointsCampaignV2,
     ReadonlyRewardsCampaign,
@@ -140,6 +141,44 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         if (ossified) revert Ossified();
     }
 
+    function _resolvedRewardsCampaignCreationFee(address _creator) internal view returns (ResolvedFee memory) {
+        uint32 _fee = creationFee;
+        uint32 _rebate = creationFeeRebate[_creator];
+        uint32 _resolved = uint32(uint64(_fee) * (UNIT - _rebate) / UNIT);
+
+        return ResolvedFee({full: _fee, rebate: _rebate, resolved: _resolved});
+    }
+
+    function _resolvedReimbursementFeeByAddress(address _account) internal view returns (ResolvedFee memory) {
+        uint32 _fee = reimbursementFee;
+        uint32 _rebate = reimbursementFeeRebate[_account];
+        uint32 _resolved = uint32(uint64(_fee) * (UNIT - _rebate) / UNIT);
+
+        return ResolvedFee({full: _fee, rebate: _rebate, resolved: _resolved});
+    }
+
+    /// @inheritdoc IMetrom
+    function resolvedRewardsCampaignCreationFee(address _creator) external view override returns (ResolvedFee memory) {
+        return _resolvedRewardsCampaignCreationFee(_creator);
+    }
+
+    /// @inheritdoc IMetrom
+    function resolvedReimbursementFeeByAddress(address _creator) external view override returns (ResolvedFee memory) {
+        return _resolvedReimbursementFeeByAddress(_creator);
+    }
+
+    /// @inheritdoc IMetrom
+    function resolvedReimbursementFeeByCampaign(bytes32 _campaignId)
+        external
+        view
+        override
+        returns (ResolvedFee memory)
+    {
+        address _owner = rewardsCampaignsV1.get(_campaignId).owner;
+        if (_owner == address(0)) _owner = rewardsCampaignsV2.getExistingReadonly(_campaignId).owner;
+        return _resolvedReimbursementFeeByAddress(_owner);
+    }
+
     /// @inheritdoc IMetrom
     function rewardsCampaignById(bytes32 _id) external view override returns (ReadonlyRewardsCampaign memory) {
         RewardsCampaignV1 storage campaignV1 = rewardsCampaignsV1.get(_id);
@@ -201,16 +240,14 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         CreateRewardsCampaignBundle[] calldata _rewardsCampaignBundles,
         CreatePointsCampaignBundle[] calldata _pointsCampaignBundles
     ) external {
-        uint32 _fee = creationFee;
-        uint32 _feeRebate = creationFeeRebate[msg.sender];
-        uint32 _resolvedRewardsCampaignFee = uint32(uint64(_fee) * (UNIT - _feeRebate) / UNIT);
+        ResolvedFee memory _fee = _resolvedRewardsCampaignCreationFee(msg.sender);
         uint32 _minimumCampaignDuration = minimumCampaignDuration;
         uint32 _maximumCampaignDuration = maximumCampaignDuration;
 
         for (uint256 _i = 0; _i < _rewardsCampaignBundles.length; _i++) {
             CreateRewardsCampaignBundle calldata _rewardsCampaignBundle = _rewardsCampaignBundles[_i];
             (bytes32 _id, CreatedCampaignReward[] memory _createdCampaignRewards) = createRewardsCampaign(
-                _rewardsCampaignBundle, _minimumCampaignDuration, _maximumCampaignDuration, _resolvedRewardsCampaignFee
+                _rewardsCampaignBundle, _minimumCampaignDuration, _maximumCampaignDuration, _fee.resolved
             );
             emit CreateRewardsCampaign(
                 _id,
@@ -227,7 +264,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         for (uint256 _i = 0; _i < _pointsCampaignBundles.length; _i++) {
             CreatePointsCampaignBundle calldata _pointsCampaignBundle = _pointsCampaignBundles[_i];
             (bytes32 _id, uint256 _feeAmount) = createPointsCampaign(
-                _pointsCampaignBundle, _minimumCampaignDuration, _maximumCampaignDuration, _feeRebate
+                _pointsCampaignBundle, _minimumCampaignDuration, _maximumCampaignDuration, _fee.rebate
             );
             emit CreatePointsCampaign(
                 _id,

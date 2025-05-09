@@ -110,6 +110,13 @@ struct ReadonlyPointsCampaign {
     uint256 points;
 }
 
+/// @notice Bundles data regarding a resolved fee.
+struct ResolvedFee {
+    uint32 full;
+    uint32 rebate;
+    uint32 resolved;
+}
+
 struct RewardAmount {
     address token;
     uint256 amount;
@@ -488,6 +495,14 @@ interface IMetrom {
     /// @return rebate The creation fee rebate for the provided account.
     function creationFeeRebate(address account) external view returns (uint32 rebate);
 
+    /// @notice Returns the resolved creation fee for a rewards campaign creator.
+    /// @param creator The creator's address.
+    /// @return resolvedCreationFee The resolved creation fee.
+    function resolvedRewardsCampaignCreationFee(address creator)
+        external
+        view
+        returns (ResolvedFee memory resolvedCreationFee);
+
     /// @notice Returns the current reimbursement fee.
     /// @return creationFee The current reimbursement fee.
     function reimbursementFee() external view returns (uint32 creationFee);
@@ -496,6 +511,22 @@ interface IMetrom {
     /// @param account The account for which to fetch the fee rebate.
     /// @return rebate The reimbursement fee rebate for the provided account.
     function reimbursementFeeRebate(address account) external view returns (uint32 rebate);
+
+    /// @notice Returns the resolved reimbursement fee for a campaign creator.
+    /// @param account The creator's account.
+    /// @return resolvedReimbursementFee The resolved reimbursement fee.
+    function resolvedReimbursementFeeByAddress(address account)
+        external
+        view
+        returns (ResolvedFee memory resolvedReimbursementFee);
+
+    /// @notice Returns the resolved reimbursement fee for a campaign.
+    /// @param campaignId The campaign id.
+    /// @return resolvedReimbursementFee The resolved reimbursement fee.
+    function resolvedReimbursementFeeByCampaign(bytes32 campaignId)
+        external
+        view
+        returns (ResolvedFee memory resolvedReimbursementFee);
 
     /// @notice Returns the currently enforced minimum campaign duration.
     /// @return minimumCampaignDuration The currently enforced minimum campaign duration.
