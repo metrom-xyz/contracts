@@ -22,6 +22,7 @@ export enum SupportedChain {
     Telos = 40,
     LightLinkPhoenix = 1890,
     Sei = 1329,
+    Swell = 1923,
 }
 
 export const ADDRESS: Record<SupportedChain, ChainContract> = {
@@ -96,5 +97,9 @@ export const ADDRESS: Record<SupportedChain, ChainContract> = {
     [SupportedChain.Sei]: {
         address: "0xD4AC4AaFb81eC774E49AA755A66EfCe4574D6276",
         blockCreated: 141494257,
+    },
+    [SupportedChain.Swell]: {
+        address: "0xe82c4D8b993D613a28600B953e91A3A93Ae69Fd6",
+        blockCreated: 7267194,
     },
 };
