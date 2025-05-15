@@ -99,7 +99,7 @@ export const ADDRESS: Record<SupportedChain, ChainContract> = {
         blockCreated: 141494257,
     },
     [SupportedChain.Swell]: {
-        address: "0xe82c4D8b993D613a28600B953e91A3A93Ae69Fd6",
-        blockCreated: 7267194,
+        address: "0x95Bf186929194099899139Ff79998cC147290F28",
+        blockCreated: 7309091,
     },
 };

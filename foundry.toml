@@ -30,4 +30,4 @@ base_sepolia = { chain = 84532, key = "${ETHERSCAN_API_KEY}", url = "https://api
 taiko = { chain = 167000, key = "${ETHERSCAN_API_KEY}", url = "https://api.taikoscan.io/api" }
 sonic = { chain = 146, key = "${ETHERSCAN_API_KEY}", url = "https://api.sonicscan.org/api" }
 sepolia = { chain = 11155111, key = "${ETHERSCAN_API_KEY}", url = "https://api-sepolia.etherscan.io/api" }
-swell = { chain = 1923, key = "${ETHERSCAN_API_KEY}", url = "https://api-swell.etherscan.io/api" }
+swell = { chain = 1923, key = "${ETHERSCAN_API_KEY}", url = "https://api.swellchainscan.io/api" }
