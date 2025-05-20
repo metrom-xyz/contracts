@@ -1,4 +1,4 @@
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import {MetromHarness} from "./harnesses/MetromHarness.sol";
 import {BaseTest} from "./Base.t.sol";
@@ -206,8 +206,12 @@ contract ClaimRewardsTest is BaseTest {
         // then the provided proof at claim time is the one for the second claim
 
         bytes32 _root = bytes32(0x8177f131454affec90ea987fa3784afc6d2ca02009c6c8f9e7e7183794f801fe);
-        DistributeRewardsBundle memory _distributeRewardBundle =
-            DistributeRewardsBundle({campaignId: _createdCampaignId, root: _root, dataHash: bytes32("foo")});
+        DistributeRewardsBundle memory _distributeRewardBundle = DistributeRewardsBundle({
+            campaignId: _createdCampaignId,
+            root: _root,
+            dataHash: bytes32("foo"),
+            reimbursementFees: new RewardAmount[](0)
+        });
         DistributeRewardsBundle[] memory _distributeRewardBundles = new DistributeRewardsBundle[](1);
         _distributeRewardBundles[0] = _distributeRewardBundle;
 
@@ -353,8 +357,12 @@ contract ClaimRewardsTest is BaseTest {
         // then the provided proof at claim time is the one for the second claim
 
         bytes32 _root = bytes32(0xb1ba26940192dab1dbb383cfc69674e93fb8011037f51703624b66d5238661b5);
-        DistributeRewardsBundle memory _distributeRewardBundle =
-            DistributeRewardsBundle({campaignId: _createdCampaignId, root: _root, dataHash: bytes32("foo")});
+        DistributeRewardsBundle memory _distributeRewardBundle = DistributeRewardsBundle({
+            campaignId: _createdCampaignId,
+            root: _root,
+            dataHash: bytes32("foo"),
+            reimbursementFees: new RewardAmount[](0)
+        });
         DistributeRewardsBundle[] memory _distributeRewardBundles = new DistributeRewardsBundle[](1);
         _distributeRewardBundles[0] = _distributeRewardBundle;
 
@@ -445,8 +453,12 @@ contract ClaimRewardsTest is BaseTest {
         // then the provided proof at claim time is the one for the second claim
 
         bytes32 _root = bytes32(0xb1ba26940192dab1dbb383cfc69674e93fb8011037f51703624b66d5238661b5);
-        DistributeRewardsBundle memory _distributeRewardBundle =
-            DistributeRewardsBundle({campaignId: _createdCampaignId, root: _root, dataHash: bytes32("foo")});
+        DistributeRewardsBundle memory _distributeRewardBundle = DistributeRewardsBundle({
+            campaignId: _createdCampaignId,
+            root: _root,
+            dataHash: bytes32("foo"),
+            reimbursementFees: new RewardAmount[](0)
+        });
         DistributeRewardsBundle[] memory _distributeRewardBundles = new DistributeRewardsBundle[](1);
         _distributeRewardBundles[0] = _distributeRewardBundle;
 

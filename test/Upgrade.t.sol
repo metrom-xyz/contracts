@@ -1,4 +1,4 @@
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import {Initializable} from "oz-up/proxy/utils/Initializable.sol";
 
@@ -39,7 +39,7 @@ contract UpgradeTest is BaseTest {
         vm.assertEq(MetromHarnessUpgraded(address(metrom)).upgraded(), true);
 
         vm.expectRevert(Initializable.InvalidInitialization.selector);
-        metrom.initialize(address(1), address(1), 10, 10, 11);
+        metrom.initialize(address(1), address(1), 10, 10, 10, 11);
     }
 
     function test_successReinitialize() public {

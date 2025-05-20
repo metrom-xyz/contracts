@@ -1,4 +1,4 @@
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import {RewardsCampaignsV2Utils, RewardsCampaignsV2} from "../../src/libraries/RewardsCampaignsV2Utils.sol";
 import {PointsCampaignsV2Utils, PointsCampaignsV2} from "../../src/libraries/PointsCampaignsV2Utils.sol";
