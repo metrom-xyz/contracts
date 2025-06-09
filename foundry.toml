@@ -31,3 +31,4 @@ taiko = { chain = 167000, key = "${ETHERSCAN_API_KEY}", url = "https://api.taiko
 sonic = { chain = 146, key = "${ETHERSCAN_API_KEY}", url = "https://api.sonicscan.org/api" }
 sepolia = { chain = 11155111, key = "${ETHERSCAN_API_KEY}", url = "https://api-sepolia.etherscan.io/api" }
 swell = { chain = 1923, key = "${ETHERSCAN_API_KEY}", url = "https://api.swellchainscan.io/api" }
+sei = { chain = 1329, key = "${ETHERSCAN_API_KEY}", url = "https://seitrace.com/pacific-1/api" }
