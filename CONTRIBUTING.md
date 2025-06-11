@@ -127,6 +127,12 @@ FOUNDRY_PROFILE=production forge script --broadcast --rpc-url $RPC_URL --verify 
 
 # for the implementation-only deployment with sourcify verification
 FOUNDRY_PROFILE=production forge script --broadcast --rpc-url $RPC_URL --verify --verifier sourcify DeployImplementation
+
+# for the implementation-only deployment on a zkSync chain
+FOUNDRY_PROFILE=zksync forge script --broadcast --chain $CHAIN --rpc-url $RPC_URL --zksync DeployImplementation
+
+# for the proxy deployment on a zkSync chain
+FOUNDRY_PROFILE=zksync forge script --broadcast --chain $CHAIN --rpc-url $RPC_URL --sig 'run(address,address,address,uint32,uint32,uint32)' --zksync DeployProxy <IMPLEMENTATION_ADDRESS> $OWNER $UPDATER $GLOBAL_FEE $MINIMUM_CAMPAIGN_DURATION $MAXIMUM_CAMPAIGN_DURATION
 ```
 
 ### Addresses

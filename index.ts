@@ -20,6 +20,7 @@ export enum SupportedChain {
     Sei = 1329,
     Swell = 1923,
     Hemi = 43111,
+    Lens = 232,
 }
 
 export const ADDRESS: Record<SupportedChain, ChainContract> = {
@@ -86,5 +87,9 @@ export const ADDRESS: Record<SupportedChain, ChainContract> = {
     [SupportedChain.Hemi]: {
         address: "0xD4AC4AaFb81eC774E49AA755A66EfCe4574D6276",
         blockCreated: 1838171,
+    },
+    [SupportedChain.Lens]: {
+        address: "0x5319C3Fc78ac3e10Ca733A5839D65F8493A8D60A",
+        blockCreated: 2507884,
     },
 };
