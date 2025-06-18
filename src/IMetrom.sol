@@ -110,6 +110,13 @@ struct ReadonlyPointsCampaign {
     uint256 points;
 }
 
+/// @notice Bundles data regarding a resolved fee.
+struct ResolvedFee {
+    uint32 full;
+    uint32 rebate;
+    uint32 resolved;
+}
+
 struct RewardAmount {
     address token;
     uint256 amount;
@@ -143,11 +150,13 @@ struct CreatePointsCampaignBundle {
 }
 
 /// @notice Contains data that can be used by the current `updater` to
-/// distribute rewards on a campaign by specifying a Merkle root and a data link.
+/// distribute rewards on a campaign by specifying a Merkle root, a data link,
+/// and an optional list of reimbursement fees.
 struct DistributeRewardsBundle {
     bytes32 campaignId;
     bytes32 root;
     bytes32 dataHash;
+    RewardAmount[] reimbursementFees;
 }
 
 /// @notice Contains data that can be used by the current `updater` or the
@@ -185,13 +194,15 @@ interface IMetrom {
     /// @notice Emitted at initialization time.
     /// @param owner The initial contract's owner.
     /// @param updater The initial contract's updater.
-    /// @param fee The initial contract's rewards campaign fee.
+    /// @param creationFee The initial contract's rewards campaign creation fee.
+    /// @param reimbursementFee The initial contract's rewards campaign reimbursement fee.
     /// @param minimumCampaignDuration The initial contract's minimum campaign duration.
     /// @param maximumCampaignDuration The initial contract's maximum campaign duration.
     event Initialize(
         address indexed owner,
         address updater,
-        uint32 fee,
+        uint32 creationFee,
+        uint32 reimbursementFee,
         uint32 minimumCampaignDuration,
         uint32 maximumCampaignDuration
     );
@@ -251,7 +262,9 @@ interface IMetrom {
     /// @param data The updated data content hash for the campaign. This can be used to
     /// contruct an IPFS CID for a file that will contain the raw data used to get the raw
     /// data used to contruct the campaign's Merkle tree and verify the Merkle root.
-    event DistributeReward(bytes32 indexed campaignId, bytes32 root, bytes32 data);
+    /// @param reimbursementFees A list of fees applied to the campaign's reimbursed amounts
+    /// (for example due to a non-met KPI).
+    event DistributeReward(bytes32 indexed campaignId, bytes32 root, bytes32 data, RewardAmount[] reimbursementFees);
 
     /// @notice Emitted when the rates updater or the owner updates the minimum emission
     /// rate of a certain whitelisted reward token required in order to create a rewards based
@@ -310,15 +323,27 @@ interface IMetrom {
     /// @param updater The new updater.
     event SetUpdater(address indexed updater);
 
-    /// @notice Emitted when Metrom's owner sets a new rewards based campaign fee.
-    /// @param fee The new rewards campaign fee.
-    event SetFee(uint32 fee);
+    /// @notice Emitted when Metrom's owner sets a new rewards based campaign
+    /// creation fee.
+    /// @param creationFee The new rewards campaign creation fee.
+    event SetCreationFee(uint32 creationFee);
 
     /// @notice Emitted when Metrom's owner sets a new address-specific
-    /// rebate for the protocol rewards based campaign fees.
+    /// rebate for the protocol rewards based campaign creation fees.
     /// @param account The account for which the rebate was set.
     /// @param rebate The rebate.
-    event SetFeeRebate(address account, uint32 rebate);
+    event SetCreationFeeRebate(address account, uint32 rebate);
+
+    /// @notice Emitted when Metrom's owner sets a new rewards based campaign
+    /// reimbursement fee.
+    /// @param reimbursementFee The new rewards campaign reimbursement fee.
+    event SetReimbursementFee(uint32 reimbursementFee);
+
+    /// @notice Emitted when Metrom's owner sets a new address-specific
+    /// rebate for the protocol rewards based campaign reimbursement fees.
+    /// @param account The account for which the rebate was set.
+    /// @param rebate The rebate.
+    event SetReimbursementFeeRebate(address account, uint32 rebate);
 
     /// @notice Emitted when Metrom's owner sets a new minimum campaign duration.
     /// @param minimumCampaignDuration The new minimum campaign duration.
@@ -428,13 +453,15 @@ interface IMetrom {
     /// @notice Initializes the contract.
     /// @param owner The initial owner.
     /// @param updater The initial updater.
-    /// @param fee The initial fee.
+    /// @param creationFee The initial creation fee.
+    /// @param reimbursementFee The initial reimbursement fee.
     /// @param minimumCampaignDuration The initial minimum campaign duration.
     /// @param maximumCampaignDuration The initial maximum campaign duration.
     function initialize(
         address owner,
         address updater,
-        uint32 fee,
+        uint32 creationFee,
+        uint32 reimbursementFee,
         uint32 minimumCampaignDuration,
         uint32 maximumCampaignDuration
     ) external;
@@ -459,14 +486,47 @@ interface IMetrom {
     /// @return updater The currently allowed updater.
     function updater() external view returns (address updater);
 
-    /// @notice Returns the current fee.
-    /// @return fee The current fee.
-    function fee() external view returns (uint32 fee);
+    /// @notice Returns the current creation fee.
+    /// @return creationFee The current creation fee.
+    function creationFee() external view returns (uint32 creationFee);
 
-    /// @notice Returns the current fee rebate for a provided account.
+    /// @notice Returns the current creation fee rebate for a provided account.
     /// @param account The account for which to fetch the fee rebate.
-    /// @return rebate The fee rebate for the provided account.
-    function feeRebate(address account) external view returns (uint32 rebate);
+    /// @return rebate The creation fee rebate for the provided account.
+    function creationFeeRebate(address account) external view returns (uint32 rebate);
+
+    /// @notice Returns the resolved creation fee for a rewards campaign creator.
+    /// @param creator The creator's address.
+    /// @return resolvedCreationFee The resolved creation fee.
+    function resolvedRewardsCampaignCreationFee(address creator)
+        external
+        view
+        returns (ResolvedFee memory resolvedCreationFee);
+
+    /// @notice Returns the current reimbursement fee.
+    /// @return creationFee The current reimbursement fee.
+    function reimbursementFee() external view returns (uint32 creationFee);
+
+    /// @notice Returns the current reimbursement fee rebate for a provided account.
+    /// @param account The account for which to fetch the fee rebate.
+    /// @return rebate The reimbursement fee rebate for the provided account.
+    function reimbursementFeeRebate(address account) external view returns (uint32 rebate);
+
+    /// @notice Returns the resolved reimbursement fee for a campaign creator.
+    /// @param account The creator's account.
+    /// @return resolvedReimbursementFee The resolved reimbursement fee.
+    function resolvedReimbursementFeeByAddress(address account)
+        external
+        view
+        returns (ResolvedFee memory resolvedReimbursementFee);
+
+    /// @notice Returns the resolved reimbursement fee for a campaign.
+    /// @param campaignId The campaign id.
+    /// @return resolvedReimbursementFee The resolved reimbursement fee.
+    function resolvedReimbursementFeeByCampaign(bytes32 campaignId)
+        external
+        view
+        returns (ResolvedFee memory resolvedReimbursementFee);
 
     /// @notice Returns the currently enforced minimum campaign duration.
     /// @return minimumCampaignDuration The currently enforced minimum campaign duration.
@@ -595,14 +655,23 @@ interface IMetrom {
     /// @param updater The new updater address.
     function setUpdater(address updater) external;
 
-    /// @notice Can be called by Metrom's owner to set a new fee value.
-    function setFee(uint32 fee) external;
+    /// @notice Can be called by Metrom's owner to set a new creation fee value.
+    function setCreationFee(uint32 creationFee) external;
 
-    /// @notice Can be called by Metrom's owner to set a new specific protocol fee
+    /// @notice Can be called by Metrom's owner to set a new specific creation fee
     /// rebate for an account.
     /// @param account The account for which to set the rebate value.
     /// @param rebate The rebate.
-    function setFeeRebate(address account, uint32 rebate) external;
+    function setCreationFeeRebate(address account, uint32 rebate) external;
+
+    /// @notice Can be called by Metrom's owner to set a new reimbursement fee value.
+    function setReimbursementFee(uint32 creationFee) external;
+
+    /// @notice Can be called by Metrom's owner to set a new specific reimbursement fee
+    /// rebate for an account.
+    /// @param account The account for which to set the rebate value.
+    /// @param rebate The rebate.
+    function setReimbursementFeeRebate(address account, uint32 rebate) external;
 
     /// @notice Can be called by Metrom's owner to set a new minimum allowed campaign duration.
     /// @param minimumCampaignDuration The new minimum allowed campaign duration.

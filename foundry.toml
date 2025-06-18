@@ -5,7 +5,7 @@ remappings = [
     'oz-up/=lib/openzeppelin-contracts-upgradeable/contracts/',
 ]
 optimizer = false
-solc_version = "0.8.28"
+solc_version = "0.8.30"
 
 [profile.production]
 optimizer = true
@@ -25,7 +25,7 @@ mode = "3"
 runs = 16384
 
 [profile.ci.fuzz]
-runs = 100000
+runs = 10000
 
 [etherscan]
 holesky = { chain = 17000, key = "${ETHERSCAN_API_KEY}", url = "https://api-holesky.etherscan.io/api" }

@@ -1,4 +1,4 @@
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import {MetromHarness} from "./harnesses/MetromHarness.sol";
 import {BaseTest} from "./Base.t.sol";
@@ -570,7 +570,7 @@ contract CreateRewardsCampaignTest is BaseTest {
         _createRewardsCampaignBundles[0] = _createRewardsCampaignBundle;
 
         vm.prank(owner);
-        metrom.setFeeRebate(address(this), UNIT);
+        metrom.setCreationFeeRebate(address(this), UNIT);
 
         CreatePointsCampaignBundle[] memory _createPointsCampaignBundless = new CreatePointsCampaignBundle[](0);
 

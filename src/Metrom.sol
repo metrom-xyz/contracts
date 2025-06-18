@@ -1,4 +1,4 @@
-pragma solidity 0.8.28;
+pragma solidity 0.8.30;
 
 import {IERC20} from "oz/token/ERC20/IERC20.sol";
 import {SafeERC20} from "oz/token/ERC20/utils/SafeERC20.sol";
@@ -19,6 +19,8 @@ import {
     RewardsCampaignV1,
     RewardsCampaignV2,
     Reward,
+    RewardAmount,
+    ResolvedFee,
     PointsCampaignV1,
     PointsCampaignV2,
     ReadonlyRewardsCampaign,
@@ -62,7 +64,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     address public override updater;
 
     /// @inheritdoc IMetrom
-    uint32 public override fee;
+    uint32 public override creationFee;
 
     /// @inheritdoc IMetrom
     uint32 public override minimumCampaignDuration;
@@ -73,7 +75,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     RewardsCampaignsV1 internal rewardsCampaignsV1;
 
     /// @inheritdoc IMetrom
-    mapping(address account => uint32 rebate) public override feeRebate;
+    mapping(address account => uint32 creationFeeRebate) public override creationFeeRebate;
 
     /// @inheritdoc IMetrom
     mapping(address token => uint256 amount) public override claimableFees;
@@ -90,6 +92,12 @@ contract Metrom is IMetrom, UUPSUpgradeable {
 
     PointsCampaignsV2 internal pointsCampaignsV2;
 
+    /// @inheritdoc IMetrom
+    uint32 public override reimbursementFee;
+
+    /// @inheritdoc IMetrom
+    mapping(address account => uint32 reimbursementFeeRebate) public override reimbursementFeeRebate;
+
     constructor() {
         _disableInitializers();
     }
@@ -98,22 +106,27 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     function initialize(
         address _owner,
         address _updater,
-        uint32 _fee,
+        uint32 _creationFee,
+        uint32 _reimbursementFee,
         uint32 _minimumCampaignDuration,
         uint32 _maximumCampaignDuration
     ) external override initializer {
         if (_owner == address(0)) revert ZeroAddressOwner();
         if (_updater == address(0)) revert ZeroAddressUpdater();
-        if (_fee >= UNIT) revert InvalidFee();
+        if (_creationFee >= UNIT) revert InvalidFee();
+        if (_reimbursementFee >= UNIT) revert InvalidFee();
         if (_minimumCampaignDuration >= _maximumCampaignDuration) revert InvalidMinimumCampaignDuration();
 
         owner = _owner;
         updater = _updater;
         minimumCampaignDuration = _minimumCampaignDuration;
         maximumCampaignDuration = _maximumCampaignDuration;
-        fee = _fee;
+        creationFee = _creationFee;
+        reimbursementFee = _reimbursementFee;
 
-        emit Initialize(_owner, _updater, _fee, _minimumCampaignDuration, _maximumCampaignDuration);
+        emit Initialize(
+            _owner, _updater, _creationFee, _reimbursementFee, _minimumCampaignDuration, _maximumCampaignDuration
+        );
     }
 
     /// @inheritdoc IMetrom
@@ -126,6 +139,44 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     function _authorizeUpgrade(address) internal view override {
         if (msg.sender != owner) revert Forbidden();
         if (ossified) revert Ossified();
+    }
+
+    function _resolvedRewardsCampaignCreationFee(address _creator) internal view returns (ResolvedFee memory) {
+        uint32 _fee = creationFee;
+        uint32 _rebate = creationFeeRebate[_creator];
+        uint32 _resolved = uint32(uint64(_fee) * (UNIT - _rebate) / UNIT);
+
+        return ResolvedFee({full: _fee, rebate: _rebate, resolved: _resolved});
+    }
+
+    function _resolvedReimbursementFeeByAddress(address _account) internal view returns (ResolvedFee memory) {
+        uint32 _fee = reimbursementFee;
+        uint32 _rebate = reimbursementFeeRebate[_account];
+        uint32 _resolved = uint32(uint64(_fee) * (UNIT - _rebate) / UNIT);
+
+        return ResolvedFee({full: _fee, rebate: _rebate, resolved: _resolved});
+    }
+
+    /// @inheritdoc IMetrom
+    function resolvedRewardsCampaignCreationFee(address _creator) external view override returns (ResolvedFee memory) {
+        return _resolvedRewardsCampaignCreationFee(_creator);
+    }
+
+    /// @inheritdoc IMetrom
+    function resolvedReimbursementFeeByAddress(address _creator) external view override returns (ResolvedFee memory) {
+        return _resolvedReimbursementFeeByAddress(_creator);
+    }
+
+    /// @inheritdoc IMetrom
+    function resolvedReimbursementFeeByCampaign(bytes32 _campaignId)
+        external
+        view
+        override
+        returns (ResolvedFee memory)
+    {
+        address _owner = rewardsCampaignsV1.get(_campaignId).owner;
+        if (_owner == address(0)) _owner = rewardsCampaignsV2.getExistingReadonly(_campaignId).owner;
+        return _resolvedReimbursementFeeByAddress(_owner);
     }
 
     /// @inheritdoc IMetrom
@@ -189,16 +240,14 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         CreateRewardsCampaignBundle[] calldata _rewardsCampaignBundles,
         CreatePointsCampaignBundle[] calldata _pointsCampaignBundles
     ) external {
-        uint32 _fee = fee;
-        uint32 _feeRebate = feeRebate[msg.sender];
-        uint32 _resolvedRewardsCampaignFee = uint32(uint64(_fee) * (UNIT - _feeRebate) / UNIT);
+        ResolvedFee memory _fee = _resolvedRewardsCampaignCreationFee(msg.sender);
         uint32 _minimumCampaignDuration = minimumCampaignDuration;
         uint32 _maximumCampaignDuration = maximumCampaignDuration;
 
         for (uint256 _i = 0; _i < _rewardsCampaignBundles.length; _i++) {
             CreateRewardsCampaignBundle calldata _rewardsCampaignBundle = _rewardsCampaignBundles[_i];
             (bytes32 _id, CreatedCampaignReward[] memory _createdCampaignRewards) = createRewardsCampaign(
-                _rewardsCampaignBundle, _minimumCampaignDuration, _maximumCampaignDuration, _resolvedRewardsCampaignFee
+                _rewardsCampaignBundle, _minimumCampaignDuration, _maximumCampaignDuration, _fee.resolved
             );
             emit CreateRewardsCampaign(
                 _id,
@@ -215,7 +264,7 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         for (uint256 _i = 0; _i < _pointsCampaignBundles.length; _i++) {
             CreatePointsCampaignBundle calldata _pointsCampaignBundle = _pointsCampaignBundles[_i];
             (bytes32 _id, uint256 _feeAmount) = createPointsCampaign(
-                _pointsCampaignBundle, _minimumCampaignDuration, _maximumCampaignDuration, _feeRebate
+                _pointsCampaignBundle, _minimumCampaignDuration, _maximumCampaignDuration, _fee.rebate
             );
             emit CreatePointsCampaign(
                 _id,
@@ -343,7 +392,12 @@ contract Metrom is IMetrom, UUPSUpgradeable {
                 campaignV2.dataHash = _bundle.dataHash;
             }
 
-            emit DistributeReward(_bundle.campaignId, _bundle.root, _bundle.dataHash);
+            for (uint256 _j = 0; _j < _bundle.reimbursementFees.length; _j++) {
+                RewardAmount calldata _reimbursementFee = _bundle.reimbursementFees[_i];
+                claimableFees[_reimbursementFee.token] += _reimbursementFee.amount;
+            }
+
+            emit DistributeReward(_bundle.campaignId, _bundle.root, _bundle.dataHash, _bundle.reimbursementFees);
         }
     }
 
@@ -574,20 +628,37 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     }
 
     /// @inheritdoc IMetrom
-    function setFee(uint32 _fee) external override {
-        if (_fee >= UNIT) revert InvalidFee();
+    function setCreationFee(uint32 _creationFee) external override {
+        if (_creationFee >= UNIT) revert InvalidFee();
         if (msg.sender != owner) revert Forbidden();
-        fee = _fee;
-        emit SetFee(_fee);
+        creationFee = _creationFee;
+        emit SetCreationFee(_creationFee);
     }
 
     /// @inheritdoc IMetrom
-    function setFeeRebate(address _account, uint32 _rebate) external override {
+    function setCreationFeeRebate(address _account, uint32 _rebate) external override {
         if (_account == address(0)) revert ZeroAddressAccount();
         if (_rebate > UNIT) revert RebateTooHigh();
         if (msg.sender != owner) revert Forbidden();
-        feeRebate[_account] = _rebate;
-        emit SetFeeRebate(_account, _rebate);
+        creationFeeRebate[_account] = _rebate;
+        emit SetCreationFeeRebate(_account, _rebate);
+    }
+
+    /// @inheritdoc IMetrom
+    function setReimbursementFee(uint32 _reimbursementFee) external override {
+        if (_reimbursementFee >= UNIT) revert InvalidFee();
+        if (msg.sender != owner) revert Forbidden();
+        reimbursementFee = _reimbursementFee;
+        emit SetReimbursementFee(_reimbursementFee);
+    }
+
+    /// @inheritdoc IMetrom
+    function setReimbursementFeeRebate(address _account, uint32 _rebate) external override {
+        if (_account == address(0)) revert ZeroAddressAccount();
+        if (_rebate > UNIT) revert RebateTooHigh();
+        if (msg.sender != owner) revert Forbidden();
+        reimbursementFeeRebate[_account] = _rebate;
+        emit SetReimbursementFeeRebate(_account, _rebate);
     }
 
     /// @inheritdoc IMetrom
