@@ -2,7 +2,6 @@ import { type ChainContract } from "viem";
 
 export enum SupportedChain {
     // testnets
-    Holesky = 17000,
     BaseSepolia = 84532,
     Sepolia = 11155111,
 
@@ -24,10 +23,6 @@ export enum SupportedChain {
 }
 
 export const ADDRESS: Record<SupportedChain, ChainContract> = {
-    [SupportedChain.Holesky]: {
-        address: "0xE2461a09B782efF63a2B50964a6DA3C15dD2A51e",
-        blockCreated: 2189164,
-    },
     [SupportedChain.BaseSepolia]: {
         address: "0xD4AC4AaFb81eC774E49AA755A66EfCe4574D6276",
         blockCreated: 16130946,
