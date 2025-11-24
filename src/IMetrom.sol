@@ -169,6 +169,18 @@ struct ClaimRewardBundle {
     address receiver;
 }
 
+/// @notice Contains data that can be used by operators to claim rewards on behalf of a user
+/// by specifying the data necessary to build a valid Merkle leaf and an inclusion
+/// proof.
+struct ClaimRewardForBundle {
+    address account;
+    bytes32 campaignId;
+    bytes32[] proof;
+    address token;
+    uint256 amount;
+    address receiver;
+}
+
 /// @notice Contains data that can be used by the contract's owner to claim accrued fees.
 struct ClaimFeeBundle {
     address token;
@@ -275,6 +287,15 @@ interface IMetrom {
     /// @param receiver The claim's receiver.
     event ClaimReward(bytes32 indexed campaignId, address token, uint256 amount, address indexed receiver);
 
+    /// @notice Emitted when an eligible operator claims a reward on behalf of a user.
+    /// @param campaignId The id of the campaign on which the claim is performed.
+    /// @param token The claimed token.
+    /// @param amount The claimed amount.
+    /// @param receiver The claim's receiver.
+    event ClaimRewardFor(
+        bytes32 indexed campaignId, address token, uint256 amount, address indexed operator, address indexed receiver
+    );
+
     /// @notice Emitted when the campaign's owner recovers unassigned rewards.
     /// @param campaignId The id of the campaign on which the recovery was performed.
     /// @param token The recovered token.
@@ -327,6 +348,14 @@ interface IMetrom {
     /// @notice Emitted when Metrom's owner sets a new maximum campaign duration.
     /// @param maximumCampaignDuration The new maximum campaign duration.
     event SetMaximumCampaignDuration(uint32 maximumCampaignDuration);
+
+    /// @notice Emitted when Metrom's owner allows a new operator.
+    /// @param account The allowed operator.
+    event AllowOperator(address account);
+
+    /// @notice Emitted when Metrom's owner disallows a new operator.
+    /// @param account The disallowed operator.
+    event DisallowOperator(address account);
 
     /// @notice Thrown when trying to create a campaign that already exists.
     error AlreadyExists();
@@ -390,7 +419,7 @@ interface IMetrom {
     /// @notice Thrown when trying to set the updater to the zero address.
     error ZeroAddressUpdater();
 
-    /// @notice Thrown when trying to set the fee rebate for a zero address account.
+    /// @notice Thrown when trying to use a zero address account in contexts where it is not accepted.
     error ZeroAddressAccount();
 
     /// @notice Thrown when trying to transfer Metrom's or a campaign's ownership to the zero address.
@@ -424,6 +453,9 @@ interface IMetrom {
 
     /// @notice Thrown at rewards distribution time when the specified root is 0-bytes.
     error ZeroRoot();
+
+    /// @notice Thrown when an unauthorized operator tries to claim rewards on behalf of users.
+    error DisallowedOperator();
 
     /// @notice Initializes the contract.
     /// @param owner The initial owner.
@@ -495,6 +527,12 @@ interface IMetrom {
     /// @return minimumRate The reward token's minimum required rate.
     function minimumFeeTokenRate(address token) external view returns (uint256 minimumRate);
 
+    /// @notice Returns whether a given address is registered as an authorized operator,
+    /// and is thus allowed to claim rewards on behalf of others.
+    /// @param account The account to check.
+    /// @return authorized Whether the account is authorized as an operator.
+    function operators(address account) external view returns (bool authorized);
+
     /// @notice Returns a points based campaign in readonly format.
     /// @param id The wanted campaign id.
     /// @return campaign The points based campaign in readonly format.
@@ -516,10 +554,7 @@ interface IMetrom {
     /// @param token The reward token to query.
     /// @param account The claimer account.
     /// @return claimed The claimed amount.
-    function claimedCampaignReward(bytes32 id, address token, address account)
-        external
-        view
-        returns (uint256 claimed);
+    function claimedCampaignReward(bytes32 id, address token, address account) external view returns (uint256 claimed);
 
     /// @notice Creates one or more campaigns. The transaction will revert even if one
     /// of the specified bundles results in a creation failure (all or none).
@@ -550,6 +585,13 @@ interface IMetrom {
     /// even if only one of the specified bundles results in a claim failure (all or none).
     /// @param bundles The bundles containing the data used to claim the rewards.
     function claimRewards(ClaimRewardBundle[] calldata bundles) external;
+
+    /// @notice Allows authorized operators to claim outstanding rewards on one or more campaigns,
+    /// on behalf of on or more user.
+    /// The transaction will revert even if only one of the specified bundles results in a
+    /// claim failure (all or none).
+    /// @param bundles The bundles containing the data used to claim the rewards.
+    function claimRewardsFor(ClaimRewardForBundle[] calldata bundles) external;
 
     /// @notice Can be used by a campaign owner to recover unassigned rewards on one or more
     /// campaigns. The transaction will revert even if only one of the specified bundles results
@@ -611,4 +653,12 @@ interface IMetrom {
     /// @notice Can be called by Metrom's owner to set a new maximum allowed campaign duration.
     /// @param maximumCampaignDuration The new maximum allowed campaign duration.
     function setMaximumCampaignDuration(uint32 maximumCampaignDuration) external;
+
+    /// @notice Can be called by Metrom's owner to allow a new operator.
+    /// @param account The account to allow as an operator.
+    function allowOperator(address account) external;
+
+    /// @notice Can be called by Metrom's owner to disallow a new operator.
+    /// @param account The account to disallow as an operator.
+    function disallowOperator(address account) external;
 }

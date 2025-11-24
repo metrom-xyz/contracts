@@ -239,11 +239,7 @@ contract ClaimRewardsTest is BaseTest {
         bytes32[] memory _proof = new bytes32[](0);
 
         ClaimRewardBundle memory _bundle = ClaimRewardBundle({
-            campaignId: bytes32(0),
-            proof: _proof,
-            token: address(1),
-            amount: 1 ether,
-            receiver: address(0)
+            campaignId: bytes32(0), proof: _proof, token: address(1), amount: 1 ether, receiver: address(0)
         });
 
         ClaimRewardBundle[] memory _bundles = new ClaimRewardBundle[](1);

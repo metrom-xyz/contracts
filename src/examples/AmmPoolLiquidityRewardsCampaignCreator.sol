@@ -20,12 +20,7 @@ contract AmmPoolLiquidityRewardsCampaignCreator {
         returns (bytes32)
     {
         CreateRewardsCampaignBundle memory _bundle = CreateRewardsCampaignBundle({
-            from: from,
-            to: to,
-            kind: 1,
-            data: abi.encode(poolId),
-            specificationHash: bytes32(0),
-            rewards: rewards
+            from: from, to: to, kind: 1, data: abi.encode(poolId), specificationHash: bytes32(0), rewards: rewards
         });
         bytes32 _id = keccak256(
             abi.encode(

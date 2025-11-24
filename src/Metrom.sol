@@ -30,6 +30,7 @@ import {
     DistributeRewardsBundle,
     SetMinimumTokenRateBundle,
     ClaimRewardBundle,
+    ClaimRewardForBundle,
     ClaimFeeBundle,
     UNIT
 } from "./IMetrom.sol";
@@ -89,6 +90,9 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     RewardsCampaignsV2 internal rewardsCampaignsV2;
 
     PointsCampaignsV2 internal pointsCampaignsV2;
+
+    /// @inheritdoc IMetrom
+    mapping(address account => bool authorized) public override operators;
 
     constructor() {
         _disableInitializers();
@@ -238,8 +242,9 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         uint32 _maximumCampaignDuration,
         uint32 _resolvedFee
     ) internal returns (bytes32, CreatedCampaignReward[] memory) {
-        uint32 _duration =
-            BaseCampaignsUtils.validate(_bundle.from, _bundle.to, _minimumCampaignDuration, _maximumCampaignDuration);
+        uint32 _duration = BaseCampaignsUtils.validate(
+            _bundle.from, _bundle.to, _minimumCampaignDuration, _maximumCampaignDuration
+        );
         if (_bundle.rewards.length == 0) revert NoRewards();
         if (_bundle.rewards.length > MAX_REWARDS_PER_CAMPAIGN) revert TooManyRewards();
 
@@ -292,8 +297,9 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         uint32 _maximumCampaignDuration,
         uint32 _feeRebate
     ) internal returns (bytes32, uint256) {
-        uint32 _duration =
-            BaseCampaignsUtils.validate(_bundle.from, _bundle.to, _minimumCampaignDuration, _maximumCampaignDuration);
+        uint32 _duration = BaseCampaignsUtils.validate(
+            _bundle.from, _bundle.to, _minimumCampaignDuration, _maximumCampaignDuration
+        );
         if (_bundle.points == 0) revert NoPoints();
 
         uint256 _minimumFeeTokenRate = minimumFeeTokenRate[_bundle.feeToken];
@@ -374,51 +380,72 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     function _processRewardClaim(
         bytes32 _campaignRoot,
         Reward storage reward,
-        ClaimRewardBundle calldata _bundle,
-        address _claimOwner
+        address _token,
+        uint256 _amount,
+        bytes32[] calldata _proof,
+        address _owner,
+        address _receiver
     ) internal returns (uint256) {
-        if (_bundle.receiver == address(0)) revert ZeroAddressReceiver();
-        if (_bundle.token == address(0)) revert ZeroAddressRewardToken();
-        if (_bundle.amount == 0) revert ZeroAmount();
+        if (_token == address(0)) revert ZeroAddressRewardToken();
+        if (_amount == 0) revert ZeroAmount();
+        if (_receiver == address(0)) revert ZeroAddressReceiver();
 
-        bytes32 _leaf = keccak256(bytes.concat(keccak256(abi.encode(_claimOwner, _bundle.token, _bundle.amount))));
-        if (!MerkleProof.verifyCalldata(_bundle.proof, _campaignRoot, _leaf)) revert InvalidProof();
+        bytes32 _leaf = keccak256(bytes.concat(keccak256(abi.encode(_owner, _token, _amount))));
+        if (!MerkleProof.verifyCalldata(_proof, _campaignRoot, _leaf)) revert InvalidProof();
 
-        uint256 _claimAmount = _bundle.amount - reward.claimed[_claimOwner];
+        uint256 _claimAmount = _amount - reward.claimed[_owner];
         if (_claimAmount == 0) revert ZeroAmount();
         if (_claimAmount > reward.amount) revert TooMuchClaimedAmount();
 
-        reward.claimed[_claimOwner] += _claimAmount;
+        reward.claimed[_owner] += _claimAmount;
         reward.amount -= _claimAmount;
 
-        IERC20(_bundle.token).safeTransfer(_bundle.receiver, _claimAmount);
+        IERC20(_token).safeTransfer(_receiver, _claimAmount);
 
         return _claimAmount;
     }
 
-    function _claimableRewardAndRoot(ClaimRewardBundle calldata _bundle, bool _checkOwner)
+    function _claimableRewardAndRoot(bytes32 _campaignId, address _token, bool _checkOwner)
         internal
         view
         returns (bytes32, Reward storage)
     {
-        RewardsCampaignV1 storage rewardsCampaignV1 = rewardsCampaignsV1.get(_bundle.campaignId);
+        RewardsCampaignV1 storage rewardsCampaignV1 = rewardsCampaignsV1.get(_campaignId);
         if (rewardsCampaignV1.from != 0) {
             if (_checkOwner && rewardsCampaignV1.owner != msg.sender) revert Forbidden();
-            return (rewardsCampaignV1.root, rewardsCampaignV1.reward[_bundle.token]);
+            return (rewardsCampaignV1.root, rewardsCampaignV1.reward[_token]);
         }
 
-        RewardsCampaignV2 storage rewardsCampaignV2 = rewardsCampaignsV2.getExisting(_bundle.campaignId);
+        RewardsCampaignV2 storage rewardsCampaignV2 = rewardsCampaignsV2.getExisting(_campaignId);
         if (_checkOwner && rewardsCampaignV2.owner != msg.sender) revert Forbidden();
-        return (rewardsCampaignV2.root, rewardsCampaignV2.reward[_bundle.token]);
+        return (rewardsCampaignV2.root, rewardsCampaignV2.reward[_token]);
     }
 
     /// @inheritdoc IMetrom
     function claimRewards(ClaimRewardBundle[] calldata _bundles) external override {
         for (uint256 _i; _i < _bundles.length; _i++) {
             ClaimRewardBundle calldata _bundle = _bundles[_i];
-            (bytes32 _root, Reward storage claimableReward) = _claimableRewardAndRoot(_bundle, false);
-            uint256 _claimedAmount = _processRewardClaim(_root, claimableReward, _bundle, msg.sender);
+            (bytes32 _root, Reward storage claimableReward) =
+                _claimableRewardAndRoot(_bundle.campaignId, _bundle.token, false);
+            uint256 _claimedAmount = _processRewardClaim(
+                _root, claimableReward, _bundle.token, _bundle.amount, _bundle.proof, msg.sender, _bundle.receiver
+            );
             emit ClaimReward(_bundle.campaignId, _bundle.token, _claimedAmount, _bundle.receiver);
+        }
+    }
+
+    /// @inheritdoc IMetrom
+    function claimRewardsFor(ClaimRewardForBundle[] calldata _bundles) external override {
+        if (!operators[msg.sender]) revert DisallowedOperator();
+
+        for (uint256 _i; _i < _bundles.length; _i++) {
+            ClaimRewardForBundle calldata _bundle = _bundles[_i];
+            (bytes32 _root, Reward storage claimableReward) =
+                _claimableRewardAndRoot(_bundle.campaignId, _bundle.token, false);
+            uint256 _claimedAmount = _processRewardClaim(
+                _root, claimableReward, _bundle.token, _bundle.amount, _bundle.proof, _bundle.account, _bundle.receiver
+            );
+            emit ClaimRewardFor(_bundle.campaignId, _bundle.token, _claimedAmount, msg.sender, _bundle.receiver);
         }
     }
 
@@ -426,8 +453,11 @@ contract Metrom is IMetrom, UUPSUpgradeable {
     function recoverRewards(ClaimRewardBundle[] calldata _bundles) external override {
         for (uint256 _i; _i < _bundles.length; _i++) {
             ClaimRewardBundle calldata _bundle = _bundles[_i];
-            (bytes32 _root, Reward storage claimableReward) = _claimableRewardAndRoot(_bundle, true);
-            uint256 _claimedAmount = _processRewardClaim(_root, claimableReward, _bundle, address(0));
+            (bytes32 _root, Reward storage claimableReward) =
+                _claimableRewardAndRoot(_bundle.campaignId, _bundle.token, true);
+            uint256 _claimedAmount = _processRewardClaim(
+                _root, claimableReward, _bundle.token, _bundle.amount, _bundle.proof, address(0), _bundle.receiver
+            );
             emit RecoverReward(_bundle.campaignId, _bundle.token, _claimedAmount, _bundle.receiver);
         }
     }
@@ -604,5 +634,21 @@ contract Metrom is IMetrom, UUPSUpgradeable {
         if (msg.sender != owner) revert Forbidden();
         maximumCampaignDuration = _maximumCampaignDuration;
         emit SetMaximumCampaignDuration(_maximumCampaignDuration);
+    }
+
+    /// @inheritdoc IMetrom
+    function allowOperator(address _account) external override {
+        if (_account == address(0)) revert ZeroAddressAccount();
+        if (msg.sender != owner) revert Forbidden();
+        operators[_account] = true;
+        emit AllowOperator(_account);
+    }
+
+    /// @inheritdoc IMetrom
+    function disallowOperator(address _account) external override {
+        if (_account == address(0)) revert ZeroAddressAccount();
+        if (msg.sender != owner) revert Forbidden();
+        operators[_account] = false;
+        emit DisallowOperator(_account);
     }
 }

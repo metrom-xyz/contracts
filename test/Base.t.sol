@@ -17,6 +17,7 @@ import {
 contract BaseTest is Test {
     address internal owner;
     address internal updater;
+    address internal operator;
     uint32 internal fee;
     uint32 internal minimumCampaignDuration;
     uint32 internal maximumCampaignDuration;
@@ -25,6 +26,7 @@ contract BaseTest is Test {
     function setUp() external {
         owner = address(1);
         updater = address(2);
+        operator = address(3);
         fee = 10_000;
         minimumCampaignDuration = 1 seconds;
         maximumCampaignDuration = 30 minutes;
@@ -43,6 +45,8 @@ contract BaseTest is Test {
                 )
             )
         );
+        vm.prank(owner);
+        metrom.allowOperator(operator);
     }
 
     function createFixedRewardsCampaign() internal returns (bytes32) {

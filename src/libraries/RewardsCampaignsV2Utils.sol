@@ -1,8 +1,6 @@
 pragma solidity 0.8.28;
 
-import {
-    IMetrom, RewardsCampaignV2, CreateRewardsCampaignBundle, ReadonlyRewardsCampaign, Reward
-} from "../IMetrom.sol";
+import {IMetrom, RewardsCampaignV2, CreateRewardsCampaignBundle, ReadonlyRewardsCampaign, Reward} from "../IMetrom.sol";
 
 /// @dev Represents the maximum number of different rewards allowed for a
 /// single campaign.
