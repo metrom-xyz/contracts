@@ -21,6 +21,7 @@ export enum SupportedChain {
     Hemi = 43111,
     Lens = 232,
     Lumia = 994873017,
+    ArbitrumOne = 42161,
 }
 
 export const ADDRESS: Record<SupportedChain, ChainContract> = {
@@ -91,5 +92,9 @@ export const ADDRESS: Record<SupportedChain, ChainContract> = {
     [SupportedChain.Lumia]: {
         address: "0xD4AC4AaFb81eC774E49AA755A66EfCe4574D6276",
         blockCreated: 8947210,
+    },
+    [SupportedChain.ArbitrumOne]: {
+        address: "0xD6e88c910329fE3597498772eB94991a0630306d",
+        blockCreated: 406784936,
     },
 };
