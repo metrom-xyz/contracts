@@ -17,12 +17,8 @@ contract DeployFull is Script {
     ) public {
         vm.startBroadcast(vm.envUint("PRIVATE_KEY"));
 
-        ERC1967Proxy _metrom = new ERC1967Proxy(
-            address(new Metrom()),
-            abi.encodeWithSelector(
-                Metrom.initialize.selector, _owner, _updater, _fee, _minimumCampaignDuration, _maximumCampaignDuration
-            )
-        );
+        Metrom _metrom = Metrom(address(new ERC1967Proxy(address(new Metrom()), bytes(""))));
+        _metrom.initialize(_owner, _updater, _fee, _minimumCampaignDuration, _maximumCampaignDuration);
         console2.log("Metrom address: ", address(_metrom));
 
         vm.stopBroadcast();
