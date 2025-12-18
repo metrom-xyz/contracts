@@ -24,6 +24,7 @@ export enum SupportedChain {
     ArbitrumOne = 42161,
     Plasma = 9745,
     Saga = 5464,
+    Bsc = 56,
 }
 
 export const ADDRESS: Record<SupportedChain, ChainContract> = {
@@ -106,5 +107,9 @@ export const ADDRESS: Record<SupportedChain, ChainContract> = {
     [SupportedChain.Saga]: {
         address: "0xD4AC4AaFb81eC774E49AA755A66EfCe4574D6276",
         blockCreated: 5923214,
+    },
+    [SupportedChain.Bsc]: {
+        address: "0xD4AC4AaFb81eC774E49AA755A66EfCe4574D6276",
+        blockCreated: 72064323,
     },
 };
