@@ -26,6 +26,7 @@ export enum SupportedChain {
     Saga = 5464,
     Bsc = 56,
     MegaEth = 4326,
+    Mainnet = 1,
 }
 
 export const ADDRESS: Record<SupportedChain, ChainContract> = {
@@ -116,5 +117,9 @@ export const ADDRESS: Record<SupportedChain, ChainContract> = {
     [SupportedChain.MegaEth]: {
         address: "0xD4AC4AaFb81eC774E49AA755A66EfCe4574D6276",
         blockCreated: 11479372,
+    },
+    [SupportedChain.Mainnet]: {
+        address: "0xe3dA4E4b76C4ed3e4227db20F20d1F25A4507f9b",
+        blockCreated: 25070925,
     },
 };
